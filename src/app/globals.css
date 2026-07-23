@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-outfit: 'Outfit', sans-serif;
+  --font-plus-jakarta: 'Plus Jakarta Sans', sans-serif;
+
+  /* Premium Warm Coffee & Chocolate Design System */
+  --bg-deep: #120907;        /* Very dark rich espresso */
+  --bg-card: #1c100c;        /* Deep warm chocolate card */
+  --bg-input: #231612;       /* Medium warm dark brown */
+  --bg-hover: #2d1d18;       /* Lighter warm brown for hover states */
+  
+  --primary: #8b4f30;        /* Roasted coffee brown */
+  --primary-hover: #a1603d;  /* Roasted coffee hover */
+  --primary-light: #522f1d;  /* Deep shadow brown */
+  
+  --accent: #dca385;         /* Soft sand cream gold */
+  --accent-hover: #ebc0a8;   /* Soft sand cream gold hover */
+  
+  --text-primary: #fbf8f7;   /* Off-white warm cream */
+  --text-muted: #9e8e89;     /* Soft warm grey-brown */
+  --text-dark: #3b2821;      /* Deep coffee text for bright backgrounds */
+  
+  --border-light: rgba(139, 79, 48, 0.2);  /* Transparent brown border */
+  --border-focus: rgba(220, 163, 133, 0.4); /* Transparent accent focus border */
+}
+
+@theme inline {
+  --font-sans: var(--font-plus-jakarta);
+  --font-outfit: var(--font-outfit);
+  
+  --color-bg-deep: var(--bg-deep);
+  --color-bg-card: var(--bg-card);
+  --color-bg-input: var(--bg-input);
+  --color-bg-hover: var(--bg-hover);
+  
+  --color-brand-primary: var(--primary);
+  --color-brand-primary-hover: var(--primary-hover);
+  --color-brand-primary-light: var(--primary-light);
+  
+  --color-brand-accent: var(--accent);
+  --color-brand-accent-hover: var(--accent-hover);
+  
+  --color-txt-primary: var(--text-primary);
+  --color-txt-muted: var(--text-muted);
+  --color-txt-dark: var(--text-dark);
+  
+  --color-border-light: var(--border-light);
+  --color-border-focus: var(--border-focus);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-plus-jakarta);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Premium Scrollbar design */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-input);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Custom glowing and ambient utilities */
+.glow-card {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-light);
+}
+
+.glow-card:hover {
+  border-color: rgba(220, 163, 133, 0.3);
+  box-shadow: 0 8px 32px rgba(139, 79, 48, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #fbf8f7 30%, #dca385 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-brown {
+  background: linear-gradient(135deg, #dca385 0%, #8b4f30 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Ambient radial glow background */
+.ambient-bg {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 79, 48, 0.12) 0%, rgba(0,0,0,0) 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Custom Animation classes */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 4s ease-in-out infinite;
+}
