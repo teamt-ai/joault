@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
-import { dbService, Profile } from '@/lib/supabaseClient';
+import { dbService, supabase, Profile } from '@/lib/supabaseClient';
 
 export default function JoaultAuthPage() {
   const router = useRouter();
@@ -20,16 +20,21 @@ export default function JoaultAuthPage() {
   const [user, setUser] = useState<Profile | null>(null);
 
   useEffect(() => {
-    async function checkUser() {
-      try {
-        const u = await dbService.getCurrentUser();
-        setUser(u);
-      } catch (err) {
-        console.error(err);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        router.push('/dashboard');
       }
-    }
-    checkUser();
-  }, []);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        router.push('/dashboard');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
 
 
   const handleAuth = async (e: React.FormEvent) => {

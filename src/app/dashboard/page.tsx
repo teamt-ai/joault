@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { dbService, Profile, Space } from '@/lib/supabaseClient';
+import { dbService, supabase, Profile, Space } from '@/lib/supabaseClient';
+
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,28 +24,44 @@ export default function DashboardPage() {
 
   useEffect(() => {
     document.body.classList.add('dashboard-body');
-    async function loadData() {
-      try {
-        const u = await dbService.getCurrentUser();
-        if (!u) {
-          router.push('/');
-          return;
-        }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const u: Profile = {
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+        };
         setUser(u);
-        const mySpaces = await dbService.getMySpaces(u.id);
-        setSpaces(mySpaces || []);
-      } catch (err) {
-        console.error("Dashboard error:", err);
-      } finally {
-        setLoading(false);
+        dbService.getMySpaces(session.user.id).then(mySpaces => setSpaces(mySpaces || []));
       }
-    }
-    loadData();
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const u: Profile = {
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+        };
+        setUser(u);
+        dbService.getMySpaces(session.user.id).then(mySpaces => setSpaces(mySpaces || []));
+      } else {
+        setUser(null);
+        setSpaces([]);
+      }
+      setLoading(false);
+    });
 
     return () => {
+      subscription.unsubscribe();
       document.body.classList.remove('dashboard-body');
     };
-  }, [router]);
+  }, []);
+
 
 
   const handleLogout = async () => {

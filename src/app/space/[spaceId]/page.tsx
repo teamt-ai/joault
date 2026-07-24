@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { dbService, Profile, Space, Message } from '@/lib/supabaseClient';
+import { dbService, supabase, Profile, Space, Message } from '@/lib/supabaseClient';
 
 export default function SpaceFeedPage({ params }: { params: Promise<{ spaceId: string }> }) {
   const resolvedParams = use(params);
@@ -34,27 +34,39 @@ export default function SpaceFeedPage({ params }: { params: Promise<{ spaceId: s
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    async function loadSpaceData() {
-      try {
-        const u = await dbService.getCurrentUser();
-        if (!u) {
-          window.location.href = '/';
-          return;
-        }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const u: Profile = {
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+        };
         setUser(u);
-
-        const currentSpace = await dbService.getSpaceById(spaceId);
-        setSpace(currentSpace);
-
-        const msgs = await dbService.getMessages(spaceId);
-        setMessages(msgs || []);
-      } catch (err) {
-        console.error("Error loading space:", err);
-      } finally {
-        setLoading(false);
+        dbService.getSpaceById(spaceId).then(setSpace);
+        dbService.getMessages(spaceId).then(setMessages);
       }
-    }
-    loadSpaceData();
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const u: Profile = {
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+        };
+        setUser(u);
+        dbService.getSpaceById(spaceId).then(setSpace);
+        dbService.getMessages(spaceId).then(setMessages);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, [spaceId]);
 
   const toggleAnonymousNightMode = () => {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { dbService, Profile, Space, Message } from '@/lib/supabaseClient';
+import { dbService, supabase, Profile, Space, Message } from '@/lib/supabaseClient';
 
 export default function TwoGroupsFeedPage() {
   const router = useRouter();
@@ -19,28 +19,42 @@ export default function TwoGroupsFeedPage() {
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const u = await dbService.getCurrentUser();
-        if (!u) {
-          window.location.href = '/';
-          return;
-        }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const u: Profile = {
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+        };
         setUser(u);
-
-        const mySpaces = await dbService.getMySpaces(u.id);
-        if (mySpaces && mySpaces.length > 0) {
-          const msgs = await dbService.getMessages(mySpaces[0].id);
-          setMessages(msgs || []);
-        }
-      } catch (err) {
-        console.error("Error loading twogroups data:", err);
-      } finally {
-        setLoading(false);
+        dbService.getMySpaces(session.user.id).then(mySpaces => {
+          if (mySpaces && mySpaces.length > 0) {
+            dbService.getMessages(mySpaces[0].id).then(msgs => setMessages(msgs || []));
+          }
+        });
       }
-    }
-    loadData();
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const u: Profile = {
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+        };
+        setUser(u);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
 
   const toggleAnonymousNightMode = () => {
     setIsAnonymousNight(!isAnonymousNight);
