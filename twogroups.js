@@ -375,7 +375,7 @@ function renderConnectedSLineView(post) {
         <div class="sline-top-row">
           <div class="original-sender-info">
             <div class="original-header-line">
-              <span class="anon-badge-pill">● ${post.team}</span>
+              <span class="anon-badge-pill">● Anonymous</span>
               <span class="original-time">· ${post.time}</span>
             </div>
             <div class="original-msg-content">${escapeHtml(post.content)}</div>
@@ -390,7 +390,7 @@ function renderConnectedSLineView(post) {
 
         <div class="sline-bottom-row ${currentReply.teamKey}-comment-bg" id="bottom-row-${post.id}">
           <div class="commenter-avatar-left">
-            <span class="anon-badge-pill">● ${currentReply.team}</span>
+            <span class="anon-badge-pill">● Anonymous</span>
           </div>
 
           <div class="comment-content-right">
@@ -413,6 +413,7 @@ function renderConnectedSLineView(post) {
       </div>
     `;
   }
+
 
   return `
     <div class="card-sline-layout">
@@ -480,7 +481,7 @@ function renderFullCommentsView(post) {
         <div class="comment-item ${r.teamKey}-item-bg anonymous-comment">
           <div class="comment-content-meta">
             <div class="comment-author-line">
-              <span class="anon-badge-pill">● ${r.team}</span>
+              <span class="anon-badge-pill">● Anonymous</span>
               <span class="comment-time">${r.time}</span>
             </div>
             <p class="comment-body">${escapeHtml(r.text)}</p>
@@ -492,6 +493,7 @@ function renderFullCommentsView(post) {
             </button>
           </div>
         </div>
+
       `;
     }
 

@@ -904,15 +904,15 @@ body.space-body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* JOAULT ANONYMOUS NIGHT MODE - PURE BLACK & WHITE HIGH CONTRAST MONOCHROME */
+/* JOAULT ANONYMOUS NIGHT MODE - STRICT PURE BLACK & WHITE (ZERO BROWN, ZERO BLUE) */
 body.anonymous-night-mode {
-  background-color: #050505 !important;
+  background-color: #000000 !important;
   color: #FFFFFF !important;
 }
 
 body.anonymous-night-mode .space-header {
-  background-color: rgba(10, 10, 10, 0.96) !important;
-  border-bottom-color: #27272A !important;
+  background-color: #08080A !important;
+  border-bottom-color: #222226 !important;
 }
 
 body.anonymous-night-mode .brand-square {
@@ -927,16 +927,35 @@ body.anonymous-night-mode .brand-name {
 body.anonymous-night-mode .post-card-box,
 body.anonymous-night-mode .twogroup-card-box,
 body.anonymous-night-mode .compose-card-box,
-body.anonymous-night-mode .twogroup-pane {
-  background-color: #0F0F12 !important;
-  border-color: #27272A !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.9) !important;
+body.anonymous-night-mode .twogroup-pane,
+body.anonymous-night-mode .card-sline-layout,
+body.anonymous-night-mode .card-default-view,
+body.anonymous-night-mode .card-comments-view,
+body.anonymous-night-mode .card-reply-view {
+  background-color: #121214 !important;
+  border-color: #24242A !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.95) !important;
+}
+
+body.anonymous-night-mode .sline-bottom-row,
+body.anonymous-night-mode .team-a-comment-bg,
+body.anonymous-night-mode .team-b-comment-bg,
+body.anonymous-night-mode .team-a-item-bg,
+body.anonymous-night-mode .team-b-item-bg {
+  background-color: #1A1A1E !important;
+  border-color: #2E2E36 !important;
+}
+
+body.anonymous-night-mode .sline-path {
+  stroke: #52525B !important;
 }
 
 body.anonymous-night-mode .post-text-body,
 body.anonymous-night-mode .twogroup-content-body,
-body.anonymous-night-mode .comment-text-body {
-  color: #F4F4F5 !important;
+body.anonymous-night-mode .comment-text-body,
+body.anonymous-night-mode .original-msg-content,
+body.anonymous-night-mode .comment-body {
+  color: #FFFFFF !important;
 }
 
 body.anonymous-night-mode .search-pill,
@@ -952,6 +971,19 @@ body.anonymous-night-mode .tab-item.active {
   border-color: #FFFFFF !important;
 }
 
+body.anonymous-night-mode .btn-night-anonymous-toggle {
+  background: #18181B !important;
+  border: 1px solid #3F3F46 !important;
+  color: #FFFFFF !important;
+}
+
+body.anonymous-night-mode .btn-night-anonymous-toggle.active {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #FFFFFF !important;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.6) !important;
+}
+
 body.anonymous-night-mode .post-anon-header {
   display: flex;
   align-items: center;
@@ -960,9 +992,9 @@ body.anonymous-night-mode .post-anon-header {
 }
 
 body.anonymous-night-mode .anon-badge-pill {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
+  background-color: #27272A !important;
+  border: 1px solid #3F3F46 !important;
+  color: #FFFFFF !important;
   font-size: 0.6875rem;
   font-weight: 700;
   padding: 0.25rem 0.65rem;
@@ -970,8 +1002,16 @@ body.anonymous-night-mode .anon-badge-pill {
   letter-spacing: 0.03em;
 }
 
+body.anonymous-night-mode .auto-rotate-badge,
+body.anonymous-night-mode .team-a-badge,
+body.anonymous-night-mode .team-b-badge {
+  background-color: #27272A !important;
+  color: #D4D4D8 !important;
+  border-color: #3F3F46 !important;
+}
+
 body.anonymous-night-mode .anonymous-comment {
-  border-bottom: 1px solid #18181B;
+  border-bottom: 1px solid #1E1E24;
   padding-bottom: 0.625rem;
   margin-bottom: 0.625rem;
 }
@@ -980,5 +1020,6 @@ body.anonymous-night-mode .anonymous-comment {
 body.anonymous-night-mode .tiny-threaded-hole {
   display: none !important;
 }
+
 
 
