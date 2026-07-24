@@ -229,15 +229,25 @@ export const dbService = {
 
 
   async signUp(username: string, email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
-    const userPass = password || 'dummy-password-joault-123';
-    
+    if (!email || !email.includes('@')) {
+      return { success: false, error: 'Please provide a valid email address.' };
+    }
+    if (!password || password.length < 6) {
+      return { success: false, error: 'Password must be at least 6 characters long.' };
+    }
+    const cleanUsername = username.trim() || email.split('@')[0];
+
     if (isDemoMode || !supabase) {
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
+      const existing = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
+      if (existing) {
+        return { success: false, error: 'An account with this email already exists. Please log in.' };
+      }
       const newProfile: Profile = {
         id: `usr-${Math.random().toString(36).substr(2, 9)}`,
-        username: username || email.split('@')[0],
+        username: cleanUsername,
         email,
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username || email}`
+        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanUsername}`
       };
       
       profiles.push(newProfile);
@@ -248,33 +258,26 @@ export const dbService = {
 
     const { data, error } = await supabase.auth.signUp({
       email,
-      password: userPass,
-      options: { data: { username: username || email.split('@')[0] } }
+      password: password,
+      options: { data: { username: cleanUsername } }
     });
 
     if (error) {
-      const newProfile: Profile = {
-        id: `usr-${Date.now()}`,
-        username: username || email.split('@')[0],
-        email,
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username || email}`
-      };
-      setLocalStorageData('active_user', newProfile);
-      return { success: true, profile: newProfile };
+      return { success: false, error: error.message };
     }
 
     if (data.user) {
       const newProfile: Profile = {
         id: data.user.id,
-        username: username || email.split('@')[0],
+        username: cleanUsername,
         email,
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username || email}`
+        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanUsername}`
       };
       try {
         await supabase.from('profiles').upsert({
           id: data.user.id,
           email: email,
-          username: (username || email.split('@')[0]).toLowerCase().replace(/\s+/g, '_'),
+          username: cleanUsername.toLowerCase().replace(/\s+/g, '_'),
           updated_at: new Date().toISOString()
         });
       } catch (err) {
@@ -288,20 +291,18 @@ export const dbService = {
   },
 
   async login(email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
-    const userPass = password || 'dummy-password-joault-123';
+    if (!email || !email.includes('@')) {
+      return { success: false, error: 'Please enter a valid email address.' };
+    }
+    if (!password) {
+      return { success: false, error: 'Please enter your password.' };
+    }
 
     if (isDemoMode || !supabase) {
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
-      let user = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
+      const user = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
       if (!user) {
-        user = {
-          id: `usr-${Math.random().toString(36).substr(2, 9)}`,
-          username: email.split('@')[0],
-          email,
-          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${email}`
-        };
-        profiles.push(user);
-        setLocalStorageData('profiles', profiles);
+        return { success: false, error: 'No account found with this email. Please sign up first.' };
       }
       setLocalStorageData('active_user', user);
       return { success: true, profile: user };
@@ -309,15 +310,15 @@ export const dbService = {
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password: userPass
+      password
     });
 
     if (error) {
-      return this.signUp(email.split('@')[0], email, userPass);
+      return { success: false, error: error.message || 'Invalid email or password. Please try again.' };
     }
 
     if (data.user) {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single().catch(() => ({ data: null }));
       const activeProf: Profile = profile || {
         id: data.user.id,
         username: email.split('@')[0],
@@ -328,8 +329,9 @@ export const dbService = {
       return { success: true, profile: activeProf };
     }
 
-    return { success: false, error: 'Login failed.' };
+    return { success: false, error: 'Login failed. Please check your credentials.' };
   },
+
 
   async loginWithGoogle(): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (!isDemoMode && supabase) {
