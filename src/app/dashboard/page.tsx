@@ -3,474 +3,330 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Plus, 
-  UserPlus, 
-  LogOut, 
-  FolderLock, 
-  ArrowRight, 
-  Check, 
-  X, 
-  Copy, 
-  Sparkles, 
-  Loader2, 
-  AlertCircle,
-  Clock,
-  Compass,
-  Search,
-  Key,
-  Users,
-  Layers
-} from 'lucide-react';
-import { dbService, Profile, Space, SpaceRequest } from '@/lib/supabaseClient';
+import { dbService, Profile, Space } from '@/lib/supabaseClient';
 
 export default function DashboardPage() {
   const router = useRouter();
-  
+
   const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [spaces, setSpaces] = useState<Space[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<SpaceRequest[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Create Space State
-  const [createOpen, setCreateOpen] = useState(false);
-  const [spaceName, setSpaceName] = useState('');
-  const [createdSpace, setCreatedSpace] = useState<Space | null>(null);
-  const [createLoading, setCreateLoading] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-  
-  // Join Space State
-  const [joinOpen, setJoinOpen] = useState(false);
-  const [authProtocol, setAuthProtocol] = useState('');
-  const [joinSuccessMsg, setJoinSuccessMsg] = useState<string | null>(null);
-  const [joinLoading, setJoinLoading] = useState(false);
-  const [joinError, setJoinError] = useState<string | null>(null);
 
-  // Invite Second Group State (Dual-Group Shared Chat Mode!)
-  const [inviteGroupOpen, setInviteGroupOpen] = useState<string | null>(null);
-  const [guestProtocol, setGuestProtocol] = useState('');
-  const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
+  // Protocol input state
+  const [protocolCode, setProtocolCode] = useState('');
+  const [joinMsg, setJoinMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // Admin Request Status Updates
-  const [adminLoadingId, setAdminLoadingId] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Modal Create Space state
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newSpaceName, setNewSpaceName] = useState('');
+  const [newAuthProtocol, setNewAuthProtocol] = useState('');
 
   useEffect(() => {
-    async function loadDashboardData() {
+    async function loadData() {
       try {
         const u = await dbService.getCurrentUser();
         if (!u) {
           router.push('/');
           return;
         }
-
         setUser(u);
-        
-        const [mySpaces, myPendingRequests] = await Promise.all([
-          dbService.getMySpaces(u.id),
-          dbService.getPendingRequestsForOwner(u.id)
-        ]);
-
-        setSpaces(mySpaces);
-        setPendingRequests(myPendingRequests);
+        const mySpaces = await dbService.getMySpaces(u.id);
+        setSpaces(mySpaces || []);
       } catch (err) {
-        console.error('Error loading dashboard data:', err);
+        console.error("Dashboard error:", err);
       } finally {
         setLoading(false);
       }
     }
-    loadDashboardData();
+    loadData();
   }, [router]);
-
-  useEffect(() => {
-    if (!user) return;
-    const interval = setInterval(async () => {
-      try {
-        const myPendingRequests = await dbService.getPendingRequestsForOwner(user.id);
-        setPendingRequests(myPendingRequests);
-        const mySpaces = await dbService.getMySpaces(user.id);
-        setSpaces(mySpaces);
-      } catch (err) {
-        console.error('Error refreshing requests:', err);
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [user]);
 
   const handleLogout = async () => {
     await dbService.logout();
     router.push('/');
   };
 
-  const handleCreateSpace = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!spaceName || !user) return;
-    setCreateLoading(true);
-    setCreateError(null);
-    try {
-      const space = await dbService.createSpace(spaceName, user.id);
-      setCreatedSpace(space);
-      setSpaceName('');
-      
-      const mySpaces = await dbService.getMySpaces(user.id);
-      setSpaces(mySpaces);
-      
-      if (typeof window !== 'undefined') {
-        const confetti = (await import('canvas-confetti')).default;
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#000000', '#737373', '#ffffff']
-        });
-      }
-    } catch (err: any) {
-      setCreateError(err.message || 'Failed to create space.');
-    } finally {
-      setCreateLoading(false);
-    }
-  };
-
   const handleJoinSpace = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authProtocol || !user) return;
-    setJoinLoading(true);
-    setJoinError(null);
-    setJoinSuccessMsg(null);
+    if (!protocolCode.trim() || !user) return;
+    setJoinMsg(null);
+
     try {
-      await dbService.requestToJoinSpace(authProtocol, user.id);
-      setJoinSuccessMsg('Access request successfully sent! Please wait for the Space Admin to approve it.');
-      setAuthProtocol('');
+      await dbService.requestToJoinSpace(protocolCode.trim(), user.id);
+      setJoinMsg({ text: "🔑 Space connected! Access request sent to space owner.", type: 'success' });
+      setProtocolCode('');
+      const updated = await dbService.getMySpaces(user.id);
+      setSpaces(updated || []);
     } catch (err: any) {
-      setJoinError(err.message || 'Failed to send request.');
-    } finally {
-      setJoinLoading(false);
+      setJoinMsg({ text: err.message || "Failed to connect to space.", type: 'error' });
     }
   };
 
-  const handleInviteSecondGroup = async (spaceId: string, e: React.FormEvent) => {
+  const handleGenerateProtocol = () => {
+    const rand = () => Math.random().toString(36).substring(2, 6).toUpperCase();
+    setNewAuthProtocol(`SPACE-${rand()}-${rand()}`);
+  };
+
+  const handleCreateSpaceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!guestProtocol || !user) return;
-    setInviteLoading(true);
-    setInviteError(null);
-    try {
-      await dbService.inviteSecondGroupToSpace(spaceId, guestProtocol);
-      setGuestProtocol('');
-      setInviteGroupOpen(null);
-      const mySpaces = await dbService.getMySpaces(user.id);
-      setSpaces(mySpaces);
-    } catch (err: any) {
-      setInviteError(err.message || 'Failed to link group.');
-    } finally {
-      setInviteLoading(false);
-    }
-  };
+    if (!newSpaceName.trim() || !user) return;
 
-  const handleRequestStatus = async (requestId: string, status: 'approved' | 'rejected') => {
-    setAdminLoadingId(requestId);
     try {
-      await dbService.updateRequestStatus(requestId, status);
-      if (user) {
-        const [mySpaces, myPendingRequests] = await Promise.all([
-          dbService.getMySpaces(user.id),
-          dbService.getPendingRequestsForOwner(user.id)
-        ]);
-        setSpaces(mySpaces);
-        setPendingRequests(myPendingRequests);
+      const created = await dbService.createSpace(newSpaceName.trim(), user.id);
+      if (newAuthProtocol.trim()) {
+        created.auth_protocol = newAuthProtocol.trim();
       }
-    } catch (err) {
-      console.error('Failed to update request:', err);
-    } finally {
-      setAdminLoadingId(null);
+      setNewSpaceName('');
+      setNewAuthProtocol('');
+      setCreateModalOpen(false);
+
+      const updated = await dbService.getMySpaces(user.id);
+      setSpaces(updated || []);
+
+      router.push('/space.html');
+    } catch (err: any) {
+      alert(err.message || 'Failed to create space');
     }
   };
 
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const getUserInitials = () => {
+    if (!user) return 'AN';
+    const name = user.username || user.email || 'AN';
+    return name.slice(0, 2).toUpperCase();
   };
-
-  const filteredSpaces = spaces.filter((s) => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.auth_protocol.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center text-black gap-3 font-sans">
-        <Loader2 className="w-8 h-8 animate-spin text-black" />
-        <span className="text-xs font-bold tracking-wider">Syncing Joault Workspace...</span>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF6F0', color: '#23150D', fontFamily: 'sans-serif' }}>
+        <span>Syncing Joault Workspace...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#0f1419] font-sans select-none">
-      
-      {/* THREADS MINIMALIST HEADER */}
-      <header className="sticky top-0 z-50 w-full bg-white/95 border-b border-[#f0f0f1] backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white font-black text-lg">
-              J
+    <div className="dashboard-body" style={{ minHeight: '100vh' }}>
+      {/* HEADER BAR */}
+      <header className="dash-header">
+        <div className="dash-header-container">
+          {/* TOP LEFT: PROFILE INFO */}
+          <div className="user-profile-widget" id="user-profile-widget">
+            <div className="avatar-circle" id="user-avatar">
+              <span id="avatar-initials">{getUserInitials()}</span>
             </div>
-            <span className="font-outfit font-black text-2xl tracking-tight hidden sm:inline">Joault</span>
-          </Link>
-
-          <div className="flex-grow max-w-lg relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search spaces, protocol codes..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-zinc-200 bg-zinc-100 text-xs outline-none focus:bg-white focus:border-black transition"
-            />
+            <div className="user-meta">
+              <span className="user-name" id="user-display-name">{user?.username || user?.email?.split('@')[0] || 'User'}</span>
+              <span className="user-status-badge"><span className="status-dot"></span> Active</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="hidden md:flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-full border border-zinc-200">
-              <img src={user?.avatar_url} alt={user?.username} className="w-6 h-6 rounded-full border border-black bg-white" />
-              <span className="text-xs font-bold">{user?.username}</span>
-            </div>
+          {/* BRAND LOGO CENTER */}
+          <div className="dash-brand">
+            <span className="brand-title">Joault</span>
+          </div>
 
-            <button onClick={handleLogout} className="p-2 text-zinc-400 hover:text-black transition" title="Logout">
-              <LogOut className="w-4.5 h-4.5" />
+          {/* TOP RIGHT: CREATE SPACE (+) BUTTON & LOGOUT */}
+          <div className="header-actions">
+            <button
+              type="button"
+              onClick={() => { setCreateModalOpen(true); handleGenerateProtocol(); }}
+              className="btn-create-space"
+              title="Create a New Space"
+            >
+              <svg className="plus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span className="btn-create-label">Create Space</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="btn-logout"
+              title="Log Out"
+            >
+              <svg className="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
             </button>
           </div>
-
         </div>
       </header>
 
-      {/* DASHBOARD CONTENT GRID */}
-      <main className="max-w-6xl w-full mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-4 gap-8 flex-grow">
-        
-        {/* SIDEBAR ACTIONS */}
-        <section className="lg:col-span-1 flex flex-col gap-6">
-          <div className="bg-white rounded-3xl p-6 border border-zinc-200 space-y-4">
-            <h2 className="font-outfit font-bold text-base">Space Controls</h2>
-            
-            <div className="flex flex-col gap-2.5">
-              <button
-                onClick={() => { setCreateOpen(true); setCreatedSpace(null); setCreateError(null); setJoinOpen(false); }}
-                className="w-full py-3 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center gap-2"
-              >
-                <Plus className="w-4 h-4" /> Create Space
-              </button>
-              
-              <button
-                onClick={() => { setJoinOpen(true); setJoinSuccessMsg(null); setJoinError(null); setCreateOpen(false); }}
-                className="w-full py-3 rounded-full border border-zinc-200 text-xs font-bold hover:bg-zinc-100 transition flex items-center justify-center gap-2"
-              >
-                <UserPlus className="w-4 h-4" /> Join via Auth Protocol
-              </button>
-            </div>
-          </div>
+      {/* MAIN DASHBOARD CONTENT CONTAINER */}
+      <main className="dash-main">
+        <div className="dash-content-wrapper">
+          {/* HERO BANNER SECTION */}
+          <section className="dash-hero">
+            <h1 className="hero-title">Your Spaces Portal</h1>
+            <p className="hero-subtitle">Enter an Auth Protocol code to connect to a space or launch your own collaborative environment.</p>
+          </section>
 
-          <div className="bg-white rounded-3xl p-6 border border-zinc-200 space-y-3">
-            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Metrics</h4>
-            <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-2xl border border-zinc-200 text-xs">
-              <span className="font-medium text-zinc-600">Active Spaces</span>
-              <span className="font-bold">{spaces.length}</span>
-            </div>
-            <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-2xl border border-zinc-200 text-xs">
-              <span className="font-medium text-zinc-600">Pending Requests</span>
-              <span className="font-bold text-amber-600">{pendingRequests.length}</span>
-            </div>
-          </div>
-        </section>
+          {/* AUTH PROTOCOL INPUT PILL SECTION */}
+          <section className="auth-protocol-section">
+            <div className="protocol-card">
+              <div className="protocol-header">
+                <div className="protocol-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="protocol-title">Access Space via Auth Protocol</h2>
+                  <p id="protocol-prompt-text" className="protocol-desc">Key in the Auth Protocol code provided by a space owner to join immediately.</p>
+                </div>
+              </div>
 
-        {/* MAIN SPACES FEED */}
-        <section className="lg:col-span-3 flex flex-col gap-6">
-          
-          {/* Create Space Modal */}
-          {createOpen && (
-            <div className="bg-white rounded-3xl p-6 border border-black shadow-sm relative space-y-4">
-              <button onClick={() => setCreateOpen(false)} className="absolute top-5 right-5 text-zinc-400 hover:text-black">
-                <X className="w-4 h-4" />
-              </button>
-              <h2 className="font-outfit font-bold text-lg flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Create a New Space
-              </h2>
-
-              {!createdSpace ? (
-                <form onSubmit={handleCreateSpace} className="space-y-4">
-                  {createError && <span className="text-xs text-red-600 block">{createError}</span>}
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Space Name</label>
-                    <input
-                      type="text"
-                      value={spaceName}
-                      onChange={(e) => setSpaceName(e.target.value)}
-                      placeholder="e.g. Design Collective"
-                      className="w-full px-4 py-3 rounded-full border border-zinc-200 bg-zinc-100 text-xs outline-none focus:bg-white focus:border-black"
-                      required
-                    />
-                  </div>
-                  <button type="submit" disabled={createLoading} className="px-6 py-3 rounded-full bg-black text-white text-xs font-bold">
-                    {createLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate Space & Protocol'}
+              <form id="form-join-protocol" className="protocol-form" onSubmit={handleJoinSpace}>
+                <div className="protocol-input-pill">
+                  <span className="protocol-prefix">KEY-</span>
+                  <input
+                    type="text"
+                    value={protocolCode}
+                    onChange={(e) => setProtocolCode(e.target.value)}
+                    className="protocol-input"
+                    placeholder="e.g. ALPHA-9824 or JOIN-SPACE-1"
+                    required
+                  />
+                  <button type="submit" className="btn-protocol-submit">
+                    <span>Connect Space</span>
+                    <svg className="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
                   </button>
-                </form>
-              ) : (
-                <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-200 text-xs">
-                  <span className="font-bold text-emerald-600 block">Space Created!</span>
-                  <p className="text-zinc-500">Share this unique Auth Protocol code with members:</p>
-                  <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-zinc-200 font-mono font-bold">
-                    <span>{createdSpace.auth_protocol}</span>
-                    <button onClick={() => copyToClipboard(createdSpace.auth_protocol, createdSpace.id)} className="text-zinc-400 hover:text-black">
-                      {copiedId === createdSpace.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  <Link href={`/space/${createdSpace.id}`} className="px-4 py-2 rounded-full bg-black text-white text-xs font-bold inline-block">
-                    Enter Space Room
-                  </Link>
+                </div>
+              </form>
+
+              {joinMsg && (
+                <div className={`feedback-msg ${joinMsg.type === 'error' ? 'error' : 'success'}`} style={{ marginTop: '0.75rem', fontSize: '0.8125rem', color: joinMsg.type === 'error' ? '#ef4444' : '#10b981' }}>
+                  {joinMsg.text}
                 </div>
               )}
             </div>
-          )}
+          </section>
 
-          {/* Join Space Modal */}
-          {joinOpen && (
-            <div className="bg-white rounded-3xl p-6 border border-black shadow-sm relative space-y-4">
-              <button onClick={() => setJoinOpen(false)} className="absolute top-5 right-5 text-zinc-400 hover:text-black">
-                <X className="w-4 h-4" />
-              </button>
-              <h2 className="font-outfit font-bold text-lg flex items-center gap-2">
-                <FolderLock className="w-4 h-4" /> Join Space via Auth Protocol
-              </h2>
-
-              <form onSubmit={handleJoinSpace} className="space-y-4">
-                {joinError && <span className="text-xs text-red-600 block">{joinError}</span>}
-                {joinSuccessMsg && <span className="text-xs text-emerald-600 font-bold block">{joinSuccessMsg}</span>}
-                <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Auth Protocol Code</label>
-                  <input
-                    type="text"
-                    value={authProtocol}
-                    onChange={(e) => setAuthProtocol(e.target.value)}
-                    placeholder="e.g. SPACE-COFFEE-9922"
-                    className="w-full px-4 py-3 rounded-full border border-zinc-200 bg-zinc-100 text-xs font-mono outline-none focus:bg-white focus:border-black"
-                    required
-                  />
-                </div>
-                <button type="submit" disabled={joinLoading} className="px-6 py-3 rounded-full bg-black text-white text-xs font-bold">
-                  {joinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Request Access'}
-                </button>
-              </form>
+          {/* SPACES SECTION */}
+          <section className="spaces-section">
+            {/* SECTION TITLE & STATS */}
+            <div className="section-header">
+              <div>
+                <h2 className="section-title">Connected Spaces</h2>
+                <p className="section-subtitle">Collaborative hubs you belong to</p>
+              </div>
+              <span id="spaces-count-badge" className="count-badge">{spaces.length} Spaces</span>
             </div>
-          )}
 
-          {/* Pending Requests Admin Panel */}
-          {pendingRequests.length > 0 && (
-            <div className="bg-white rounded-3xl p-6 border border-amber-300 space-y-4">
-              <h2 className="font-outfit font-bold text-base text-amber-600 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Pending Approvals ({pendingRequests.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {pendingRequests.map((req) => (
-                  <div key={req.id} className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200 flex flex-col justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2">
-                      <img src={req.profile?.avatar_url} alt={req.profile?.username} className="w-7 h-7 rounded-full border border-black bg-white" />
-                      <div>
-                        <h4 className="font-bold">{req.profile?.username}</h4>
-                        <span className="text-[10px] text-zinc-400 block font-mono">Space: {req.space?.name}</span>
-                      </div>
+            {/* EMPTY STATE OR SPACES GRID */}
+            {spaces.length === 0 ? (
+              <div id="empty-spaces-state" className="empty-state">
+                <div className="empty-icon-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                </div>
+                <h3 className="empty-title">Please key in your Auth Protocol</h3>
+                <p className="empty-desc">
+                  You have not joined any spaces yet. Use the Auth Protocol pill above to join an existing space, or click the <strong>+</strong> button at the top right to create your own.
+                </p>
+              </div>
+            ) : (
+              <div className="spaces-grid">
+                {spaces.map((sp) => (
+                  <div key={sp.id} className="space-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#23150D' }}>{sp.name}</h3>
+                      <span style={{ fontSize: '0.7rem', background: '#EDE4D7', padding: '0.2rem 0.6rem', borderRadius: '9999px', fontWeight: 600 }}>
+                        {sp.auth_protocol}
+                      </span>
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleRequestStatus(req.id, 'approved')} className="flex-1 py-1.5 rounded-full bg-black text-white font-bold text-[11px]">
-                        Approve
-                      </button>
-                      <button onClick={() => handleRequestStatus(req.id, 'rejected')} className="flex-1 py-1.5 rounded-full border border-zinc-300 font-bold text-[11px]">
-                        Reject
-                      </button>
-                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: '#786C60', margin: '0.5rem 0 1rem 0' }}>
+                      Active space feed with 3D card layout, double-tap reactions, and connected threads.
+                    </p>
+                    <a
+                      href="/space.html"
+                      style={{
+                        display: 'inline-block',
+                        background: '#23150D',
+                        color: '#FFFFFF',
+                        padding: '0.5rem 1.25rem',
+                        borderRadius: '12px',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        textDecoration: 'none'
+                      }}
+                    >
+                      Enter Space Feed &rarr;
+                    </a>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Active Spaces Grid */}
-          <div className="bg-white rounded-3xl p-6 border border-zinc-200 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="font-outfit font-bold text-lg flex items-center gap-2">
-                <Compass className="w-5 h-5" /> Your Spaces
-              </h2>
-              <span className="text-xs text-zinc-400 font-mono">{filteredSpaces.length} Active</span>
-            </div>
-
-            {filteredSpaces.length === 0 ? (
-              <div className="text-center py-16 px-4 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 text-xs text-zinc-400">
-                No active spaces found. Click "Create Space" to start.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredSpaces.map((space) => {
-                  const isOwner = space.owner_id === user?.id;
-                  const hasGuestGroup = !!space.guest_space_name;
-
-                  return (
-                    <div key={space.id} className="p-5 rounded-2xl border border-zinc-200 hover:border-black transition flex flex-col justify-between gap-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-outfit font-bold text-base">{space.name}</h3>
-                          <button onClick={() => copyToClipboard(space.auth_protocol, space.id)} className="text-zinc-400 hover:text-black">
-                            {copiedId === space.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                        <p className="text-xs text-zinc-400 font-mono">{space.auth_protocol}</p>
-
-                        {hasGuestGroup && (
-                          <div className="text-[10px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-full inline-block">
-                            Dual Group Shared: {space.guest_space_name}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Invite Second Group for Owner */}
-                      {isOwner && !hasGuestGroup && (
-                        <div>
-                          {inviteGroupOpen === space.id ? (
-                            <form onSubmit={(e) => handleInviteSecondGroup(space.id, e)} className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
-                              {inviteError && <span className="text-[10px] text-red-600 block">{inviteError}</span>}
-                              <input
-                                type="text"
-                                value={guestProtocol}
-                                onChange={(e) => setGuestProtocol(e.target.value)}
-                                placeholder="2nd Group Auth Protocol"
-                                className="w-full px-3 py-1 rounded-full border text-xs font-mono"
-                                required
-                              />
-                              <div className="flex gap-2">
-                                <button type="submit" className="px-3 py-1 bg-black text-white text-[10px] font-bold rounded-full">Link Group</button>
-                                <button type="button" onClick={() => setInviteGroupOpen(null)} className="text-[10px] text-zinc-400">Cancel</button>
-                              </div>
-                            </form>
-                          ) : (
-                            <button onClick={() => setInviteGroupOpen(space.id)} className="text-[11px] font-bold text-zinc-500 hover:text-black">
-                              + Invite Second Group to Space
-                            </button>
-                          )}
-                        </div>
-                      )}
-
-                      <Link href={`/space/${space.id}`} className="w-full py-2 px-4 rounded-full bg-black text-white text-xs font-bold text-center">
-                        Enter Chat Space &rarr;
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
             )}
-          </div>
-
-        </section>
+          </section>
+        </div>
       </main>
+
+      {/* CREATE SPACE MODAL */}
+      {createModalOpen && (
+        <div className="modal-backdrop" onClick={() => setCreateModalOpen(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <div className="modal-icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="modal-title">Create a New Space</h3>
+                  <p className="modal-subtitle">Generate a space with a custom Auth Protocol</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setCreateModalOpen(false)} className="modal-close-btn">&times;</button>
+            </div>
+
+            <form className="modal-form" onSubmit={handleCreateSpaceSubmit}>
+              <div className="form-group">
+                <label className="form-label">Space Name</label>
+                <input
+                  type="text"
+                  value={newSpaceName}
+                  onChange={(e) => setNewSpaceName(e.target.value)}
+                  className="form-input"
+                  placeholder="e.g. Design Team Studio"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Auth Protocol Code</label>
+                <div className="protocol-gen-row">
+                  <input
+                    type="text"
+                    value={newAuthProtocol}
+                    onChange={(e) => setNewAuthProtocol(e.target.value)}
+                    className="form-input"
+                    placeholder="e.g. STUDIO-883"
+                    required
+                  />
+                  <button type="button" onClick={handleGenerateProtocol} className="btn-gen">Generate</button>
+                </div>
+                <span className="form-hint">Members will use this Auth Protocol code to join your space.</span>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" onClick={() => setCreateModalOpen(false)} className="btn-secondary">Cancel</button>
+                <button type="submit" className="btn-primary">Create Space</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
