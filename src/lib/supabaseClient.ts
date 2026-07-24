@@ -266,29 +266,33 @@ export const dbService = {
       return { success: false, error: error.message };
     }
 
-    if (data.user) {
-      const newProfile: Profile = {
-        id: data.user.id,
-        username: cleanUsername,
-        email,
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanUsername}`
-      };
-      try {
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          email: email,
-          username: cleanUsername.toLowerCase().replace(/\s+/g, '_'),
-          updated_at: new Date().toISOString()
-        });
-      } catch (err) {
-        console.warn("Profile upsert notice:", err);
-      }
-      setLocalStorageData('active_user', newProfile);
-      return { success: true, profile: newProfile };
+    if (!data.user) {
+      return { success: false, error: 'Failed to create user account in Supabase.' };
     }
 
-    return { success: false, error: 'Sign up failed.' };
+    const newProfile: Profile = {
+      id: data.user.id,
+      username: cleanUsername,
+      email,
+      avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanUsername}`
+    };
+
+    const { error: profileError } = await supabase.from('profiles').upsert({
+      id: data.user.id,
+      email: email,
+      username: cleanUsername.toLowerCase().replace(/\s+/g, '_'),
+      updated_at: new Date().toISOString()
+    });
+
+    if (profileError) {
+      console.error("Supabase Database Profile Error:", profileError);
+      return { success: false, error: `Database Error: ${profileError.message}` };
+    }
+
+    setLocalStorageData('active_user', newProfile);
+    return { success: true, profile: newProfile };
   },
+
 
   async login(email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
 
