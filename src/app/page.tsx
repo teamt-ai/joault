@@ -131,17 +131,17 @@ export default function JoaultAuthPage() {
       </div>
 
       {/* RIGHT COLUMN: CREAM AUTH SECTION */}
-      <div className="lg:col-span-7 bg-[#FAF6F0] p-6 sm:p-10 md:p-14 lg:p-14 flex flex-col justify-between min-h-screen">
+      <div className="lg:col-span-7 bg-[#FAF6F0] p-6 sm:p-10 md:p-12 flex flex-col justify-between min-h-screen">
         
         {/* TOP RIGHT TAB TOGGLE (PILLED SWITCHER MATCHING IMAGE) */}
-        <div className="flex justify-end mb-6">
-          <div className="inline-flex items-center bg-[#EDE4D7] p-1 rounded-2xl">
+        <div className="w-full flex justify-end mb-4">
+          <div className="inline-flex items-center gap-1 bg-[#EDE4D7] p-1.5 rounded-2xl border border-[#E5DDD2]">
             <button
               type="button"
               onClick={() => { setActiveTab('login'); setError(null); }}
-              className={`px-7 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+              className={`px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
                 activeTab === 'login'
-                  ? 'bg-[#23150D] text-white shadow-sm'
+                  ? 'bg-[#23150D] text-white shadow-md'
                   : 'text-[#8C6F57] hover:text-[#23150D]'
               }`}
             >
@@ -150,9 +150,9 @@ export default function JoaultAuthPage() {
             <button
               type="button"
               onClick={() => { setActiveTab('signup'); setError(null); }}
-              className={`px-7 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+              className={`px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
                 activeTab === 'signup'
-                  ? 'bg-[#23150D] text-white shadow-sm'
+                  ? 'bg-[#23150D] text-white shadow-md'
                   : 'text-[#8C6F57] hover:text-[#23150D]'
               }`}
             >
@@ -161,8 +161,10 @@ export default function JoaultAuthPage() {
           </div>
         </div>
 
+
         {/* FORM CONTAINER */}
-        <div className="max-w-md w-full mx-auto my-auto py-2 space-y-6">
+        <div className="max-w-md w-full mx-auto my-4 lg:my-auto py-2 space-y-5">
+
           
           {/* HEADER */}
           <div className="space-y-1">
