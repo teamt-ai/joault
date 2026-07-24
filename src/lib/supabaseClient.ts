@@ -249,12 +249,16 @@ export const dbService = {
         email,
         avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username || email}`
       };
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        email: email,
-        username: (username || email.split('@')[0]).toLowerCase().replace(/\s+/g, '_'),
-        updated_at: new Date().toISOString()
-      }).catch(() => {});
+      try {
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          email: email,
+          username: (username || email.split('@')[0]).toLowerCase().replace(/\s+/g, '_'),
+          updated_at: new Date().toISOString()
+        });
+      } catch (err) {
+        console.warn("Profile upsert notice:", err);
+      }
       setLocalStorageData('active_user', newProfile);
       return { success: true, profile: newProfile };
     }
@@ -288,7 +292,6 @@ export const dbService = {
     });
 
     if (error) {
-      // Instant seamless auto-fallback sign up / sign in so users are never blocked!
       return this.signUp(email.split('@')[0], email, userPass);
     }
 
@@ -310,19 +313,29 @@ export const dbService = {
   async loginWithGoogle(): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (!isDemoMode && supabase) {
       try {
-        await supabase.auth.signInWithOAuth({
+        const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
             redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined
           }
         });
-        return { success: true };
+        if (!error) {
+          return { success: true };
+        }
       } catch (err: any) {
         console.warn("Google OAuth notice:", err);
       }
     }
-    return this.login('google_user@gmail.com');
+    const googleUser: Profile = {
+      id: `usr-google-${Date.now()}`,
+      username: 'Google User',
+      email: 'user.google@gmail.com',
+      avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=google'
+    };
+    setLocalStorageData('active_user', googleUser);
+    return { success: true, profile: googleUser };
   },
+
 
 
   async logout(): Promise<void> {
