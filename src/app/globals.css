@@ -1,34 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
 :root {
   --font-inter: 'Inter', sans-serif;
-  --font-outfit: 'Outfit', sans-serif;
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-instrument: 'Instrument Serif', Georgia, serif;
 
-  /* Threads / X Ultra-Minimalist Light Mode */
-  --threads-bg: #ffffff;
-  --threads-card: #fcfcfc;
-  --threads-card-subtle: #f4f4f5;
-  --threads-primary: #000000;
-  --threads-border: #f0f0f1;
-  --threads-text: #0f1419;
-  --threads-muted: #536471;
-}
-
-/* Threads / X Ultra-Minimalist Dark Mode (Anonymous Mode) */
-.dark {
-  --threads-bg: #000000;
-  --threads-card: #09090b;
-  --threads-card-subtle: #121215;
-  --threads-primary: #ffffff;
-  --threads-border: #18181b;
-  --threads-text: #f7f9f9;
-  --threads-muted: #71767b;
+  --bg-dark-brown: #24150E;
+  --bg-cream: #FAF6F0;
+  --color-gold: #C59B73;
+  --color-text-dark: #24150E;
+  --color-text-muted: #6E6259;
+  --color-border-cream: #E8E1D7;
 }
 
 @theme inline {
   --font-sans: var(--font-inter);
-  --font-outfit: var(--font-outfit);
+  --font-serif: var(--font-playfair);
 }
 
 * {
@@ -38,12 +26,11 @@
 }
 
 body {
-  background-color: var(--threads-bg);
-  color: var(--threads-text);
+  background-color: var(--bg-cream);
+  color: var(--color-text-dark);
   font-family: var(--font-inter);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Minimalist Scrollbar */
@@ -54,62 +41,14 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: #E8E1D7;
   border-radius: 9999px;
 }
-.dark ::-webkit-scrollbar-thumb {
-  background: #27272a;
+
+.font-serif-title {
+  font-family: var(--font-playfair);
 }
 
-/* Sleek Minimalist Post Card (X / Threads Style) */
-.threads-post-card {
-  background-color: var(--threads-bg);
-  border-bottom: 1px solid var(--threads-border);
-  padding: 20px 24px;
-  transition: background-color 0.15s ease;
-}
-
-.threads-post-card:hover {
-  background-color: rgba(0, 0, 0, 0.015);
-}
-
-.dark .threads-post-card:hover {
-  background-color: rgba(255, 255, 255, 0.02);
-}
-
-/* Sub-Rectangle Comments */
-.threads-sub-rectangle {
-  background-color: var(--threads-card-subtle);
-  border: 1px solid var(--threads-border);
-  border-radius: 14px;
-  padding: 12px 16px;
-}
-
-/* TikTok Gift Floating Emojis Animation */
-@keyframes tiktokGiftFloat {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.5) rotate(-10deg);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(-40px) scale(1.4) rotate(10deg);
-  }
-  80% {
-    opacity: 1;
-    transform: translateY(-180px) scale(1.1) rotate(-5deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-260px) scale(0.6) rotate(15deg);
-  }
-}
-
-.tiktok-gift-emoji {
-  position: absolute;
-  pointer-events: none;
-  font-size: 3.2rem;
-  z-index: 100;
-  animation: tiktokGiftFloat 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.2));
+.font-serif-instrument {
+  font-family: var(--font-instrument);
 }

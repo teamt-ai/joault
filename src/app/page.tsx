@@ -1,84 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
-  Users, 
-  Key, 
-  Moon, 
-  Sun, 
-  MessageSquare, 
-  Sparkles, 
-  ArrowRight, 
-  ShieldCheck, 
-  Check, 
-  Loader2, 
-  AlertCircle,
-  Eye,
-  Heart
-} from 'lucide-react';
-import { dbService, isDemoMode, Profile, Space } from '@/lib/supabaseClient';
+import Image from 'next/image';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { dbService, Profile } from '@/lib/supabaseClient';
 
-export default function LandingPage() {
+export default function JoaultAuthPage() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<Profile | null>(null);
-
-  // Interactive Auth Protocol Lookup Demo
-  const [protocolInput, setProtocolInput] = useState('SPACE-COFFEE-9922');
-  const [previewSpace, setPreviewSpace] = useState<Space | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewMsg, setPreviewMsg] = useState<string | null>(null);
-
-  // Theme preview state
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     async function checkUser() {
       try {
         const u = await dbService.getCurrentUser();
         setUser(u);
+        if (u) {
+          router.push('/dashboard');
+        }
       } catch (err) {
         console.error(err);
       }
     }
     checkUser();
-  }, []);
-
-  const handleProtocolLookup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!protocolInput.trim()) return;
-    setPreviewLoading(true);
-    setPreviewMsg(null);
-    setPreviewSpace(null);
-    try {
-      const mySpaces = await dbService.getMySpaces(user?.id || 'guest');
-      const found = mySpaces.find(s => s.auth_protocol.toLowerCase().trim() === protocolInput.toLowerCase().trim());
-      if (found) {
-        setPreviewSpace(found);
-      } else {
-        setPreviewSpace({
-          id: 'preview-space-1',
-          name: 'Design Collective & Tech Rivals',
-          owner_id: 'owner-1',
-          auth_protocol: protocolInput.toUpperCase(),
-          created_at: new Date().toISOString(),
-          guest_space_name: 'Tech Rivals'
-        });
-      }
-      setPreviewMsg('Space Found! Click below to send join request to Space Admin.');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPreviewLoading(false);
-    }
-  };
+  }, [router]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,12 +47,8 @@ export default function LandingPage() {
 
     try {
       if (activeTab === 'signup') {
-        if (!username || username.length < 3) {
-          setError('Username must be at least 3 characters.');
-          setLoading(false);
-          return;
-        }
-        const res = await dbService.signUp(username, email);
+        const userNm = username.trim() || email.split('@')[0];
+        const res = await dbService.signUp(userNm, email);
         if (res.success) {
           router.push('/dashboard');
         } else {
@@ -109,7 +59,7 @@ export default function LandingPage() {
         if (res.success) {
           router.push('/dashboard');
         } else {
-          setError(res.error || 'User not found. Try creating an account.');
+          setError(res.error || 'User not found. Try signing up.');
         }
       }
     } catch (err: any) {
@@ -119,277 +69,292 @@ export default function LandingPage() {
     }
   };
 
-  return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-200 ${
-      isDarkMode ? 'dark bg-black text-[#f7f9f9]' : 'bg-white text-[#0f1419]'
-    } font-sans select-none overflow-x-hidden`}>
-      
-      {/* THREADS / X MINIMALIST HEADER */}
-      <header className={`sticky top-0 z-50 w-full border-b transition-colors duration-200 ${
-        isDarkMode ? 'bg-black/90 border-[#18181b]' : 'bg-white/90 border-[#f0f0f1]'
-      } backdrop-blur-md`}>
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-black text-lg">
-              J
-            </div>
-            <span className="font-outfit font-black text-2xl tracking-tight">Joault</span>
-          </div>
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      // Demo Google Sign-In action
+      const res = await dbService.login('demo_user@gmail.com');
+      if (res.success) {
+        router.push('/dashboard');
+      } else {
+        setError(res.error || 'Google Sign-In failed.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Google Auth error.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
-          <div className="flex items-center gap-4">
-            {/* Dark Mode Anonymous Switcher */}
+  return (
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-12 bg-[#FAF6F0] text-[#24150E] font-sans select-none overflow-x-hidden">
+      
+      {/* LEFT COLUMN: DARK CHOCOLATE BROWN SECTION */}
+      <div className="lg:col-span-5 bg-[#24150E] p-8 md:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden min-h-[420px] lg:min-h-screen">
+        
+        {/* TOP-LEFT ROUNDED THUMBNAIL */}
+        <div className="z-10 self-start">
+          <div className="relative w-48 h-36 sm:w-56 sm:h-40 md:w-64 md:h-44 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            <Image
+              src="/team1.jpg"
+              alt="Team members collaborating around laptop"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* CENTER HEADING TEXT */}
+        <div className="my-10 lg:my-auto z-10 space-y-2">
+          <h1 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-normal text-white tracking-tight leading-[1.1]">
+            Create a Space
+          </h1>
+          <h2 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-normal text-[#C59B73] tracking-tight leading-[1.1]">
+            Join a Space
+          </h2>
+        </div>
+
+        {/* BOTTOM-RIGHT ROUNDED THUMBNAIL */}
+        <div className="z-10 self-end">
+          <div className="relative w-48 h-36 sm:w-56 sm:h-40 md:w-64 md:h-44 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            <Image
+              src="/team2.jpg"
+              alt="Overhead shot of team working around wooden desk"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+
+      </div>
+
+      {/* RIGHT COLUMN: CREAM AUTH SECTION */}
+      <div className="lg:col-span-7 bg-[#FAF6F0] p-6 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-between min-h-screen">
+        
+        {/* TOP RIGHT TAB TOGGLE */}
+        <div className="flex justify-end mb-8">
+          <div className="inline-flex items-center gap-1 bg-[#FAF6F0] p-1">
             <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold transition ${
-                isDarkMode 
-                  ? 'bg-zinc-900 text-zinc-200 border-zinc-800' 
-                  : 'bg-zinc-100 text-zinc-800 border-zinc-200'
+              type="button"
+              onClick={() => { setActiveTab('login'); setError(null); }}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
+                activeTab === 'login'
+                  ? 'bg-[#24150E] text-white shadow-md'
+                  : 'text-[#9C7B5D] hover:text-[#24150E]'
               }`}
             >
-              {isDarkMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-              <span>{isDarkMode ? 'Dark (Anonymous ON)' : 'Light (Identities Shown)'}</span>
+              Log in
+            </button>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('signup'); setError(null); }}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
+                activeTab === 'signup'
+                  ? 'bg-[#24150E] text-white shadow-md'
+                  : 'text-[#9C7B5D] hover:text-[#24150E]'
+              }`}
+            >
+              Create account
+            </button>
+          </div>
+        </div>
+
+        {/* FORM CONTAINER */}
+        <div className="max-w-md w-full mx-auto my-auto py-4 space-y-6">
+          
+          {/* HEADER */}
+          <div className="space-y-1">
+            <h2 className="font-serif-title text-3xl sm:text-4xl text-[#24150E] font-medium tracking-tight">
+              {activeTab === 'login' ? 'Welcome back' : 'Create an account'}
+            </h2>
+            <p className="text-sm text-[#6E6259] font-normal">
+              {activeTab === 'login' ? 'Sign in to access your spaces.' : 'Sign up to create and join your spaces.'}
+            </p>
+          </div>
+
+          {/* ERROR ALERT */}
+          {error && (
+            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-700 text-xs flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* GOOGLE SIGN-IN BUTTON */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading}
+            className="w-full bg-white border border-[#E8E1D7] text-[#24150E] font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-[#F5EFE6] transition duration-150 shadow-xs cursor-pointer disabled:opacity-70"
+          >
+            {googleLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[#24150E]" />
+            ) : (
+              <>
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                <span>Continue with Google</span>
+              </>
+            )}
+          </button>
+
+          {/* DIVIDER LINE */}
+          <div className="relative flex items-center justify-center my-6">
+            <div className="w-full border-t border-[#E6DFD5]"></div>
+            <span className="absolute bg-[#FAF6F0] px-4 text-xs text-[#A89B8F] font-normal">
+              or
+            </span>
+          </div>
+
+          {/* AUTH FORM */}
+          <form onSubmit={handleAuth} className="space-y-4">
+            
+            {activeTab === 'signup' && (
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-[#3E322A]">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Your username"
+                  className="w-full bg-white border border-[#E6DFD5] rounded-2xl px-4 py-3.5 text-sm text-[#24150E] placeholder-[#B5AAA0] focus:outline-none focus:ring-2 focus:ring-[#24150E]/15 focus:border-[#24150E] transition"
+                  required={activeTab === 'signup'}
+                />
+              </div>
+            )}
+
+            {/* EMAIL FIELD */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-[#3E322A]">
+                Email address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full bg-white border border-[#E6DFD5] rounded-2xl px-4 py-3.5 text-sm text-[#24150E] placeholder-[#B5AAA0] focus:outline-none focus:ring-2 focus:ring-[#24150E]/15 focus:border-[#24150E] transition"
+                required
+              />
+            </div>
+
+            {/* PASSWORD FIELD WITH FORGOT PASSWORD & EYE TOGGLE */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-[#3E322A]">
+                  Password
+                </label>
+                {activeTab === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => setError('Password reset instructions sent to your email.')}
+                    className="text-xs text-[#C49B74] font-semibold hover:underline transition"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-white border border-[#E6DFD5] rounded-2xl px-4 py-3.5 text-sm text-[#24150E] placeholder-[#B5AAA0] focus:outline-none focus:ring-2 focus:ring-[#24150E]/15 focus:border-[#24150E] transition pr-11"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7E72] hover:text-[#24150E] transition cursor-pointer p-1"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#24150E] hover:bg-[#382217] active:scale-[0.99] text-white font-bold text-sm py-4 rounded-2xl transition duration-150 shadow-sm flex items-center justify-center cursor-pointer disabled:opacity-70 mt-2"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin mx-auto text-white" />
+              ) : activeTab === 'login' ? (
+                'Log in to Joault'
+              ) : (
+                'Create Joault Account'
+              )}
             </button>
 
-            {user ? (
-              <Link href="/dashboard" className="px-5 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold">
-                Dashboard <ArrowRight className="w-3.5 h-3.5 inline ml-1" />
-              </Link>
+          </form>
+
+          {/* TOGGLE ACCOUNT MODE LINK */}
+          <div className="text-center pt-2">
+            {activeTab === 'login' ? (
+              <p className="text-xs text-[#6E6259]">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('signup'); setError(null); }}
+                  className="font-bold text-[#24150E] hover:underline cursor-pointer"
+                >
+                  Create one
+                </button>
+              </p>
             ) : (
-              <button 
-                onClick={() => {
-                  document.getElementById('auth_card_container')?.scrollIntoView({ behavior: 'smooth' });
-                }} 
-                className="px-5 py-2 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
-              >
-                Sign in
-              </button>
+              <p className="text-xs text-[#6E6259]">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('login'); setError(null); }}
+                  className="font-bold text-[#24150E] hover:underline cursor-pointer"
+                >
+                  Log in
+                </button>
+              </p>
             )}
           </div>
 
         </div>
-      </header>
 
-      {/* THREADS / X MAIN SPLIT-SCREEN CONTAINER */}
-      <main className="max-w-6xl w-full mx-auto px-6 py-10 flex-grow">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          {/* LEFT COLUMN: MINIMALIST HEADLINE & RECTANGULAR FEED PREVIEW */}
-          <div className="lg:col-span-7 space-y-8 text-left">
-            
-            <div className="space-y-4">
-              <h1 className="font-outfit text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08]">
-                See what’s happening in your spaces.
-              </h1>
-              <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg max-w-lg font-normal leading-relaxed">
-                Connect with friends and the world around you in structured group spaces. Invite rival groups, swipe to comment, and double tap to react with floating gift emojis.
-              </p>
-            </div>
+        {/* FLOATING HELP BUTTON IN BOTTOM RIGHT */}
+        <button
+          type="button"
+          onClick={() => alert('Joault Auth Help: Sign in with your email or Google account to access your collaborative spaces.')}
+          className="fixed bottom-5 right-5 w-8 h-8 rounded-full bg-white border border-[#E6DFD5] shadow-md flex items-center justify-center text-[#24150E] text-xs font-serif hover:bg-[#F5EFE6] transition cursor-pointer z-50"
+          title="Help & Info"
+        >
+          ?
+        </button>
 
-            {/* INTERACTIVE AUTH PROTOCOL LOOKUP TOOL */}
-            <div className={`p-6 rounded-3xl border ${
-              isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-[#fcfcfc] border-[#f0f0f1]'
-            } space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h3 className="font-outfit font-bold text-sm flex items-center gap-2">
-                  <Key className="w-4 h-4 text-black dark:text-white" /> Auth Protocol Space Lookup
-                </h3>
-                <span className="text-[10px] font-mono text-zinc-400 font-bold uppercase">LIVE DEMO</span>
-              </div>
-
-              <form onSubmit={handleProtocolLookup} className="flex gap-2">
-                <input
-                  type="text"
-                  value={protocolInput}
-                  onChange={(e) => setProtocolInput(e.target.value)}
-                  placeholder="e.g. SPACE-COFFEE-9922"
-                  className={`flex-grow px-4 py-3 rounded-full border text-xs outline-none font-mono tracking-wider ${
-                    isDarkMode ? 'bg-[#121215] border-[#18181b] text-white' : 'bg-zinc-100 border-zinc-200 text-black'
-                  }`}
-                />
-                <button type="submit" disabled={previewLoading} className="px-5 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold shrink-0">
-                  {previewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Inspect'}
-                </button>
-              </form>
-
-              {previewMsg && (
-                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400">
-                  <span className="font-bold">{previewSpace?.name} ({previewSpace?.auth_protocol})</span>
-                  <Link href="/login" className="px-3 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-bold">
-                    Request Access
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* RECTANGULAR CARD FEED PREVIEW (X / THREADS STYLE) */}
-            <div className={`p-6 rounded-3xl border ${
-              isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-[#fcfcfc] border-[#f0f0f1]'
-            } space-y-4`}>
-              <div className="flex items-center justify-between text-xs text-zinc-500 font-bold">
-                <span className="flex items-center gap-1.5">
-                  <MessageSquare className="w-4 h-4" /> Rectangular Feed (Swipe & Double Tap Ready)
-                </span>
-                <span className="font-mono text-[10px]">{isDarkMode ? 'ANONYMOUS ON' : 'IDENTITIES SHOWN'}</span>
-              </div>
-
-              {/* Sample Post Rectangle */}
-              <div className="threads-post-card rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-bold text-xs">
-                      {isDarkMode ? '?' : 'A'}
-                    </div>
-                    <div>
-                      <h5 className="text-xs font-bold">
-                        {isDarkMode ? 'Anonymous Phantom' : 'Alex (Space Admin)'}
-                      </h5>
-                      <span className="text-[10px] text-zinc-400">Design Group &bull; Just now</span>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-xs leading-relaxed text-zinc-800 dark:text-zinc-200">
-                  Welcome to Joault! Double tap this rectangle to trigger floating TikTok gift emojis, or swipe right to view comments inside sub-rectangles! 🔥
-                </p>
-
-                {/* Sub-Rectangle Comment */}
-                <div className="threads-sub-rectangle text-[11px] space-y-1">
-                  <div className="flex justify-between font-bold">
-                    <span className="text-black dark:text-white">
-                      {isDarkMode ? 'Ghost Commenter' : 'Sarah (Designer)'}
-                    </span>
-                    <span className="text-zinc-400 font-mono">1m ago</span>
-                  </div>
-                  <p className="text-zinc-600 dark:text-zinc-400">This clean rectangle feed layout is super smooth!</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* RIGHT COLUMN: MINIMALIST AUTH CARD */}
-          <div className="lg:col-span-5 w-full max-w-md mx-auto" id="auth_card_container">
-            <div className={`p-8 rounded-3xl border ${
-              isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-white border-[#f0f0f1]'
-            } shadow-sm space-y-6`}>
-              
-              <div className="text-left">
-                <h2 className="font-outfit font-bold text-2xl mb-1">
-                  {activeTab === 'login' ? 'Log in to Joault' : 'Create an account'}
-                </h2>
-                <p className="text-xs text-zinc-500">
-                  {activeTab === 'login' ? 'Enter your details to access your spaces' : 'Quick registration to join your community'}
-                </p>
-              </div>
-
-              {error && (
-                <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleAuth} className="space-y-4">
-                
-                {activeTab === 'signup' && (
-                  <div className="space-y-1">
-                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Username"
-                      className={`w-full px-4 py-3.5 rounded-full border text-xs outline-none ${
-                        isDarkMode ? 'bg-[#121215] border-[#18181b] text-white' : 'bg-zinc-100 border-zinc-200 text-black'
-                      }`}
-                      required={activeTab === 'signup'}
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email address"
-                    className={`w-full px-4 py-3.5 rounded-full border text-xs outline-none ${
-                      isDarkMode ? 'bg-[#121215] border-[#18181b] text-white' : 'bg-zinc-100 border-zinc-200 text-black'
-                    }`}
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-sm shadow-sm"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (activeTab === 'login' ? 'Log in' : 'Sign up')}
-                </button>
-
-                <div className="text-center pt-1">
-                  <a href="#" className="text-xs text-zinc-500 hover:underline font-medium">
-                    Forgotten account?
-                  </a>
-                </div>
-
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-200 dark:border-zinc-800"></div>
-                  </div>
-                  <div className="relative flex justify-center text-[10px]">
-                    <span className="bg-white dark:bg-[#09090b] px-3 text-zinc-400 font-mono uppercase font-bold">OR</span>
-                  </div>
-                </div>
-
-                {activeTab === 'login' ? (
-                  <button
-                    type="button"
-                    onClick={() => { setActiveTab('signup'); setError(null); }}
-                    className="w-full py-3 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
-                  >
-                    Create new account
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => { setActiveTab('login'); setError(null); }}
-                    className="w-full py-3 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
-                  >
-                    Sign in to existing account
-                  </button>
-                )}
-
-              </form>
-
-              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 text-center text-[11px] text-zinc-500 font-medium">
-                Protected by Joault Auth Protocols
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-      </main>
-
-      {/* FOOTER */}
-      <footer className="w-full border-t py-5 px-6 text-center text-xs border-zinc-200 dark:border-zinc-800 text-zinc-500">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p>&copy; {new Date().getFullYear()} Joault Inc. All rights reserved.</p>
-          <div className="flex gap-5 font-medium">
-            <a href="#" className="hover:text-black dark:hover:text-white transition">Privacy</a>
-            <a href="#" className="hover:text-black dark:hover:text-white transition">Terms</a>
-            <a href="#" className="hover:text-black dark:hover:text-white transition">Cookies</a>
-          </div>
-        </div>
-      </footer>
+      </div>
 
     </div>
   );
