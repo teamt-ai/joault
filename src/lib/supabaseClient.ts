@@ -186,47 +186,30 @@ if (typeof window !== 'undefined') {
 export const dbService = {
   // --- AUTH METHODS ---
   async getCurrentUser(): Promise<Profile | null> {
-    if (typeof window !== 'undefined') {
-      const localVal = localStorage.getItem('joault_active_user');
-      if (localVal) {
-        try {
-          const parsed = JSON.parse(localVal);
-          if (parsed && parsed.id) return parsed;
-        } catch (e) {}
-      }
-    }
-
     if (!supabase) return null;
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user) {
-        let data: Profile | null = null;
+        let profileData: Profile | null = null;
         try {
           const res = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-          data = res.data;
+          profileData = res.data;
         } catch (e) {}
 
-        const prof: Profile = data || {
+        const prof: Profile = profileData || {
           id: session.user.id,
           username: session.user.email?.split('@')[0] || 'User',
           email: session.user.email || '',
           avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
         };
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('joault_active_user', JSON.stringify(prof));
-        }
         return prof;
       }
-
     } catch (e) {
       console.warn("Session check notice:", e);
     }
     return null;
   },
-
-
-
 
   async signUp(username: string, email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (!email || !email.includes('@')) {
@@ -268,16 +251,12 @@ export const dbService = {
       });
     } catch (e) {}
 
-    if (data.user) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('joault_active_user', JSON.stringify(newProfile));
-      }
+    if (data.session) {
       return { success: true, profile: newProfile };
+    } else {
+      return { success: false, error: 'Supabase email confirmation sent! Please check your email inbox to confirm your email before logging in.' };
     }
-
-    return { success: false, error: 'Sign up failed.' };
   },
-
 
   async login(email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (!email || !email.includes('@')) {
@@ -294,21 +273,8 @@ export const dbService = {
     });
 
     if (error) {
-      if (error.message.toLowerCase().includes('email not confirmed')) {
-        try {
-          const res = await supabase.from('profiles').select('*').eq('email', cleanEmail).single();
-          if (res.data) {
-            const prof = res.data as Profile;
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('joault_active_user', JSON.stringify(prof));
-            }
-            return { success: true, profile: prof };
-          }
-        } catch (e) {}
-      }
       return { success: false, error: error.message };
     }
-
 
     if (!data.user) {
       return { success: false, error: 'Invalid login credentials.' };
@@ -327,11 +293,9 @@ export const dbService = {
       avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanEmail}`
     };
 
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('joault_active_user', JSON.stringify(activeProf));
-    }
     return { success: true, profile: activeProf };
   },
+
 
 
   async loginWithGoogle(): Promise<{ success: boolean; error?: string; profile?: Profile }> {
