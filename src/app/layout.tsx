@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "../../style.css";
+
 
 export const metadata: Metadata = {
   title: "Joault - Premium Real-Time Group Spaces",

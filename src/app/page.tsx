@@ -87,115 +87,90 @@ export default function JoaultAuthPage() {
   };
 
   return (
-    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-12 bg-[#FAF6F0] text-[#23150D] font-sans select-none overflow-x-hidden">
-      
-      {/* LEFT COLUMN: DARK CHOCOLATE BROWN SECTION */}
-      <div className="lg:col-span-5 bg-[#23150D] p-8 md:p-12 lg:p-14 flex flex-col justify-between relative overflow-hidden min-h-[440px] lg:min-h-screen">
-        
-        {/* TOP-LEFT ROUNDED THUMBNAIL */}
-        <div className="z-10 self-start">
-          <div className="relative w-48 h-34 sm:w-56 sm:h-38 md:w-60 md:h-40 rounded-[28px] overflow-hidden shadow-2xl">
-            <Image
-              src="/team1.jpg"
-              alt="Team members collaborating around laptop"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+    <div className="auth-container">
+      {/* LEFT PANEL: DARK CHOCOLATE BROWN */}
+      <div className="panel-left">
+        <div className="image-card top-card">
+          <Image
+            src="/team1.jpg"
+            alt="Team members collaborating around laptop"
+            width={240}
+            height={160}
+            className="w-full h-full object-cover"
+            priority
+          />
         </div>
 
-        {/* CENTER HEADING TEXT */}
-        <div className="my-10 lg:my-auto z-10 space-y-1">
-          <h1 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1]">
-            Create a Space
-          </h1>
-          <h2 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-medium text-[#A07B57] tracking-tight leading-[1.1]">
-            Join a Space
-          </h2>
+        <div className="heading-group">
+          <h1 className="title-white">Create a Space</h1>
+          <h2 className="title-gold">Join a Space</h2>
         </div>
 
-        {/* BOTTOM-RIGHT ROUNDED THUMBNAIL */}
-        <div className="z-10 self-end">
-          <div className="relative w-48 h-34 sm:w-56 sm:h-38 md:w-60 md:h-40 rounded-[28px] overflow-hidden shadow-2xl">
-            <Image
-              src="/team2.jpg"
-              alt="Overhead shot of team working around desk"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+        <div className="image-card bottom-card">
+          <Image
+            src="/team2.jpg"
+            alt="Overhead shot of team working around desk"
+            width={240}
+            height={160}
+            className="w-full h-full object-cover"
+            priority
+          />
         </div>
-
       </div>
 
-      {/* RIGHT COLUMN: CREAM AUTH SECTION */}
-      <div className="lg:col-span-7 bg-[#FAF6F0] p-6 sm:p-10 md:p-12 flex flex-col justify-between min-h-screen">
-        
-        {/* TOP RIGHT TAB TOGGLE (PILLED SWITCHER MATCHING IMAGE) */}
-        <div className="w-full flex justify-end mb-4">
-          <div className="inline-flex items-center gap-1 bg-[#EDE4D7] p-1.5 rounded-2xl border border-[#E5DDD2]">
+      {/* RIGHT PANEL: CREAM AUTH FORM */}
+      <div className="panel-right">
+        {/* TOP RIGHT TAB TOGGLE */}
+        <div className="tab-switcher-wrapper">
+          <div className="tab-switcher">
             <button
               type="button"
               onClick={() => { setActiveTab('login'); setError(null); }}
-              className={`px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                activeTab === 'login'
-                  ? 'bg-[#23150D] text-white shadow-md'
-                  : 'text-[#8C6F57] hover:text-[#23150D]'
-              }`}
+              className={`tab-btn ${activeTab === 'login' ? 'active' : ''}`}
             >
               Log in
             </button>
             <button
               type="button"
               onClick={() => { setActiveTab('signup'); setError(null); }}
-              className={`px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                activeTab === 'signup'
-                  ? 'bg-[#23150D] text-white shadow-md'
-                  : 'text-[#8C6F57] hover:text-[#23150D]'
-              }`}
+              className={`tab-btn ${activeTab === 'signup' ? 'active' : ''}`}
             >
               Create account
             </button>
           </div>
         </div>
 
-
-        {/* FORM CONTAINER */}
-        <div className="max-w-md w-full mx-auto my-4 lg:my-auto py-2 space-y-5">
-
-          
-          {/* HEADER */}
-          <div className="space-y-1">
-            <h2 className="font-serif-title text-4xl text-[#23150D] font-medium tracking-tight">
+        {/* MAIN FORM WRAPPER */}
+        <div className="form-wrapper">
+          <div className="form-header">
+            <h2 className="form-heading">
               {activeTab === 'login' ? 'Welcome back' : 'Create an account'}
             </h2>
-            <p className="text-sm text-[#786C60] font-normal">
+            <p className="form-subheading">
               {activeTab === 'login' ? 'Sign in to access your spaces.' : 'Sign up to create and join your spaces.'}
             </p>
           </div>
 
-          {/* ERROR ALERT */}
+          {/* ERROR ALERT BOX */}
           {error && (
-            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-700 text-xs flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+            <div className="error-alert">
+              <AlertCircle className="error-icon" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* GOOGLE SIGN-IN BUTTON */}
+          {/* GOOGLE SIGN IN BUTTON */}
           <button
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full bg-white border border-[#E5DDD2] text-[#23150D] font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-[#F5EFE6] transition duration-150 shadow-xs cursor-pointer disabled:opacity-70"
+            className="btn-google"
           >
             {googleLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-[#23150D]" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <svg className="google-icon" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -218,77 +193,68 @@ export default function JoaultAuthPage() {
             )}
           </button>
 
-          {/* DIVIDER LINE */}
-          <div className="relative flex items-center justify-center my-6">
-            <div className="w-full border-t border-[#E5DDD2]"></div>
-            <span className="absolute bg-[#FAF6F0] px-4 text-xs text-[#A89B8F] font-normal">
-              or
-            </span>
+          {/* DIVIDER */}
+          <div className="divider">
+            <span className="divider-text">or</span>
           </div>
 
           {/* AUTH FORM */}
-          <form onSubmit={handleAuth} className="space-y-4">
-            
+          <form onSubmit={handleAuth}>
             {activeTab === 'signup' && (
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#3E322A]">
-                  Username
-                </label>
+              <div className="form-group">
+                <label className="form-label">Username</label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  className="form-input"
                   placeholder="Your username"
-                  className="w-full bg-white border border-[#E5DDD2] rounded-2xl px-4 py-3.5 text-sm text-[#23150D] placeholder-[#A89C90] focus:outline-none focus:ring-2 focus:ring-[#23150D]/15 focus:border-[#23150D] transition"
                   required={activeTab === 'signup'}
                 />
               </div>
             )}
 
             {/* EMAIL FIELD */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-[#3E322A]">
-                Email address
-              </label>
+            <div className="form-group">
+              <label className="form-label">Email address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="form-input"
                 placeholder="you@example.com"
-                className="w-full bg-white border border-[#E5DDD2] rounded-2xl px-4 py-3.5 text-sm text-[#23150D] placeholder-[#A89C90] focus:outline-none focus:ring-2 focus:ring-[#23150D]/15 focus:border-[#23150D] transition"
                 required
               />
             </div>
 
-            {/* PASSWORD FIELD WITH FORGOT PASSWORD & EYE TOGGLE */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-[#3E322A]">
-                  Password
-                </label>
+            {/* PASSWORD FIELD */}
+            <div className="form-group">
+              <div className="label-row">
+                <label className="form-label">Password</label>
                 {activeTab === 'login' && (
                   <button
                     type="button"
                     onClick={() => setError('Password reset instructions sent to your email.')}
-                    className="text-xs text-[#C39B75] font-semibold hover:underline transition"
+                    className="link-forgot"
                   >
                     Forgot password?
                   </button>
                 )}
               </div>
-              <div className="relative">
+              <div className="password-input-container">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="form-input password-input"
                   placeholder="••••••••"
-                  className="w-full bg-white border border-[#E5DDD2] rounded-2xl px-4 py-3.5 text-sm text-[#23150D] placeholder-[#A89C90] focus:outline-none focus:ring-2 focus:ring-[#23150D]/15 focus:border-[#23150D] transition pr-11"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7E72] hover:text-[#23150D] transition cursor-pointer p-1"
+                  className="btn-toggle-eye"
+                  aria-label="Toggle password visibility"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -303,7 +269,7 @@ export default function JoaultAuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#23150D] hover:bg-[#342014] active:scale-[0.99] text-white font-bold text-sm py-4 rounded-2xl transition duration-150 shadow-xs flex items-center justify-center cursor-pointer disabled:opacity-70 mt-2"
+              className="btn-primary"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin mx-auto text-white" />
@@ -313,56 +279,50 @@ export default function JoaultAuthPage() {
                 'Create Joault Account'
               )}
             </button>
-
           </form>
 
-          {/* TOGGLE ACCOUNT MODE LINK */}
-          <div className="text-center pt-1 space-y-3">
+          {/* ACCOUNT MODE TOGGLE TEXT */}
+          <div className="footer-links">
             {activeTab === 'login' ? (
-              <p className="text-xs text-[#786C60]">
+              <p className="toggle-prompt">
                 Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={() => { setActiveTab('signup'); setError(null); }}
-                  className="font-bold text-[#23150D] hover:underline cursor-pointer"
+                  className="link-action"
                 >
                   Create one
                 </button>
               </p>
             ) : (
-              <p className="text-xs text-[#786C60]">
+              <p className="toggle-prompt">
                 Already have an account?{' '}
                 <button
                   type="button"
                   onClick={() => { setActiveTab('login'); setError(null); }}
-                  className="font-bold text-[#23150D] hover:underline cursor-pointer"
+                  className="link-action"
                 >
                   Log in
                 </button>
               </p>
             )}
 
-            {/* FINE PRINT TERMS */}
-            <p className="text-[11px] text-[#A89C90] font-normal leading-tight">
-              By continuing, you agree to Joault's <span className="hover:underline cursor-pointer">Terms</span> and <span className="hover:underline cursor-pointer">Privacy Policy</span>
+            <p className="terms-text">
+              By continuing, you agree to Joault's <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
             </p>
           </div>
-
         </div>
 
-        {/* FLOATING HELP BUTTON IN BOTTOM RIGHT */}
+        {/* FLOATING HELP BUTTON */}
         <button
           type="button"
           onClick={() => alert('Joault Auth Help: Sign in with your email or Google account to access your collaborative spaces.')}
-          className="fixed bottom-5 right-5 w-8 h-8 rounded-full bg-white border border-[#E5DDD2] shadow-sm flex items-center justify-center text-[#23150D] text-xs font-serif hover:bg-[#F5EFE6] transition cursor-pointer z-50"
+          className="floating-help-btn"
           title="Help & Info"
         >
           ?
         </button>
-
       </div>
-
     </div>
   );
 }
-
