@@ -423,12 +423,52 @@ function threadStickerToPost(postId, sticker, pack) {
   // Close drawer
   closeStickerDrawer();
 
-  // Play TikTok Gift Animation for 6 Minutes (or 6s animated sequence with 6m session duration)!
-  triggerTikTokGiftAnimation(sticker, pack);
+  // Play consolidated TikTok Gift Animation with 2x/3x quantity badge!
+  playThreadedStickersForPost(postId, cardElement);
 }
 
-// TIKTOK-STYLE GIFT ANIMATION ENGINE (4 DYNAMIC MOTIONS)
-function triggerTikTokGiftAnimation(sticker, pack) {
+// CONSOLIDATE THREADED STICKERS & PLAY SEQUENCE (PREVENTING DUPLICATE OVERLAPS FOR SAME POST)
+function playThreadedStickersForPost(postId, cardElement) {
+  const stickersList = threadedStickersDB[postId];
+  if (!stickersList || stickersList.length === 0) return;
+
+  // Prevent duplicate concurrent stacking for the exact same post
+  if (cardElement && cardElement.dataset.activeGiftPlaying === 'true') return;
+  if (cardElement) cardElement.dataset.activeGiftPlaying = 'true';
+
+  // Group stickers by sticker.id and count quantity (2x, 3x, etc.)
+  const groupedMap = new Map();
+  stickersList.forEach(item => {
+    const key = item.sticker.id;
+    if (groupedMap.has(key)) {
+      groupedMap.get(key).quantity += 1;
+    } else {
+      groupedMap.set(key, {
+        sticker: item.sticker,
+        pack: item.pack,
+        quantity: 1
+      });
+    }
+  });
+
+  const groupedItems = Array.from(groupedMap.values());
+
+  // Sequence playback for consolidated items
+  groupedItems.forEach((entry, index) => {
+    setTimeout(() => {
+      triggerTikTokGiftAnimation(entry.sticker, entry.pack, entry.quantity);
+    }, index * 900);
+  });
+
+  // Unlock activeGiftPlaying after sequence completes (6 seconds)
+  const totalSeqDuration = Math.max(6000, groupedItems.length * 900 + 4000);
+  setTimeout(() => {
+    if (cardElement) delete cardElement.dataset.activeGiftPlaying;
+  }, totalSeqDuration);
+}
+
+// TIKTOK-STYLE GIFT ANIMATION ENGINE (4 DYNAMIC MOTIONS + 2x/3x BADGES)
+function triggerTikTokGiftAnimation(sticker, pack, quantity = 1) {
   const overlay = document.getElementById('tiktok-gift-overlay-container');
   if (!overlay) return;
 
@@ -452,12 +492,14 @@ function triggerTikTokGiftAnimation(sticker, pack) {
     visualHTML = `<img src="${sticker.content}" alt="${sticker.name}" class="gift-img-art" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616490.png'">`;
   }
 
+  const quantityBadge = quantity > 1 ? ` <span style="color: #FFD700; font-weight: 800; font-size: 1.15em;">${quantity}x</span>` : '';
+
   stageItem.innerHTML = `
     <div class="gift-visual-box">
       ${visualHTML}
     </div>
     <div class="gift-label-banner">
-      <span>👑 ${sticker.name}</span>
+      <span>👑 ${sticker.name}${quantityBadge}</span>
     </div>
   `;
 
@@ -498,16 +540,10 @@ function checkMiddleScreenCards() {
       if (isMiddle) {
         if (!card.dataset.inMiddleZone) {
           card.dataset.inMiddleZone = 'true';
-
-          // Trigger all threaded stickers for this post!
-          threadedStickersDB[postId].forEach((item, index) => {
-            setTimeout(() => {
-              triggerTikTokGiftAnimation(item.sticker, item.pack);
-            }, index * 800);
-          });
+          playThreadedStickersForPost(postId, card);
         }
       } else {
-        // Reset when message leaves middle of screen so it plays again every time user returns!
+        // Reset when message leaves middle of screen so it plays again when user returns!
         delete card.dataset.inMiddleZone;
       }
     });
@@ -515,5 +551,6 @@ function checkMiddleScreenCards() {
     isScrollChecking = false;
   });
 }
+
 
 
