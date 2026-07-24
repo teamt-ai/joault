@@ -1,4 +1,4 @@
-/* JOAULT TWO-GROUPS CONNECTED S-LINE MESSAGE DESIGN */
+/* JOAULT TWO-GROUPS CONNECTED S-LINE MESSAGE DESIGN & DISTINCT GROUP BROWN SHADES */
 
 .rotation-info-pill {
   background-color: rgba(160, 123, 87, 0.12);
@@ -14,10 +14,38 @@
   margin-bottom: 0.5rem;
 }
 
-/* THE UNIQUE DUAL-GROUP CONNECTED CARD BOX */
+/* TEAM PILL BADGES FOR QUICK GROUP RECOGNITION */
+.team-tag-pill {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.team-a-pill {
+  background-color: rgba(197, 155, 115, 0.2);
+  color: #C59B73;
+  border: 1px solid rgba(197, 155, 115, 0.4);
+}
+
+.team-b-pill {
+  background-color: rgba(224, 163, 112, 0.25);
+  color: #E0A370;
+  border: 1px solid rgba(224, 163, 112, 0.45);
+}
+
+.team-mini-pill {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 9999px;
+  margin-top: 0.15rem;
+}
+
+/* INDIVIDUAL DISTINCT GROUP CARD SHADES */
 .twogroup-card-box {
-  background-color: var(--space-card-bg);
-  border: 1px solid var(--space-card-border);
   border-radius: var(--space-radius-card);
   padding: 1.5rem;
   position: relative;
@@ -26,6 +54,16 @@
   touch-action: pan-y;
   user-select: none;
   transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.twogroup-card-box.team-a {
+  background-color: #24130A; /* Dark Espresso Brown */
+  border: 1px solid #3B1F11;
+}
+
+.twogroup-card-box.team-b {
+  background-color: #331A0F; /* Warm Chestnut Brown */
+  border: 1px solid #522A19;
 }
 
 .twogroup-card-box.swiping {
@@ -57,6 +95,7 @@
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .original-author-name {
@@ -81,12 +120,11 @@
   color: #EDE4DB;
 }
 
+/* AVATAR SHADES FOR GROUP A VS GROUP B */
 .original-avatar-right {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #4A2E1C, #A07B57);
-  border: 2px solid var(--space-gold-bright);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,6 +134,16 @@
   color: #ffffff;
   flex-shrink: 0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.team-a-avatar {
+  background: linear-gradient(135deg, #4A2E1C, #A07B57);
+  border: 2px solid #C59B73;
+}
+
+.team-b-avatar {
+  background: linear-gradient(135deg, #66361C, #D98C4E);
+  border: 2px solid #E0A370;
 }
 
 /* MIDDLE SVG CONNECTING S-LINE */
@@ -108,7 +156,6 @@
 }
 
 .sline-path {
-  stroke: var(--space-gold-bright);
   stroke-width: 2.5;
   fill: none;
   stroke-dasharray: 6 3;
@@ -116,22 +163,38 @@
   opacity: 0.85;
 }
 
+.team-a-path {
+  stroke: #C59B73;
+}
+
+.team-b-path {
+  stroke: #E0A370;
+}
+
 @keyframes sLineFlow {
   from { stroke-dashoffset: 0; }
   to { stroke-dashoffset: -100; }
 }
 
-/* BOTTOM SECTION: COMMENTER AT BOTTOM LEFT, COMMENT AT BOTTOM RIGHT */
+/* BOTTOM SECTION: ROTATING COMMENT (WITH DISTINCT TEAM SHADE BACKGROUND) */
 .sline-bottom-row {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   z-index: 5;
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(160, 123, 87, 0.2);
   border-radius: 18px;
   padding: 1rem;
-  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+  transition: all 0.35s ease-in-out;
+}
+
+.team-a-comment-bg {
+  background-color: rgba(22, 11, 5, 0.7);
+  border: 1px solid rgba(197, 155, 115, 0.35);
+}
+
+.team-b-comment-bg {
+  background-color: rgba(58, 30, 17, 0.85);
+  border: 1px solid rgba(224, 163, 112, 0.4);
 }
 
 .sline-bottom-row.fade-out {
@@ -151,8 +214,6 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #6B4931, #A07B57);
-  border: 1.5px solid var(--space-gold);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,8 +226,8 @@
 .commenter-name-tag {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--space-gold-bright);
-  max-width: 70px;
+  color: var(--space-cream);
+  max-width: 75px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -191,6 +252,8 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .comment-time-stamp {
@@ -200,20 +263,28 @@
 
 .auto-rotate-badge {
   font-size: 0.6875rem;
-  color: var(--space-gold-bright);
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background-color: rgba(160, 123, 87, 0.15);
   padding: 0.2rem 0.5rem;
   border-radius: 9999px;
+}
+
+.team-a-badge {
+  background-color: rgba(197, 155, 115, 0.18);
+  color: #C59B73;
+}
+
+.team-b-badge {
+  background-color: rgba(224, 163, 112, 0.22);
+  color: #E0A370;
 }
 
 .rotate-pulse-dot {
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 9999px;
-  background-color: var(--space-gold-bright);
+  background-color: currentColor;
   animation: pulseDot 1.5s infinite;
 }
 
@@ -223,7 +294,7 @@
   100% { opacity: 0.3; transform: scale(0.8); }
 }
 
-/* CARD ACTION FOOTER IN TWOGROUPS */
+/* FOOTER ACTION BAR */
 .twogroup-card-footer {
   display: flex;
   align-items: center;
@@ -233,23 +304,20 @@
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.btn-view-all-replies {
-  background: transparent;
-  border: 1px solid var(--space-card-border);
-  color: var(--space-gold-bright);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.4rem 0.875rem;
-  border-radius: 9999px;
-  cursor: pointer;
+/* FULL COMMENTS VIEW (SWIPE RIGHT LIST - DISTINCT GROUP ITEM BROWN SHADES) */
+.commenter-left-box {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.btn-view-all-replies:hover {
-  background-color: rgba(160, 123, 87, 0.15);
-  border-color: var(--space-gold);
+.comment-item.team-a-item-bg {
+  background-color: rgba(22, 11, 5, 0.6);
+  border: 1px solid rgba(197, 155, 115, 0.25);
+}
+
+.comment-item.team-b-item-bg {
+  background-color: rgba(54, 28, 16, 0.75);
+  border: 1px solid rgba(224, 163, 112, 0.35);
 }
