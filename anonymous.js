@@ -2,12 +2,20 @@
 
 let isAnonymousNightModeActive = localStorage.getItem('joault_anonymous_mode') === 'true';
 
+// ATTACHMENT DRAFT STATE
+let currentAttachedLink = null;
+let currentAttachedImages = [];
+
 // DEDICATED ANONYMOUS FEED FOR SINGLE SPACE (space.html)
 const anonymousPostsData = [
   {
     id: 'anon_post_1',
     time: '25m ago',
     content: "Honestly, our engineering team is ignoring tech debt in the authentication microservice. If we don't refactor by Q3, we will face an emergency outage. Posting here anonymously so leadership addresses it safely.",
+    images: [
+      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80'
+    ],
     likes: 124,
     commentsCount: 38,
     liked: false,
@@ -19,6 +27,7 @@ const anonymousPostsData = [
     id: 'anon_post_2',
     time: '1h ago',
     content: "Salary benchmarks in our tech ecosystem feel severely behind remote European contracts. Is anyone else willing to share compensation anonymously to establish fair pay standards?",
+    link: 'https://github.com/teamt-ai/joault',
     likes: 198,
     commentsCount: 64,
     liked: false,
@@ -30,6 +39,9 @@ const anonymousPostsData = [
     id: 'anon_post_3',
     time: '3h ago',
     content: "Unfiltered feedback: 70% of weekly sync calls could be 2-minute text updates. We need to protect deep work time for dev flow.",
+    images: [
+      'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&q=80'
+    ],
     likes: 270,
     commentsCount: 92,
     liked: false,
@@ -57,6 +69,9 @@ const anonymousTwogroupsPostsData = [
     time: '35m ago',
     teamKey: 'team-a',
     content: "Cross-functional friction: Feature specs are being built without consulting engineering constraints. We need open anonymous alignment before sprint planning.",
+    images: [
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80'
+    ],
     likes: 145,
     commentsCount: 42,
     liked: false,
@@ -70,6 +85,7 @@ const anonymousTwogroupsPostsData = [
     time: '2h ago',
     teamKey: 'team-b',
     content: "Both teams are working on duplicate API endpoints. Let's merge our schema definitions into a single repository to avoid wasted work.",
+    link: 'https://github.com/teamt-ai/joault',
     likes: 210,
     commentsCount: 58,
     liked: false,
@@ -107,6 +123,7 @@ anonymousPostsData.forEach(p => {
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
   applyAnonymousModeDOMState();
+  setupFileInputHandler();
 });
 
 function applyAnonymousModeDOMState() {
@@ -151,7 +168,6 @@ function toggleAnonymousNightMode() {
     showAnonymousToast("☀️ Switched to Standard Group Feed");
   }
 
-  // Re-render feeds
   if (typeof renderFeed === 'function') {
     renderFeed();
   }
@@ -173,4 +189,107 @@ function showAnonymousToast(msg) {
   setTimeout(() => {
     toast.classList.remove('show');
   }, 2800);
+}
+
+/* GLOBAL LIGHTBOX MODAL HANDLERS FOR FULL-SIZE IMAGE PREVIEW */
+function openLightboxModal(imgUrl) {
+  const modal = document.getElementById('image-lightbox-modal');
+  const img = document.getElementById('lightbox-full-img');
+  if (modal && img) {
+    img.src = imgUrl;
+    modal.classList.remove('hidden');
+  }
+}
+
+function closeLightboxModal(event) {
+  if (event) event.stopPropagation();
+  const modal = document.getElementById('image-lightbox-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+/* LINK ATTACHMENT PROMPT HELPER */
+function promptAddLinkAttachment() {
+  const url = prompt("Enter website or document link (URL):", "https://");
+  if (url && url.trim() && url !== "https://") {
+    currentAttachedLink = url.trim();
+    renderAttachmentTray();
+    showAnonymousToast("🔗 Link attached to post");
+  }
+}
+
+function removeAttachedLink() {
+  currentAttachedLink = null;
+  renderAttachmentTray();
+}
+
+function removeAttachedImage(index) {
+  currentAttachedImages.splice(index, 1);
+  renderAttachmentTray();
+}
+
+function renderAttachmentTray() {
+  const tray = document.getElementById('attachment-preview-tray');
+  if (!tray) return;
+
+  if (currentAttachedImages.length === 0 && !currentAttachedLink) {
+    tray.classList.add('hidden');
+    tray.innerHTML = '';
+    return;
+  }
+
+  tray.classList.remove('hidden');
+  let html = '';
+
+  currentAttachedImages.forEach((imgSrc, idx) => {
+    html += `
+      <div class="preview-thumb-box">
+        <img src="${imgSrc}" alt="Thumbnail">
+        <button type="button" class="preview-thumb-remove" onclick="removeAttachedImage(${idx})" title="Remove image">&times;</button>
+      </div>
+    `;
+  });
+
+  if (currentAttachedLink) {
+    html += `
+      <div class="preview-link-box">
+        <span>🔗 ${escapeHtml(currentAttachedLink)}</span>
+        <button type="button" class="preview-thumb-remove" onclick="removeAttachedLink()" title="Remove link">&times;</button>
+      </div>
+    `;
+  }
+
+  tray.innerHTML = html;
+}
+
+// SETUP FILE INPUT ATTACHMENT LISTENERS WITH VIDEO REJECTION VALIDATOR
+function setupFileInputHandler() {
+  const fileInput = document.getElementById('post-image-file-input');
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      let rejectedVideosCount = 0;
+
+      files.forEach(file => {
+        if (file.type.startsWith('video/')) {
+          rejectedVideosCount++;
+        } else if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            currentAttachedImages.push(event.target.result);
+            renderAttachmentTray();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      if (rejectedVideosCount > 0) {
+        showAnonymousToast("⚠️ Video uploads are not supported. Only images and links can be attached.");
+      } else if (files.length > 0) {
+        showAnonymousToast(`📸 Attached ${files.length} image(s)`);
+      }
+      fileInput.value = '';
+    });
+  }
 }

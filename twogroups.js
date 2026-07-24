@@ -373,6 +373,24 @@ function renderConnectedSLineView(post) {
   const replies = threadRepliesDatabase[post.id] || threadRepliesDatabase.tg_1;
   const currentReply = replies[post.activeReplyIndex % replies.length];
 
+  let mediaHTML = '';
+  if (post.images && post.images.length > 0) {
+    const tiles = post.images.map(imgUrl => `
+      <img class="img-thumb-tile" src="${imgUrl}" alt="Attachment" onclick="event.stopPropagation(); openLightboxModal('${imgUrl}')" title="Click to view full size">
+    `).join('');
+    mediaHTML += `<div class="post-media-grid">${tiles}</div>`;
+  }
+
+  if (post.link) {
+    mediaHTML += `
+      <div style="margin-top: 0.5rem;">
+        <a href="${post.link}" target="_blank" class="link-attachment-card" onclick="event.stopPropagation()">
+          🔗 ${escapeHtml(post.link)}
+        </a>
+      </div>
+    `;
+  }
+
   if (isAnon) {
     return `
       <div class="card-sline-layout">
@@ -383,8 +401,10 @@ function renderConnectedSLineView(post) {
               <span class="original-time">· ${post.time}</span>
             </div>
             <div class="original-msg-content">${escapeHtml(post.content)}</div>
+            ${mediaHTML}
           </div>
         </div>
+
 
         <div class="sline-svg-container">
           <svg width="100%" height="48" viewBox="0 0 500 48" preserveAspectRatio="none">

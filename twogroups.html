@@ -103,6 +103,12 @@
   <!-- FLOATING HELP BUTTON -->
   <button type="button" id="btn-twogroups-help" class="floating-help-btn" title="Help & Info">?</button>
 
+  <!-- GLOBAL IMAGE LIGHTBOX FULL-SIZE OVERLAY -->
+  <div id="image-lightbox-modal" class="lightbox-modal hidden" onclick="closeLightboxModal(event)">
+    <span class="lightbox-close-btn" onclick="closeLightboxModal(event)">&times;</span>
+    <img id="lightbox-full-img" class="lightbox-img" src="" alt="Full size preview" onclick="event.stopPropagation()">
+  </div>
+
   <!-- JavaScript Files -->
   <script src="anonymous.js"></script>
   <script src="stickers.js"></script>
@@ -110,4 +116,5 @@
 
 </body>
 </html>
+
 

@@ -333,6 +333,24 @@ function renderFeed() {
 function renderDefaultView(post) {
   const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
 
+  let mediaHTML = '';
+  if (post.images && post.images.length > 0) {
+    const tiles = post.images.map(imgUrl => `
+      <img class="img-thumb-tile" src="${imgUrl}" alt="Attachment" onclick="event.stopPropagation(); openLightboxModal('${imgUrl}')" title="Click to view full size">
+    `).join('');
+    mediaHTML += `<div class="post-media-grid">${tiles}</div>`;
+  }
+
+  if (post.link) {
+    mediaHTML += `
+      <div style="margin-top: 0.5rem;">
+        <a href="${post.link}" target="_blank" class="link-attachment-card" onclick="event.stopPropagation()">
+          🔗 ${escapeHtml(post.link)}
+        </a>
+      </div>
+    `;
+  }
+
   if (isAnon) {
     return `
       <div class="card-default-view">
@@ -342,6 +360,7 @@ function renderDefaultView(post) {
         </div>
 
         <div class="post-text-body">${escapeHtml(post.content)}</div>
+        ${mediaHTML}
 
         <div class="post-card-bottom-row">
           <div class="swipe-hints-inline">
@@ -367,6 +386,7 @@ function renderDefaultView(post) {
       </div>
 
       <div class="post-text-body">${escapeHtml(post.content)}</div>
+      ${mediaHTML}
 
       <div class="post-card-bottom-row">
         <div class="swipe-hints-inline">
@@ -379,6 +399,7 @@ function renderDefaultView(post) {
     </div>
   `;
 }
+
 
 // 2. REPLY VIEW HTML
 function renderReplyView(post) {
@@ -854,6 +875,8 @@ function setupComposer() {
       author: { name: 'Amara Nwosu', handle: '@amara_n', avatar: 'AN' },
       time: 'Just now',
       content: text,
+      images: currentAttachedImages.length > 0 ? [...currentAttachedImages] : undefined,
+      link: currentAttachedLink || undefined,
       likes: 1,
       commentsCount: 0,
       liked: true,
@@ -870,6 +893,13 @@ function setupComposer() {
       commentsDatabase[newPost.id] = [];
     }
 
+    // Reset draft attachments
+    currentAttachedImages = [];
+    currentAttachedLink = null;
+    if (typeof renderAttachmentTray === 'function') {
+      renderAttachmentTray();
+    }
+
     postTextarea.value = '';
     formCreatePost.classList.add('hidden');
     composeCollapsed.classList.remove('hidden');
@@ -877,6 +907,7 @@ function setupComposer() {
     renderFeed();
   });
 }
+
 
 
 // Help Alert
