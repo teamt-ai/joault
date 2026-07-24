@@ -468,22 +468,158 @@ function playThreadedStickersForPost(postId, cardElement) {
   }, totalSeqDuration);
 }
 
-// TIKTOK-STYLE GIFT ANIMATION ENGINE (NON-CLUSTERING SPATIAL SLOTS + 2x/3x BADGES)
+// REAL-TIME PHYSICS & COLLISION ENGINE FOR FLOATING STICKERS
+const activePhysicsStickers = [];
+let physicsLoopActive = false;
+
+function startPhysicsLoop() {
+  if (physicsLoopActive) return;
+  physicsLoopActive = true;
+
+  function loop() {
+    updateStickerPhysics();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+}
+
+function updateStickerPhysics() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  // Flow boundaries: keep stickers floating smoothly around the central viewport (not stuck at edges!)
+  const minX = width * 0.15;
+  const maxX = width * 0.85;
+  const minY = height * 0.15;
+  const maxY = height * 0.85;
+
+  // 1. Position Update & Gentle Central Flow Bounce
+  for (let i = 0; i < activePhysicsStickers.length; i++) {
+    const s = activePhysicsStickers[i];
+
+    s.x += s.vx;
+    s.y += s.vy;
+
+    // Gentle velocity direction reversal at central flow bounds
+    if (s.x < minX) { s.x = minX; s.vx = Math.abs(s.vx); }
+    if (s.x > maxX) { s.x = maxX; s.vx = -Math.abs(s.vx); }
+    if (s.y < minY) { s.y = minY; s.vy = Math.abs(s.vy); }
+    if (s.y > maxY) { s.y = maxY; s.vy = -Math.abs(s.vy); }
+
+    if (s.element) {
+      s.element.style.left = `${s.x}px`;
+      s.element.style.top = `${s.y}px`;
+    }
+  }
+
+  // 2. Collision Detection: Spark burst & elastic bounce when stickers contact each other
+  const now = Date.now();
+  for (let i = 0; i < activePhysicsStickers.length; i++) {
+    for (let j = i + 1; j < activePhysicsStickers.length; j++) {
+      const s1 = activePhysicsStickers[i];
+      const s2 = activePhysicsStickers[j];
+
+      const dx = s2.x - s1.x;
+      const dy = s2.y - s1.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const minDist = s1.radius + s2.radius;
+
+      if (dist < minDist && dist > 0) {
+        // THEY CAME IN CONTACT! Trigger Spark Explosion & Vector Bounce
+        if (now - s1.lastSpark > 600 && now - s2.lastSpark > 600) {
+          s1.lastSpark = now;
+          s2.lastSpark = now;
+
+          const midX = (s1.x + s2.x) / 2;
+          const midY = (s1.y + s2.y) / 2;
+
+          // Spawn Explosive Golden Spark Particle Burst
+          spawnSparkBurstEffect(midX, midY);
+
+          // Flash colliding stickers
+          if (s1.element) s1.element.classList.add('colliding');
+          if (s2.element) s2.element.classList.add('colliding');
+          setTimeout(() => {
+            if (s1.element) s1.element.classList.remove('colliding');
+            if (s2.element) s2.element.classList.remove('colliding');
+          }, 350);
+
+          // Physical elastic bounce vectors
+          const nx = dx / dist;
+          const ny = dy / dist;
+          const kx = s1.vx - s2.vx;
+          const ky = s1.vy - s2.vy;
+          const p = 2 * (nx * kx + ny * ky) / 2;
+
+          s1.vx -= p * nx;
+          s1.vy -= p * ny;
+          s2.vx += p * nx;
+          s2.vy += p * ny;
+        }
+      }
+    }
+  }
+}
+
+// SPAWN GOLDEN SPARK & EXPLOSION PARTICLE BURST AT CONTACT POINT
+function spawnSparkBurstEffect(x, y) {
+  const overlay = document.getElementById('tiktok-gift-overlay-container');
+  if (!overlay) return;
+
+  const sparkBox = document.createElement('div');
+  sparkBox.className = 'collision-spark-burst';
+  sparkBox.style.left = `${x}px`;
+  sparkBox.style.top = `${y}px`;
+
+  const sparkSymbols = ['💥', '✨', '⚡', '🌟', '💫', '🔥'];
+
+  for (let i = 0; i < 8; i++) {
+    const symbol = sparkSymbols[Math.floor(Math.random() * sparkSymbols.length)];
+    const angle = (i / 8) * Math.PI * 2;
+    const distance = 50 + Math.random() * 40;
+    const tx = Math.cos(angle) * distance;
+    const ty = Math.sin(angle) * distance;
+
+    const el = document.createElement('span');
+    el.className = 'spark-symbol';
+    el.textContent = symbol;
+    el.style.setProperty('--tx', `${tx}px`);
+    el.style.setProperty('--ty', `${ty}px`);
+
+    sparkBox.appendChild(el);
+  }
+
+  overlay.appendChild(sparkBox);
+
+  setTimeout(() => {
+    if (sparkBox.parentNode) sparkBox.remove();
+  }, 750);
+}
+
+// TIKTOK-STYLE GIFT STICKER WITH REAL-TIME PHYSICS & COLLISION
 function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, slotIndex = 0) {
   const overlay = document.getElementById('tiktok-gift-overlay-container');
   if (!overlay) return;
 
-  const stageItem = document.createElement('div');
-  stageItem.className = `tiktok-gift-stage-item gift-slot-${slotIndex % 5}`;
+  startPhysicsLoop();
 
-  // Pick elegant motion pattern
-  const motions = [
-    'motion-gift-float-glow',
-    'motion-gift-spin-shake',
-    'motion-gift-pulse-bounce'
-  ];
-  const chosenMotion = motions[slotIndex % motions.length];
-  stageItem.classList.add(chosenMotion);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  // Initialize position in central screen flow region (never stuck at edges!)
+  const startX = (width * 0.25) + (Math.random() * width * 0.5);
+  const startY = (height * 0.25) + (Math.random() * height * 0.5);
+
+  // Organic floating velocity
+  const angle = Math.random() * Math.PI * 2;
+  const speed = 1.2 + Math.random() * 1.5;
+  const vx = Math.cos(angle) * speed;
+  const vy = Math.sin(angle) * speed;
+
+  const stageItem = document.createElement('div');
+  stageItem.className = 'physics-floating-sticker';
+  stageItem.style.left = `${startX}px`;
+  stageItem.style.top = `${startY}px`;
 
   let visualHTML = '';
   if (pack.type === 'emoji') {
@@ -505,11 +641,27 @@ function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, slotIndex = 0) 
 
   overlay.appendChild(stageItem);
 
-  // Stays active / playing for 6 minutes (360,000 ms) or clean removal
+  const physicsObj = {
+    id: 'phys_' + Date.now() + '_' + Math.random(),
+    x: startX,
+    y: startY,
+    vx: vx,
+    vy: vy,
+    radius: 65, // ~130px collision boundary
+    element: stageItem,
+    lastSpark: 0
+  };
+
+  activePhysicsStickers.push(physicsObj);
+
+  // Stays active / flowing for 6 minutes (360,000 ms) or clean removal
   setTimeout(() => {
+    const idx = activePhysicsStickers.indexOf(physicsObj);
+    if (idx !== -1) activePhysicsStickers.splice(idx, 1);
     if (stageItem.parentNode) stageItem.remove();
   }, 360000); // 6 Minutes!
 }
+
 
 
 // SCROLL TO MIDDLE OF SCREEN DETECTOR FOR THREADED STICKERS (EVERY TIME MESSAGE REACHES MIDDLE OF SCREEN)
