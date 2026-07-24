@@ -412,30 +412,33 @@ function triggerFloatingEmojiBurst(cardElement, emoji, count) {
   }, 3000);
 }
 
-// SCROLL-INTO-VIEW OBSERVER: Pops up sent emojis for 3 seconds when someone scrolls to a message card!
+// SCROLL-INTO-VIEW OBSERVER: Pops up sent emojis for 3 seconds EVERY TIME someone scrolls to a message card!
 function setupScrollReactionObserver() {
   if (!('IntersectionObserver' in window)) return;
 
-  const triggeredPosts = new Set();
-
   scrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const cardBox = entry.target;
-        const postId = cardBox.dataset.postId;
-        const post = postsData.find(p => p.id === postId);
+      const cardBox = entry.target;
+      const postId = cardBox.dataset.postId;
+      const post = postsData.find(p => p.id === postId);
 
-        if (post && post.reactions && Object.keys(post.reactions).length > 0 && !triggeredPosts.has(postId)) {
-          triggeredPosts.add(postId);
+      if (entry.isIntersecting) {
+        if (post && post.reactions && Object.keys(post.reactions).length > 0) {
           showScrollReactionPopup(cardBox, post.reactions);
         }
+      } else {
+        const existing = cardBox.querySelector('.scroll-reaction-popup');
+        if (existing) existing.remove();
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0.35 });
 }
 
 // Show 3-Second Floating Reaction Strip when scrolling into view
 function showScrollReactionPopup(cardBox, reactions) {
+  const existing = cardBox.querySelector('.scroll-reaction-popup');
+  if (existing) existing.remove();
+
   const popup = document.createElement('div');
   popup.className = 'scroll-reaction-popup';
 
@@ -451,6 +454,7 @@ function showScrollReactionPopup(cardBox, reactions) {
     if (popup.parentNode) popup.remove();
   }, 3000);
 }
+
 
 // Switch Card View
 function switchCardView(postId, targetView) {

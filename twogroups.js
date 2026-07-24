@@ -378,30 +378,33 @@ function triggerFloatingEmojiBurst(cardElement, emoji, count) {
   }, 3000);
 }
 
-// SCROLL-INTO-VIEW OBSERVER FOR TWOGROUPS
+// SCROLL-INTO-VIEW OBSERVER FOR TWOGROUPS: Pops up sent emojis EVERY TIME someone scrolls to a message card!
 function setupTwoGroupsScrollObserver() {
   if (!('IntersectionObserver' in window)) return;
 
-  const triggeredPosts = new Set();
-
   twoGroupsScrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const cardBox = entry.target;
-        const postId = cardBox.dataset.postId;
-        const post = twogroupsPostsData.find(p => p.id === postId);
+      const cardBox = entry.target;
+      const postId = cardBox.dataset.postId;
+      const post = twogroupsPostsData.find(p => p.id === postId);
 
-        if (post && post.reactions && Object.keys(post.reactions).length > 0 && !triggeredPosts.has(postId)) {
-          triggeredPosts.add(postId);
+      if (entry.isIntersecting) {
+        if (post && post.reactions && Object.keys(post.reactions).length > 0) {
           showScrollReactionPopup(cardBox, post.reactions);
         }
+      } else {
+        const existing = cardBox.querySelector('.scroll-reaction-popup');
+        if (existing) existing.remove();
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0.35 });
 }
 
 // Show 3-Second Scroll Reaction Popup
 function showScrollReactionPopup(cardBox, reactions) {
+  const existing = cardBox.querySelector('.scroll-reaction-popup');
+  if (existing) existing.remove();
+
   const popup = document.createElement('div');
   popup.className = 'scroll-reaction-popup';
 
@@ -416,6 +419,7 @@ function showScrollReactionPopup(cardBox, reactions) {
     if (popup.parentNode) popup.remove();
   }, 3000);
 }
+
 
 // 3-SECOND AUTOMATIC COMMENT ROTATION TIMER
 function startAutoRotationTimer() {
