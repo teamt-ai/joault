@@ -360,57 +360,61 @@ export const dbService = {
 
   // --- SPACES ---
   async getMySpaces(userId: string): Promise<Space[]> {
-    if (isDemoMode) {
-      const spaces = getLocalStorageData<Space[]>('spaces', []);
-      return spaces;
-    }
+    let dbSpaces: Space[] = [];
+    try {
+      const { data } = await supabase.from('spaces').select('*');
+      if (data) dbSpaces = data;
+    } catch (e) {}
 
-    const { data } = await supabase.from('spaces').select('*');
-    return data || [];
+    const localSpaces = getLocalStorageData<Space[]>('spaces', []);
+    const combined = [...dbSpaces];
+    for (const ls of localSpaces) {
+      if (!combined.some(s => s.id === ls.id)) {
+        combined.push(ls);
+      }
+    }
+    return combined;
   },
 
   async createSpace(name: string, ownerId: string, customProtocol?: string): Promise<Space> {
     const randSegment = () => Math.random().toString(36).substring(2, 6).toUpperCase();
     const authProtocol = customProtocol?.trim() || `SPACE-${randSegment()}-${randSegment()}`;
 
-    if (isDemoMode) {
-      const spaces = getLocalStorageData<Space[]>('spaces', []);
-      const members = getLocalStorageData<SpaceMember[]>('members', []);
-      
-      const newSpace: Space = {
-        id: `space-${Math.random().toString(36).substr(2, 9)}`,
-        name,
-        owner_id: ownerId,
-        auth_protocol: authProtocol,
-        created_at: new Date().toISOString(),
-        is_anonymous_mode: false
-      };
+    try {
+      const { data, error } = await supabase
+        .from('spaces')
+        .insert({ name, owner_id: ownerId, auth_protocol: authProtocol })
+        .select()
+        .single();
 
-      spaces.push(newSpace);
-      setLocalStorageData('spaces', spaces);
-
-      members.push({
-        id: `mem-${Math.random().toString(36).substr(2, 9)}`,
-        space_id: newSpace.id,
-        profile_id: ownerId,
-        role: 'owner',
-        joined_at: new Date().toISOString(),
-        group_name: name
-      });
-      setLocalStorageData('members', members);
-
-      return newSpace;
+      if (!error && data) {
+        const spaces = getLocalStorageData<Space[]>('spaces', []);
+        spaces.push(data);
+        setLocalStorageData('spaces', spaces);
+        return data;
+      }
+      if (error) {
+        console.warn("Supabase Space insert notice:", error.message);
+      }
+    } catch (err) {
+      console.warn("Supabase space insert exception:", err);
     }
 
-    const { data, error } = await supabase
-      .from('spaces')
-      .insert({ name, owner_id: ownerId, auth_protocol: authProtocol })
-      .select()
-      .single();
+    const fallbackSpace: Space = {
+      id: `space-${Math.random().toString(36).substr(2, 9)}`,
+      name,
+      owner_id: ownerId,
+      auth_protocol: authProtocol,
+      created_at: new Date().toISOString(),
+      is_anonymous_mode: false
+    };
 
-    if (error) throw new Error(error.message);
-    return data;
+    const spaces = getLocalStorageData<Space[]>('spaces', []);
+    spaces.push(fallbackSpace);
+    setLocalStorageData('spaces', spaces);
+    return fallbackSpace;
   },
+
 
 
   async inviteSecondGroupToSpace(spaceId: string, guestSpaceAuthProtocol: string): Promise<Space> {
