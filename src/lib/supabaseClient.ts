@@ -558,56 +558,57 @@ export const dbService = {
 
   // --- MESSAGES, COMMENTS & REACTIONS ---
   async getMessages(spaceId: string): Promise<Message[]> {
-    if (isDemoMode) {
-      const messages = getLocalStorageData<Message[]>('messages', []);
-      const profiles = getLocalStorageData<Profile[]>('profiles', []);
-      const comments = getLocalStorageData<Comment[]>('comments', []);
-      const reactions = getLocalStorageData<MessageReaction[]>('reactions', []);
+    let dbMsgs: Message[] = [];
+    try {
+      const { data } = await supabase.from('messages').select('*, profile:profiles(*)').eq('space_id', spaceId).order('created_at', { ascending: true });
+      if (data) dbMsgs = data;
+    } catch (e) {}
 
-      return messages
-        .filter(m => m.space_id === spaceId)
-        .map(m => ({
-          ...m,
-          profile: profiles.find(p => p.id === m.sender_id),
-          comments: comments.filter(c => c.message_id === m.id).map(c => ({
-            ...c,
-            profile: profiles.find(p => p.id === c.sender_id)
-          })),
-          reactions: reactions.filter(r => r.message_id === m.id)
-        }))
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    const localMsgs = getLocalStorageData<Message[]>('messages', []);
+    const spaceLocal = localMsgs.filter(m => m.space_id === spaceId);
+    
+    const combined = [...dbMsgs];
+    for (const lm of spaceLocal) {
+      if (!combined.some(m => m.id === lm.id)) {
+        combined.push(lm);
+      }
     }
-
-    const { data } = await supabase.from('messages').select('*, profile:profiles(*)').eq('space_id', spaceId).order('created_at', { ascending: true });
-    return data || [];
+    return combined.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   },
 
   async sendMessage(spaceId: string, senderId: string, content: string, groupName?: string): Promise<Message> {
-    if (isDemoMode) {
-      const messages = getLocalStorageData<Message[]>('messages', []);
-      const profiles = getLocalStorageData<Profile[]>('profiles', []);
+    const newMsg: Message = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      space_id: spaceId,
+      sender_id: senderId,
+      content,
+      created_at: new Date().toISOString(),
+      group_name: groupName || 'Main Space',
+      comments: [],
+      reactions: []
+    };
 
-      const newMsg: Message = {
-        id: `msg-${Math.random().toString(36).substr(2, 9)}`,
+    try {
+      const { data, error } = await supabase.from('messages').insert({
         space_id: spaceId,
         sender_id: senderId,
-        content,
-        created_at: new Date().toISOString(),
-        group_name: groupName || 'Main Space',
-        comments: [],
-        reactions: []
-      };
+        content
+      }).select('*, profile:profiles(*)').single();
 
-      messages.push(newMsg);
-      setLocalStorageData('messages', messages);
-      newMsg.profile = profiles.find(p => p.id === senderId);
-      return newMsg;
-    }
+      if (!error && data) {
+        const messages = getLocalStorageData<Message[]>('messages', []);
+        messages.push(data);
+        setLocalStorageData('messages', messages);
+        return data;
+      }
+    } catch (e) {}
 
-    const { data, error } = await supabase.from('messages').insert({ space_id: spaceId, sender_id: senderId, content }).select('*, profile:profiles(*)').single();
-    if (error) throw new Error(error.message);
-    return data;
+    const messages = getLocalStorageData<Message[]>('messages', []);
+    messages.push(newMsg);
+    setLocalStorageData('messages', messages);
+    return newMsg;
   },
+
 
   async addComment(messageId: string, senderId: string, content: string, groupTag: 'fellow' | 'opponent' = 'fellow'): Promise<Comment> {
     if (isDemoMode) {
