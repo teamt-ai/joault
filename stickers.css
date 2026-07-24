@@ -1,4 +1,4 @@
-/* JOAULT PREMIUM STICKER THREADING & TIKTOK-STYLE GIFT ANIMATIONS */
+/* JOAULT PREMIUM STICKER THREADING & DYNAMIC TIKTOK GIFT MOTION ENGINE */
 
 /* SECRET TOP RIGHT HOT-ZONE ON POST CARDS */
 .secret-hotzone-topright {
@@ -268,58 +268,181 @@
   overflow: hidden;
 }
 
-/* FLOATING STICKER BASE ITEM (REAL-TIME PHYSICS STAGE ITEM) */
-.physics-floating-sticker {
+/* BASE GIFT STAGE ITEM (6 SECONDS LIFECYCLE) */
+.sticker-gift-stage-item {
   position: absolute;
   pointer-events: none;
   z-index: 100000;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform: translate(-50%, -50%);
-  will-change: left, top;
 }
 
-.physics-floating-sticker.colliding {
-  animation: stickerBounceFlash 0.35s ease-out;
+/* 5 DISTINCT MOTION PATTERNS WITH UNIQUE ENTRANCE AND EXIT STYLES (6s DURATION) */
+
+/* Pattern 1: Enters Top-Left (spin entry) -> Floats Center -> Exits Right (sweep exit) */
+.sticker-motion-pattern-1 {
+  animation: giftMotionStyle1 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes giftMotionStyle1 {
+  0% {
+    left: -140px;
+    top: 20%;
+    transform: scale(0.3) rotate(-180deg);
+    opacity: 0;
+  }
+  20% {
+    left: 25%;
+    top: 30%;
+    transform: scale(1.4) rotate(0deg);
+    opacity: 1;
+  }
+  40% { transform: scale(1.2) rotate(6deg); }
+  60% { transform: scale(1.2) rotate(-6deg); }
+  80% {
+    left: 60%;
+    top: 35%;
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    left: 115%;
+    top: 40%;
+    transform: scale(0.5) rotate(90deg);
+    opacity: 0;
+  }
 }
 
-@keyframes stickerBounceFlash {
-  0% { filter: brightness(1); transform: translate(-50%, -50%) scale(1); }
-  50% { filter: brightness(2.2) drop-shadow(0 0 35px #FFD700) drop-shadow(0 0 20px #FF4500); transform: translate(-50%, -50%) scale(1.35); }
-  100% { filter: brightness(1); transform: translate(-50%, -50%) scale(1); }
+/* Pattern 2: Bursts from Center (zoom burst) -> Wiggles Up -> Exits Top (upward fade) */
+.sticker-motion-pattern-2 {
+  animation: giftMotionStyle2 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes giftMotionStyle2 {
+  0% {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 0;
+  }
+  20% {
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 1;
+  }
+  40% { transform: translate(-50%, -50%) scale(1.25) rotate(10deg); }
+  60% { transform: translate(-50%, -50%) scale(1.25) rotate(-10deg); }
+  80% {
+    left: 50%;
+    top: 22%;
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    left: 50%;
+    top: -120px;
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+  }
 }
 
-/* SPARK BURST COLLISION PARTICLES WHEN STICKERS CONTACT EACH OTHER */
-.collision-spark-burst {
-  position: absolute;
-  pointer-events: none;
-  z-index: 100005;
-  width: 120px;
-  height: 120px;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: sparkBurstFade 0.75s ease-out forwards;
+/* Pattern 3: Sweeps from Bottom-Left (slant entrance) -> Aura Float -> Exits Top-Right */
+.sticker-motion-pattern-3 {
+  animation: giftMotionStyle3 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes giftMotionStyle3 {
+  0% {
+    left: -140px;
+    top: 75%;
+    transform: scale(0.4) rotate(15deg);
+    opacity: 0;
+  }
+  20% {
+    left: 30%;
+    top: 45%;
+    transform: scale(1.4) rotate(0deg);
+    opacity: 1;
+  }
+  40% { transform: scale(1.2) translateY(-12px); }
+  60% { transform: scale(1.2) translateY(6px); }
+  80% {
+    left: 65%;
+    top: 25%;
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    left: 115%;
+    top: -100px;
+    transform: scale(0.5);
+    opacity: 0;
+  }
 }
 
-@keyframes sparkBurstFade {
-  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
-  50% { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+/* Pattern 4: Drops from Top-Right (drop entrance) -> Swirl Center -> Exits Bottom-Left */
+.sticker-motion-pattern-4 {
+  animation: giftMotionStyle4 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes giftMotionStyle4 {
+  0% {
+    left: 80%;
+    top: -140px;
+    transform: scale(0.3) rotateY(180deg);
+    opacity: 0;
+  }
+  20% {
+    left: 60%;
+    top: 35%;
+    transform: scale(1.4) rotateY(0deg);
+    opacity: 1;
+  }
+  40% { transform: scale(1.2) rotate(-8deg); }
+  60% { transform: scale(1.2) rotate(8deg); }
+  80% {
+    left: 30%;
+    top: 55%;
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    left: -140px;
+    top: 85%;
+    transform: scale(0.4);
+    opacity: 0;
+  }
 }
 
-.spark-symbol {
-  position: absolute;
-  font-size: 2.25rem;
-  filter: drop-shadow(0 0 12px #FFD700) drop-shadow(0 0 25px #FF4500);
-  animation: sparkFlyOut 0.75s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+/* Pattern 5: Swirls from Bottom-Right (spiral entrance) -> Flip Float -> Exits Left */
+.sticker-motion-pattern-5 {
+  animation: giftMotionStyle5 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-
-@keyframes sparkFlyOut {
-  0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
-  100% { transform: translate(var(--tx), var(--ty)) scale(1.6) rotate(360deg); opacity: 0; }
+@keyframes giftMotionStyle5 {
+  0% {
+    left: 115%;
+    top: 70%;
+    transform: scale(0.3) rotate(120deg);
+    opacity: 0;
+  }
+  20% {
+    left: 45%;
+    top: 40%;
+    transform: scale(1.4) rotate(0deg);
+    opacity: 1;
+  }
+  40% { transform: scale(1.25) scaleX(-1); }
+  60% { transform: scale(1.25) scaleX(1); }
+  80% {
+    left: 20%;
+    top: 30%;
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    left: -140px;
+    top: 20%;
+    transform: scale(0.4) rotate(-90deg);
+    opacity: 0;
+  }
 }
 
 /* GIFT STICKER ART DISPLAY IN ANIMATION */
@@ -331,12 +454,12 @@
 }
 
 .gift-emoji-art {
-  font-size: 5rem;
+  font-size: 5.5rem;
 }
 
 .gift-img-art {
-  width: 6.5rem;
-  height: 6.5rem;
+  width: 7rem;
+  height: 7rem;
   object-fit: contain;
 }
 
@@ -345,7 +468,7 @@
   border: 2px solid #FFD700;
   color: #EDE4DB;
   font-family: 'Playfair Display', serif;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   padding: 0.35rem 1.25rem;
   border-radius: 9999px;
