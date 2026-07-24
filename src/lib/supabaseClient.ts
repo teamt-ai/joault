@@ -1,19 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mnyqfavcpuoxekfgzcvn.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ueXFmYXZjcHVveGVrZmd6Y3ZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTgyNjQsImV4cCI6MjEwMDM5NDI2NH0.ekJws3ajF9Sf9GqgWD7d1rLp6vumUo1GX5rfqFXzMqQ';
 
-// Detect if we should run in demo/mock mode
-export const isDemoMode = !supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder') || supabaseAnonKey.includes('placeholder');
-
-if (isDemoMode) {
-  console.warn('Running Joault in DEMO MODE with rich localStorage fallback.');
-}
+export const isDemoMode = false;
 
 // Real Supabase client instance
-export const supabase = !isDemoMode 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null as any;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 
 // Helper interfaces
 export interface Profile {
@@ -207,7 +201,12 @@ export const dbService = {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user) {
-        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single().catch(() => ({ data: null }));
+        let data: Profile | null = null;
+        try {
+          const res = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+          data = res.data;
+        } catch (e) {}
+
         const prof: Profile = data || {
           id: session.user.id,
           username: session.user.email?.split('@')[0] || 'User',
@@ -219,6 +218,7 @@ export const dbService = {
         }
         return prof;
       }
+
     } catch (e) {
       console.warn("Session check notice:", e);
     }
@@ -318,7 +318,12 @@ export const dbService = {
     }
 
     if (data.user) {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single().catch(() => ({ data: null }));
+      let profile: Profile | null = null;
+      try {
+        const res = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+        profile = res.data;
+      } catch (e) {}
+
       const activeProf: Profile = profile || {
         id: data.user.id,
         username: email.split('@')[0],
@@ -328,6 +333,7 @@ export const dbService = {
       setLocalStorageData('active_user', activeProf);
       return { success: true, profile: activeProf };
     }
+
 
     return { success: false, error: 'Login failed. Please check your credentials.' };
   },
