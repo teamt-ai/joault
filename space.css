@@ -904,7 +904,7 @@ body.space-body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* JOAULT ANONYMOUS NIGHT MODE - STRICT PURE BLACK & WHITE (ZERO BROWN, ZERO BLUE) */
+/* JOAULT ANONYMOUS NIGHT MODE - PURE BLACK & WHITE 3D INSET DESIGN (ZERO BROWN, ZERO GOLD, ZERO BLUE) */
 body.anonymous-night-mode {
   background-color: #000000 !important;
   color: #FFFFFF !important;
@@ -924,17 +924,31 @@ body.anonymous-night-mode .brand-name {
   color: #FFFFFF !important;
 }
 
+/* OUTER CARD CONTAINER WITH 3D DEPTH SHADOW & BORDER */
 body.anonymous-night-mode .post-card-box,
 body.anonymous-night-mode .twogroup-card-box,
 body.anonymous-night-mode .compose-card-box,
-body.anonymous-night-mode .twogroup-pane,
-body.anonymous-night-mode .card-sline-layout,
+body.anonymous-night-mode .twogroup-pane {
+  background-color: #0B0B0D !important;
+  border: 1px solid #24242A !important;
+  border-radius: 28px !important;
+  padding: 1.25rem !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 3D INSET INNER CARD CONTAINER WITH GENEROUS BREATHING PADDING */
 body.anonymous-night-mode .card-default-view,
 body.anonymous-night-mode .card-comments-view,
-body.anonymous-night-mode .card-reply-view {
-  background-color: #121214 !important;
-  border-color: #24242A !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.95) !important;
+body.anonymous-night-mode .card-reply-view,
+body.anonymous-night-mode .card-sline-layout {
+  background: linear-gradient(165deg, #141418, #0B0B0D) !important;
+  border: 1px solid #222228 !important;
+  border-radius: 22px !important;
+  padding: 1.5rem 1.75rem !important;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 6px 16px rgba(0, 0, 0, 0.6) !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 body.anonymous-night-mode .sline-bottom-row,
@@ -950,12 +964,82 @@ body.anonymous-night-mode .sline-path {
   stroke: #52525B !important;
 }
 
+/* INDENTED ANONYMOUS HEADER (PILL & TIME PULLED INSIDE WITH 3D ELEVATED SHADOW) */
+body.anonymous-night-mode .post-anon-header {
+  display: flex !items-center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem !important;
+  padding: 0 0.25rem !important;
+}
+
+body.anonymous-night-mode .anon-badge-pill {
+  background: linear-gradient(145deg, #222228, #18181C) !important;
+  border: 1px solid #3F3F46 !important;
+  color: #FFFFFF !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  padding: 0.35rem 0.875rem !important;
+  border-radius: 9999px !important;
+  letter-spacing: 0.03em !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.anonymous-night-mode .post-time,
+body.anonymous-night-mode .original-time,
+body.anonymous-night-mode .comment-time,
+body.anonymous-night-mode .comment-time-stamp {
+  color: #A1A1AA !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+}
+
+/* 3D INSET TEXT BODY WITH WALL-TO-WALL PADDING & VERTICAL BREATHING ROOM */
 body.anonymous-night-mode .post-text-body,
 body.anonymous-night-mode .twogroup-content-body,
 body.anonymous-night-mode .comment-text-body,
 body.anonymous-night-mode .original-msg-content,
 body.anonymous-night-mode .comment-body {
+  font-size: 0.9375rem !important;
+  line-height: 1.65 !important;
   color: #FFFFFF !important;
+  padding: 0.5rem 0.25rem 0.75rem 0.25rem !important;
+  margin: 0 !important;
+  white-space: pre-line !important;
+}
+
+/* CARD BOTTOM FOOTER ROW */
+body.anonymous-night-mode .post-card-bottom-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid #222228 !important;
+  margin-top: 0.25rem !important;
+}
+
+body.anonymous-night-mode .swipe-hints-inline,
+body.anonymous-night-mode .swipe-hints-row {
+  font-size: 0.75rem !important;
+  color: #71717A !important;
+  font-weight: 500 !important;
+}
+
+body.anonymous-night-mode .btn-comments-corner {
+  background: #1C1C22 !important;
+  border: 1px solid #3F3F46 !important;
+  color: #FFFFFF !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 0.875rem !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.2s ease !important;
+}
+
+body.anonymous-night-mode .btn-comments-corner:hover {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #FFFFFF !important;
 }
 
 body.anonymous-night-mode .search-pill,
@@ -984,30 +1068,12 @@ body.anonymous-night-mode .btn-night-anonymous-toggle.active {
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.6) !important;
 }
 
-body.anonymous-night-mode .post-anon-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-body.anonymous-night-mode .anon-badge-pill {
-  background-color: #27272A !important;
-  border: 1px solid #3F3F46 !important;
-  color: #FFFFFF !important;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
-  letter-spacing: 0.03em;
-}
-
 body.anonymous-night-mode .auto-rotate-badge,
 body.anonymous-night-mode .team-a-badge,
 body.anonymous-night-mode .team-b-badge {
-  background-color: #27272A !important;
-  color: #D4D4D8 !important;
-  border-color: #3F3F46 !important;
+  background-color: #18181B !important;
+  color: #A1A1AA !important;
+  border-color: #27272A !important;
 }
 
 body.anonymous-night-mode .anonymous-comment {
@@ -1020,6 +1086,7 @@ body.anonymous-night-mode .anonymous-comment {
 body.anonymous-night-mode .tiny-threaded-hole {
   display: none !important;
 }
+
 
 
 
