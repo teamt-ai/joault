@@ -73,7 +73,6 @@ export default function JoaultAuthPage() {
     setGoogleLoading(true);
     setError(null);
     try {
-      // Demo Google Sign-In action
       const res = await dbService.login('demo_user@gmail.com');
       if (res.success) {
         router.push('/dashboard');
@@ -88,14 +87,14 @@ export default function JoaultAuthPage() {
   };
 
   return (
-    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-12 bg-[#FAF6F0] text-[#24150E] font-sans select-none overflow-x-hidden">
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-12 bg-[#FAF6F0] text-[#23150D] font-sans select-none overflow-x-hidden">
       
       {/* LEFT COLUMN: DARK CHOCOLATE BROWN SECTION */}
-      <div className="lg:col-span-5 bg-[#24150E] p-8 md:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden min-h-[420px] lg:min-h-screen">
+      <div className="lg:col-span-5 bg-[#23150D] p-8 md:p-12 lg:p-14 flex flex-col justify-between relative overflow-hidden min-h-[440px] lg:min-h-screen">
         
         {/* TOP-LEFT ROUNDED THUMBNAIL */}
         <div className="z-10 self-start">
-          <div className="relative w-48 h-36 sm:w-56 sm:h-40 md:w-64 md:h-44 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+          <div className="relative w-48 h-34 sm:w-56 sm:h-38 md:w-60 md:h-40 rounded-[28px] overflow-hidden shadow-2xl">
             <Image
               src="/team1.jpg"
               alt="Team members collaborating around laptop"
@@ -107,21 +106,21 @@ export default function JoaultAuthPage() {
         </div>
 
         {/* CENTER HEADING TEXT */}
-        <div className="my-10 lg:my-auto z-10 space-y-2">
-          <h1 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-normal text-white tracking-tight leading-[1.1]">
+        <div className="my-10 lg:my-auto z-10 space-y-1">
+          <h1 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1]">
             Create a Space
           </h1>
-          <h2 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-normal text-[#C59B73] tracking-tight leading-[1.1]">
+          <h2 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl font-medium text-[#A07B57] tracking-tight leading-[1.1]">
             Join a Space
           </h2>
         </div>
 
         {/* BOTTOM-RIGHT ROUNDED THUMBNAIL */}
         <div className="z-10 self-end">
-          <div className="relative w-48 h-36 sm:w-56 sm:h-40 md:w-64 md:h-44 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+          <div className="relative w-48 h-34 sm:w-56 sm:h-38 md:w-60 md:h-40 rounded-[28px] overflow-hidden shadow-2xl">
             <Image
               src="/team2.jpg"
-              alt="Overhead shot of team working around wooden desk"
+              alt="Overhead shot of team working around desk"
               fill
               className="object-cover"
               priority
@@ -132,18 +131,18 @@ export default function JoaultAuthPage() {
       </div>
 
       {/* RIGHT COLUMN: CREAM AUTH SECTION */}
-      <div className="lg:col-span-7 bg-[#FAF6F0] p-6 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-between min-h-screen">
+      <div className="lg:col-span-7 bg-[#FAF6F0] p-6 sm:p-10 md:p-14 lg:p-14 flex flex-col justify-between min-h-screen">
         
-        {/* TOP RIGHT TAB TOGGLE */}
-        <div className="flex justify-end mb-8">
-          <div className="inline-flex items-center gap-1 bg-[#FAF6F0] p-1">
+        {/* TOP RIGHT TAB TOGGLE (PILLED SWITCHER MATCHING IMAGE) */}
+        <div className="flex justify-end mb-6">
+          <div className="inline-flex items-center bg-[#EDE4D7] p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => { setActiveTab('login'); setError(null); }}
-              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
+              className={`px-7 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
                 activeTab === 'login'
-                  ? 'bg-[#24150E] text-white shadow-md'
-                  : 'text-[#9C7B5D] hover:text-[#24150E]'
+                  ? 'bg-[#23150D] text-white shadow-sm'
+                  : 'text-[#8C6F57] hover:text-[#23150D]'
               }`}
             >
               Log in
@@ -151,10 +150,10 @@ export default function JoaultAuthPage() {
             <button
               type="button"
               onClick={() => { setActiveTab('signup'); setError(null); }}
-              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
+              className={`px-7 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
                 activeTab === 'signup'
-                  ? 'bg-[#24150E] text-white shadow-md'
-                  : 'text-[#9C7B5D] hover:text-[#24150E]'
+                  ? 'bg-[#23150D] text-white shadow-sm'
+                  : 'text-[#8C6F57] hover:text-[#23150D]'
               }`}
             >
               Create account
@@ -163,14 +162,14 @@ export default function JoaultAuthPage() {
         </div>
 
         {/* FORM CONTAINER */}
-        <div className="max-w-md w-full mx-auto my-auto py-4 space-y-6">
+        <div className="max-w-md w-full mx-auto my-auto py-2 space-y-6">
           
           {/* HEADER */}
           <div className="space-y-1">
-            <h2 className="font-serif-title text-3xl sm:text-4xl text-[#24150E] font-medium tracking-tight">
+            <h2 className="font-serif-title text-4xl text-[#23150D] font-medium tracking-tight">
               {activeTab === 'login' ? 'Welcome back' : 'Create an account'}
             </h2>
-            <p className="text-sm text-[#6E6259] font-normal">
+            <p className="text-sm text-[#786C60] font-normal">
               {activeTab === 'login' ? 'Sign in to access your spaces.' : 'Sign up to create and join your spaces.'}
             </p>
           </div>
@@ -188,10 +187,10 @@ export default function JoaultAuthPage() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full bg-white border border-[#E8E1D7] text-[#24150E] font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-[#F5EFE6] transition duration-150 shadow-xs cursor-pointer disabled:opacity-70"
+            className="w-full bg-white border border-[#E5DDD2] text-[#23150D] font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-[#F5EFE6] transition duration-150 shadow-xs cursor-pointer disabled:opacity-70"
           >
             {googleLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-[#24150E]" />
+              <Loader2 className="w-4 h-4 animate-spin text-[#23150D]" />
             ) : (
               <>
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -219,7 +218,7 @@ export default function JoaultAuthPage() {
 
           {/* DIVIDER LINE */}
           <div className="relative flex items-center justify-center my-6">
-            <div className="w-full border-t border-[#E6DFD5]"></div>
+            <div className="w-full border-t border-[#E5DDD2]"></div>
             <span className="absolute bg-[#FAF6F0] px-4 text-xs text-[#A89B8F] font-normal">
               or
             </span>
@@ -238,7 +237,7 @@ export default function JoaultAuthPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Your username"
-                  className="w-full bg-white border border-[#E6DFD5] rounded-2xl px-4 py-3.5 text-sm text-[#24150E] placeholder-[#B5AAA0] focus:outline-none focus:ring-2 focus:ring-[#24150E]/15 focus:border-[#24150E] transition"
+                  className="w-full bg-white border border-[#E5DDD2] rounded-2xl px-4 py-3.5 text-sm text-[#23150D] placeholder-[#A89C90] focus:outline-none focus:ring-2 focus:ring-[#23150D]/15 focus:border-[#23150D] transition"
                   required={activeTab === 'signup'}
                 />
               </div>
@@ -254,7 +253,7 @@ export default function JoaultAuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-white border border-[#E6DFD5] rounded-2xl px-4 py-3.5 text-sm text-[#24150E] placeholder-[#B5AAA0] focus:outline-none focus:ring-2 focus:ring-[#24150E]/15 focus:border-[#24150E] transition"
+                className="w-full bg-white border border-[#E5DDD2] rounded-2xl px-4 py-3.5 text-sm text-[#23150D] placeholder-[#A89C90] focus:outline-none focus:ring-2 focus:ring-[#23150D]/15 focus:border-[#23150D] transition"
                 required
               />
             </div>
@@ -269,7 +268,7 @@ export default function JoaultAuthPage() {
                   <button
                     type="button"
                     onClick={() => setError('Password reset instructions sent to your email.')}
-                    className="text-xs text-[#C49B74] font-semibold hover:underline transition"
+                    className="text-xs text-[#C39B75] font-semibold hover:underline transition"
                   >
                     Forgot password?
                   </button>
@@ -281,13 +280,13 @@ export default function JoaultAuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-white border border-[#E6DFD5] rounded-2xl px-4 py-3.5 text-sm text-[#24150E] placeholder-[#B5AAA0] focus:outline-none focus:ring-2 focus:ring-[#24150E]/15 focus:border-[#24150E] transition pr-11"
+                  className="w-full bg-white border border-[#E5DDD2] rounded-2xl px-4 py-3.5 text-sm text-[#23150D] placeholder-[#A89C90] focus:outline-none focus:ring-2 focus:ring-[#23150D]/15 focus:border-[#23150D] transition pr-11"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7E72] hover:text-[#24150E] transition cursor-pointer p-1"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7E72] hover:text-[#23150D] transition cursor-pointer p-1"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -302,7 +301,7 @@ export default function JoaultAuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#24150E] hover:bg-[#382217] active:scale-[0.99] text-white font-bold text-sm py-4 rounded-2xl transition duration-150 shadow-sm flex items-center justify-center cursor-pointer disabled:opacity-70 mt-2"
+              className="w-full bg-[#23150D] hover:bg-[#342014] active:scale-[0.99] text-white font-bold text-sm py-4 rounded-2xl transition duration-150 shadow-xs flex items-center justify-center cursor-pointer disabled:opacity-70 mt-2"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin mx-auto text-white" />
@@ -316,30 +315,35 @@ export default function JoaultAuthPage() {
           </form>
 
           {/* TOGGLE ACCOUNT MODE LINK */}
-          <div className="text-center pt-2">
+          <div className="text-center pt-1 space-y-3">
             {activeTab === 'login' ? (
-              <p className="text-xs text-[#6E6259]">
+              <p className="text-xs text-[#786C60]">
                 Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={() => { setActiveTab('signup'); setError(null); }}
-                  className="font-bold text-[#24150E] hover:underline cursor-pointer"
+                  className="font-bold text-[#23150D] hover:underline cursor-pointer"
                 >
                   Create one
                 </button>
               </p>
             ) : (
-              <p className="text-xs text-[#6E6259]">
+              <p className="text-xs text-[#786C60]">
                 Already have an account?{' '}
                 <button
                   type="button"
                   onClick={() => { setActiveTab('login'); setError(null); }}
-                  className="font-bold text-[#24150E] hover:underline cursor-pointer"
+                  className="font-bold text-[#23150D] hover:underline cursor-pointer"
                 >
                   Log in
                 </button>
               </p>
             )}
+
+            {/* FINE PRINT TERMS */}
+            <p className="text-[11px] text-[#A89C90] font-normal leading-tight">
+              By continuing, you agree to Joault's <span className="hover:underline cursor-pointer">Terms</span> and <span className="hover:underline cursor-pointer">Privacy Policy</span>
+            </p>
           </div>
 
         </div>
@@ -348,7 +352,7 @@ export default function JoaultAuthPage() {
         <button
           type="button"
           onClick={() => alert('Joault Auth Help: Sign in with your email or Google account to access your collaborative spaces.')}
-          className="fixed bottom-5 right-5 w-8 h-8 rounded-full bg-white border border-[#E6DFD5] shadow-md flex items-center justify-center text-[#24150E] text-xs font-serif hover:bg-[#F5EFE6] transition cursor-pointer z-50"
+          className="fixed bottom-5 right-5 w-8 h-8 rounded-full bg-white border border-[#E5DDD2] shadow-sm flex items-center justify-center text-[#23150D] text-xs font-serif hover:bg-[#F5EFE6] transition cursor-pointer z-50"
           title="Help & Info"
         >
           ?
@@ -359,3 +363,4 @@ export default function JoaultAuthPage() {
     </div>
   );
 }
+

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joault - Create & Join Spaces</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <div class="auth-container">
+    
+    <!-- LEFT PANEL: DARK CHOCOLATE BROWN -->
+    <div class="panel-left">
+      <!-- TOP IMAGE CARD -->
+      <div class="image-card top-card">
+        <img src="public/team1.jpg" alt="Team members collaborating around laptop">
+      </div>
+
+      <!-- CENTER HEADINGS -->
+      <div class="heading-group">
+        <h1 class="title-white">Create a Space</h1>
+        <h2 class="title-gold">Join a Space</h2>
+      </div>
+
+      <!-- BOTTOM IMAGE CARD -->
+      <div class="image-card bottom-card">
+        <img src="public/team2.jpg" alt="Overhead shot of team working around desk">
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: CREAM AUTH FORM -->
+    <div class="panel-right">
+      
+      <!-- TOP RIGHT TAB TOGGLE -->
+      <div class="tab-switcher-wrapper">
+        <div class="tab-switcher">
+          <button type="button" id="tab-login" class="tab-btn active">Log in</button>
+          <button type="button" id="tab-signup" class="tab-btn">Create account</button>
+        </div>
+      </div>
+
+      <!-- MAIN FORM WRAPPER -->
+      <div class="form-wrapper">
+        
+        <!-- HEADER -->
+        <div class="form-header">
+          <h2 id="form-title" class="form-heading">Welcome back</h2>
+          <p id="form-subtitle" class="form-subheading">Sign in to access your spaces.</p>
+        </div>
+
+        <!-- ERROR ALERT BOX -->
+        <div id="error-box" class="error-alert hidden">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span id="error-message"></span>
+        </div>
+
+        <!-- GOOGLE SIGN IN BUTTON -->
+        <button type="button" id="btn-google" class="btn-google">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <!-- DIVIDER -->
+        <div class="divider">
+          <span class="divider-text">or</span>
+        </div>
+
+        <!-- AUTH FORM -->
+        <form id="auth-form">
+          
+          <!-- USERNAME FIELD (Signup only) -->
+          <div id="group-username" class="form-group hidden">
+            <label for="input-username" class="form-label">Username</label>
+            <input type="text" id="input-username" class="form-input" placeholder="Your username">
+          </div>
+
+          <!-- EMAIL FIELD -->
+          <div class="form-group">
+            <label for="input-email" class="form-label">Email address</label>
+            <input type="email" id="input-email" class="form-input" placeholder="you@example.com" required>
+          </div>
+
+          <!-- PASSWORD FIELD -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="input-password" class="form-label">Password</label>
+              <button type="button" id="btn-forgot-password" class="link-forgot">Forgot password?</button>
+            </div>
+            <div class="password-input-container">
+              <input type="password" id="input-password" class="form-input password-input" placeholder="••••••••" required>
+              <button type="button" id="btn-toggle-password" class="btn-toggle-eye" aria-label="Toggle password visibility">
+                <!-- EYE ICON SVG -->
+                <svg id="eye-icon" class="eye-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUBMIT BUTTON -->
+          <button type="submit" id="btn-submit" class="btn-primary">
+            <span id="btn-submit-text">Log in to Joault</span>
+          </button>
+
+        </form>
+
+        <!-- ACCOUNT MODE TOGGLE TEXT -->
+        <div class="footer-links">
+          <p id="toggle-account-prompt" class="toggle-prompt">
+            Don't have an account? <button type="button" id="link-toggle-mode" class="link-action">Create one</button>
+          </p>
+          <p class="terms-text">
+            By continuing, you agree to Joault's <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+          </p>
+        </div>
+
+      </div>
+
+      <!-- FLOATING HELP BUTTON -->
+      <button type="button" id="btn-help" class="floating-help-btn" title="Help & Info">?</button>
+
+    </div>
+
+  </div>
+
+  <!-- JavaScript Script File -->
+  <script src="script.js"></script>
+</body>
+</html>
