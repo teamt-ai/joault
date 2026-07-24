@@ -224,7 +224,10 @@ export const dbService = {
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
       password: password,
-      options: { data: { username: cleanUsername } }
+      options: {
+        emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined,
+        data: { username: cleanUsername }
+      }
     });
 
     if (error) {
@@ -251,12 +254,9 @@ export const dbService = {
       });
     } catch (e) {}
 
-    if (data.session) {
-      return { success: true, profile: newProfile };
-    } else {
-      return { success: false, error: 'Supabase email confirmation sent! Please check your email inbox to confirm your email before logging in.' };
-    }
+    return { success: true, profile: newProfile };
   },
+
 
   async login(email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (!email || !email.includes('@')) {
