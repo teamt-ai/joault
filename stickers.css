@@ -268,7 +268,7 @@
   overflow: hidden;
 }
 
-/* BASE GIFT STAGE ITEM (6 SECONDS LIFECYCLE) */
+/* BASE GIFT STAGE ITEM (3 SECONDS LIFECYCLE) */
 .sticker-gift-stage-item {
   position: absolute;
   pointer-events: none;
@@ -278,11 +278,11 @@
   align-items: center;
 }
 
-/* 5 DISTINCT MOTION PATTERNS WITH UNIQUE ENTRANCE AND EXIT STYLES (6s DURATION) */
+/* 5 DISTINCT MOTION PATTERNS WITH UNIQUE ENTRANCE AND EXIT STYLES (3s DURATION) */
 
 /* Pattern 1: Enters Top-Left (spin entry) -> Floats Center -> Exits Right (sweep exit) */
 .sticker-motion-pattern-1 {
-  animation: giftMotionStyle1 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: giftMotionStyle1 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes giftMotionStyle1 {
   0% {
@@ -315,7 +315,7 @@
 
 /* Pattern 2: Bursts from Center (zoom burst) -> Wiggles Up -> Exits Top (upward fade) */
 .sticker-motion-pattern-2 {
-  animation: giftMotionStyle2 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: giftMotionStyle2 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes giftMotionStyle2 {
   0% {
@@ -348,7 +348,7 @@
 
 /* Pattern 3: Sweeps from Bottom-Left (slant entrance) -> Aura Float -> Exits Top-Right */
 .sticker-motion-pattern-3 {
-  animation: giftMotionStyle3 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: giftMotionStyle3 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes giftMotionStyle3 {
   0% {
@@ -381,7 +381,7 @@
 
 /* Pattern 4: Drops from Top-Right (drop entrance) -> Swirl Center -> Exits Bottom-Left */
 .sticker-motion-pattern-4 {
-  animation: giftMotionStyle4 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: giftMotionStyle4 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes giftMotionStyle4 {
   0% {
@@ -414,8 +414,9 @@
 
 /* Pattern 5: Swirls from Bottom-Right (spiral entrance) -> Flip Float -> Exits Left */
 .sticker-motion-pattern-5 {
-  animation: giftMotionStyle5 6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: giftMotionStyle5 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+
 @keyframes giftMotionStyle5 {
   0% {
     left: 115%;

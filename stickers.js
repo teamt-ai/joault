@@ -427,10 +427,10 @@ function threadStickerToPost(postId, sticker, pack) {
   playThreadedStickersForPost(postId, cardElement);
 }
 
-// GLOBAL PLAYING LOCK (PREVENTS ANY OTHER SET FROM APPEARING UNTIL CURRENT SET FINISHES AFTER 6s)
+// GLOBAL PLAYING LOCK (PREVENTS ANY OTHER SET FROM APPEARING UNTIL CURRENT SET FINISHES AFTER 3s)
 let isStickerSetCurrentlyActive = false;
 
-// CONSOLIDATE THREADED STICKERS & PLAY SEQUENCE (6-SECOND STRICT LIFECYCLE)
+// CONSOLIDATE THREADED STICKERS & PLAY SEQUENCE (3-SECOND STRICT LIFECYCLE)
 function playThreadedStickersForPost(postId, cardElement) {
   const stickersList = threadedStickersDB[postId];
   if (!stickersList || stickersList.length === 0) return;
@@ -462,13 +462,13 @@ function playThreadedStickersForPost(postId, cardElement) {
     triggerTikTokGiftAnimation(entry.sticker, entry.pack, entry.quantity, patternIndex);
   });
 
-  // Strict Lock Release after exactly 6.2 seconds (when 6s set animation completely finishes)
+  // Strict Lock Release after exactly 3.2 seconds (when 3s set animation completely finishes)
   setTimeout(() => {
     isStickerSetCurrentlyActive = false;
-  }, 6200);
+  }, 3200);
 }
 
-// TIKTOK-STYLE GIFT ANIMATION ENGINE (5 DISTINCT MOTION PATTERNS + 6s DURATION + 2x/3x BADGES)
+// TIKTOK-STYLE GIFT ANIMATION ENGINE (5 DISTINCT MOTION PATTERNS + 3s DURATION + 2x/3x BADGES)
 function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, patternIndex = 1) {
   const overlay = document.getElementById('tiktok-gift-overlay-container');
   if (!overlay) return;
@@ -496,11 +496,12 @@ function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, patternIndex = 
 
   overlay.appendChild(stageItem);
 
-  // Lasts for exactly 6 seconds!
+  // Lasts for exactly 3 seconds!
   setTimeout(() => {
     if (stageItem.parentNode) stageItem.remove();
-  }, 6000);
+  }, 3000);
 }
+
 
 
 
