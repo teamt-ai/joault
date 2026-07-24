@@ -603,7 +603,7 @@ function triggerFloatingEmojiBurst(cardElement, emoji, count) {
   }, 3000);
 }
 
-// SCROLL-INTO-VIEW OBSERVER: Pops up sent emojis for 3 seconds EVERY TIME someone scrolls to a message card!
+// SCROLL-INTO-VIEW OBSERVER: Pops up sent emojis for 3 seconds when message reaches middle of screen!
 function setupScrollReactionObserver() {
   if (!('IntersectionObserver' in window)) return;
 
@@ -626,11 +626,12 @@ function setupScrollReactionObserver() {
         if (existing) existing.remove();
       }
     });
-  }, { threshold: 0.05 });
+  }, { rootMargin: '-35% 0px -35% 0px', threshold: 0.1 });
 
   const cardBoxes = document.querySelectorAll('.post-card-box');
   cardBoxes.forEach(card => scrollObserver.observe(card));
 }
+
 
 // Show 3-Second Floating Reaction Strip when scrolling into view
 function showScrollReactionPopup(cardBox, reactions) {

@@ -656,7 +656,7 @@ function renderTwoGroupsFeed() {
   setupTwoGroupsScrollObserver();
 }
 
-// SCROLL-INTO-VIEW OBSERVER FOR TWOGROUPS: Pops up sent emojis EVERY TIME someone scrolls to a message card!
+// SCROLL-INTO-VIEW OBSERVER FOR TWOGROUPS: Pops up sent emojis when message reaches middle of screen!
 function setupTwoGroupsScrollObserver() {
   if (!('IntersectionObserver' in window)) return;
 
@@ -679,11 +679,12 @@ function setupTwoGroupsScrollObserver() {
         if (existing) existing.remove();
       }
     });
-  }, { threshold: 0.05 });
+  }, { rootMargin: '-35% 0px -35% 0px', threshold: 0.1 });
 
   const cardBoxes = document.querySelectorAll('.twogroup-card-box');
   cardBoxes.forEach(card => twoGroupsScrollObserver.observe(card));
 }
+
 
 
 // Show 3-Second Scroll Reaction Popup
