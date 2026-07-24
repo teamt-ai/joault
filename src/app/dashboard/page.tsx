@@ -62,9 +62,10 @@ export default function DashboardPage() {
       try {
         const u = await dbService.getCurrentUser();
         if (!u) {
-          router.push('/login');
+          router.push('/');
           return;
         }
+
         setUser(u);
         
         const [mySpaces, myPendingRequests] = await Promise.all([

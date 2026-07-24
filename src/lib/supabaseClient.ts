@@ -192,20 +192,23 @@ if (typeof window !== 'undefined') {
 export const dbService = {
   // --- AUTH METHODS ---
   async getCurrentUser(): Promise<Profile | null> {
-    if (isDemoMode) {
-      return getLocalStorageData<Profile | null>('active_user', {
-        id: 'usr-owner',
-        username: 'Alex (Admin)',
-        email: 'alex@example.com',
-        avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=alex'
-      });
+    if (isDemoMode || !supabase) {
+      return getLocalStorageData<Profile | null>('active_user', null);
     }
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+    if (!user) {
+      return getLocalStorageData<Profile | null>('active_user', null);
+    }
     
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    return data || null;
+    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single().catch(() => ({ data: null }));
+    return data || {
+      id: user.id,
+      username: user.email?.split('@')[0] || 'User',
+      email: user.email || '',
+      avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`
+    };
   },
+
 
   async signUp(username: string, email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     const userPass = password || 'dummy-password-joault-123';
