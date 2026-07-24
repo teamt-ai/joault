@@ -353,10 +353,11 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
           
           <div className="flex-grow overflow-y-auto pr-2 space-y-4 pb-6">
             
-            <div class="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-between text-zinc-500">
+            <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-between text-zinc-500">
               <span>Swipe Left = Comment | Swipe Right = View Comments | Double Tap = React with Joault Emojis</span>
               <span className="font-mono text-[10px] font-bold">{messages.length} Messages</span>
             </div>
+
 
 
             {messages.length === 0 ? (
