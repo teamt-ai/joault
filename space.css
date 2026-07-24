@@ -904,7 +904,7 @@ body.space-body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* JOAULT ANONYMOUS NIGHT MODE - PURE BLACK & WHITE 3D INSET DESIGN (ZERO BROWN, ZERO GOLD, ZERO BLUE) */
+/* JOAULT ANONYMOUS NIGHT MODE - SINGLE SLEEK 3D CARD BOX & PURE BLACK EMOJI PILL (ZERO BROWN) */
 body.anonymous-night-mode {
   background-color: #000000 !important;
   color: #FFFFFF !important;
@@ -924,28 +924,28 @@ body.anonymous-night-mode .brand-name {
   color: #FFFFFF !important;
 }
 
-/* OUTER CARD CONTAINER WITH 3D DEPTH SHADOW & BORDER */
+/* SINGLE 3D CARD CONTAINER (OUTER DOUBLE BOX REMOVED) */
 body.anonymous-night-mode .post-card-box,
 body.anonymous-night-mode .twogroup-card-box,
 body.anonymous-night-mode .compose-card-box,
 body.anonymous-night-mode .twogroup-pane {
-  background-color: #0B0B0D !important;
+  background: linear-gradient(165deg, #141418, #0B0B0D) !important;
   border: 1px solid #24242A !important;
-  border-radius: 28px !important;
-  padding: 1.25rem !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  border-radius: 24px !important;
+  padding: 1.5rem 1.75rem !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-/* 3D INSET INNER CARD CONTAINER WITH GENEROUS BREATHING PADDING */
+/* INNER CONTAINER (TRANSPARENT, NO NESTED SECOND BOX) */
 body.anonymous-night-mode .card-default-view,
 body.anonymous-night-mode .card-comments-view,
 body.anonymous-night-mode .card-reply-view,
 body.anonymous-night-mode .card-sline-layout {
-  background: linear-gradient(165deg, #141418, #0B0B0D) !important;
-  border: 1px solid #222228 !important;
-  border-radius: 22px !important;
-  padding: 1.5rem 1.75rem !important;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 6px 16px rgba(0, 0, 0, 0.6) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -964,12 +964,12 @@ body.anonymous-night-mode .sline-path {
   stroke: #52525B !important;
 }
 
-/* INDENTED ANONYMOUS HEADER (PILL & TIME PULLED INSIDE WITH 3D ELEVATED SHADOW) */
+/* ANONYMOUS HEADER (PILL & TIMESTAMP INSIDE CARD) */
 body.anonymous-night-mode .post-anon-header {
-  display: flex !items-center;
-  justify-content: space-between;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
   margin-bottom: 0.5rem !important;
-  padding: 0 0.25rem !important;
 }
 
 body.anonymous-night-mode .anon-badge-pill {
@@ -993,7 +993,7 @@ body.anonymous-night-mode .comment-time-stamp {
   font-weight: 500 !important;
 }
 
-/* 3D INSET TEXT BODY WITH WALL-TO-WALL PADDING & VERTICAL BREATHING ROOM */
+/* TEXT BODY WITH SPACIOUS MARGINS (PREVENTS TEXT FROM TOUCHING EDGES) */
 body.anonymous-night-mode .post-text-body,
 body.anonymous-night-mode .twogroup-content-body,
 body.anonymous-night-mode .comment-text-body,
@@ -1002,7 +1002,7 @@ body.anonymous-night-mode .comment-body {
   font-size: 0.9375rem !important;
   line-height: 1.65 !important;
   color: #FFFFFF !important;
-  padding: 0.5rem 0.25rem 0.75rem 0.25rem !important;
+  padding: 0.25rem 0 0.5rem 0 !important;
   margin: 0 !important;
   white-space: pre-line !important;
 }
@@ -1040,6 +1040,18 @@ body.anonymous-night-mode .btn-comments-corner:hover {
   background: #FFFFFF !important;
   color: #000000 !important;
   border-color: #FFFFFF !important;
+}
+
+/* PURE BLACK POPPING EMOJI PILL (ZERO BROWN) */
+body.anonymous-night-mode .scroll-reaction-popup {
+  background: #0B0B0E !important;
+  border: 1px solid #3F3F46 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95), 0 0 15px rgba(255, 255, 255, 0.1) !important;
+}
+
+body.anonymous-night-mode .scroll-emoji-tag {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
 }
 
 body.anonymous-night-mode .search-pill,
@@ -1086,6 +1098,7 @@ body.anonymous-night-mode .anonymous-comment {
 body.anonymous-night-mode .tiny-threaded-hole {
   display: none !important;
 }
+
 
 
 
