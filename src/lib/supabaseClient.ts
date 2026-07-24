@@ -235,29 +235,19 @@ export const dbService = {
     if (!password || password.length < 6) {
       return { success: false, error: 'Password must be at least 6 characters long.' };
     }
-    const cleanUsername = username.trim() || email.split('@')[0];
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanUsername = username.trim() || cleanEmail.split('@')[0];
 
-    if (isDemoMode || !supabase) {
-      const profiles = getLocalStorageData<Profile[]>('profiles', []);
-      const existing = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
-      if (existing) {
-        return { success: false, error: 'An account with this email already exists. Please log in.' };
+    // Explicit Live Supabase Check: Stop if email already exists in database
+    try {
+      const res = await supabase.from('profiles').select('id, email').eq('email', cleanEmail).single();
+      if (res.data) {
+        return { success: false, error: 'An account with this email already exists in Supabase. Please click "Log in" to sign in.' };
       }
-      const newProfile: Profile = {
-        id: `usr-${Math.random().toString(36).substr(2, 9)}`,
-        username: cleanUsername,
-        email,
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanUsername}`
-      };
-      
-      profiles.push(newProfile);
-      setLocalStorageData('profiles', profiles);
-      setLocalStorageData('active_user', newProfile);
-      return { success: true, profile: newProfile };
-    }
+    } catch (e) {}
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: cleanEmail,
       password: password,
       options: { data: { username: cleanUsername } }
     });
@@ -273,13 +263,13 @@ export const dbService = {
     const newProfile: Profile = {
       id: data.user.id,
       username: cleanUsername,
-      email,
+      email: cleanEmail,
       avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanUsername}`
     };
 
     const { error: profileError } = await supabase.from('profiles').upsert({
       id: data.user.id,
-      email: email,
+      email: cleanEmail,
       username: cleanUsername.toLowerCase().replace(/\s+/g, '_'),
       updated_at: new Date().toISOString()
     });
@@ -292,6 +282,7 @@ export const dbService = {
     setLocalStorageData('active_user', newProfile);
     return { success: true, profile: newProfile };
   },
+
 
 
   async login(email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
