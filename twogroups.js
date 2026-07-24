@@ -654,7 +654,11 @@ function renderTwoGroupsFeed() {
 
   // Re-observe all rendered cards for scroll-into-view emoji reaction popups
   setupTwoGroupsScrollObserver();
+  if (typeof setupSecretStickerHotzones === 'function') {
+    setupSecretStickerHotzones();
+  }
 }
+
 
 // SCROLL-INTO-VIEW OBSERVER FOR TWOGROUPS: Pops up sent emojis when message reaches middle of screen!
 function setupTwoGroupsScrollObserver() {

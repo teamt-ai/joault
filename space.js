@@ -318,7 +318,11 @@ function renderFeed() {
 
   // Re-observe all rendered cards for scroll-into-view emoji reaction popups
   setupScrollReactionObserver();
+  if (typeof setupSecretStickerHotzones === 'function') {
+    setupSecretStickerHotzones();
+  }
 }
+
 
 
 // 1. DEFAULT POST VIEW HTML (ONLY '289 comments' IN BOTTOM RIGHT CORNER)
