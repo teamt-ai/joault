@@ -47,9 +47,18 @@
           <input type="text" placeholder="Search" class="search-input">
         </div>
 
+        <!-- NIGHT ANONYMOUS MODE TOGGLE BUTTON -->
+        <button type="button" class="btn-night-anonymous-toggle" id="btn-night-toggle" onclick="toggleAnonymousNightMode()" title="Toggle Anonymous Night Mode">
+          <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span class="night-toggle-text">Anonymous</span>
+        </button>
+
         <div class="user-avatar-pill">
           <span>AN</span>
         </div>
+
       </div>
 
     </div>
@@ -95,8 +104,10 @@
   <button type="button" id="btn-twogroups-help" class="floating-help-btn" title="Help & Info">?</button>
 
   <!-- JavaScript Files -->
+  <script src="anonymous.js"></script>
   <script src="stickers.js"></script>
   <script src="twogroups.js"></script>
+
 </body>
 </html>
 

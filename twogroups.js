@@ -365,8 +365,54 @@ function renderTwoGroupsFeed() {
 
 // 1. RENDER CONNECTED S-LINE VIEW
 function renderConnectedSLineView(post) {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
   const replies = threadRepliesDatabase[post.id] || threadRepliesDatabase.tg_1;
   const currentReply = replies[post.activeReplyIndex % replies.length];
+
+  if (isAnon) {
+    return `
+      <div class="card-sline-layout">
+        <div class="sline-top-row">
+          <div class="original-sender-info">
+            <div class="original-header-line">
+              <span class="anon-badge-pill">● ${post.team}</span>
+              <span class="original-time">· ${post.time}</span>
+            </div>
+            <div class="original-msg-content">${escapeHtml(post.content)}</div>
+          </div>
+        </div>
+
+        <div class="sline-svg-container">
+          <svg width="100%" height="48" viewBox="0 0 500 48" preserveAspectRatio="none">
+            <path d="M 40 4 C 40 44, 460 4, 460 44" class="sline-path ${post.teamKey}-path" />
+          </svg>
+        </div>
+
+        <div class="sline-bottom-row ${currentReply.teamKey}-comment-bg" id="bottom-row-${post.id}">
+          <div class="commenter-avatar-left">
+            <span class="anon-badge-pill">● ${currentReply.team}</span>
+          </div>
+
+          <div class="comment-content-right">
+            <p class="comment-text-body">${escapeHtml(currentReply.text)}</p>
+            <div class="comment-meta-row">
+              <span class="comment-time-stamp">${currentReply.time} · ❤️ ${currentReply.likes}</span>
+              <span class="auto-rotate-badge ${currentReply.teamKey}-badge">
+                <span class="rotate-pulse-dot"></span>
+                Reply ${post.activeReplyIndex + 1} of ${replies.length} (3s)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="twogroup-card-footer">
+          <div class="swipe-hints-row" style="margin: 0; padding: 0; width: 100%;">
+            <span>👉 Double tap to react | Swipe right for all ${replies.length} replies</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   return `
     <div class="card-sline-layout">
@@ -422,32 +468,55 @@ function renderConnectedSLineView(post) {
 
 // 2. RENDER FULL COMMENTS VIEW
 function renderFullCommentsView(post) {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
   const allReplies = threadRepliesDatabase[post.id] || threadRepliesDatabase.tg_1;
   const visibleCount = post.commentsPage * 8;
   const visibleReplies = allReplies.slice(0, visibleCount);
   const hasMore = visibleCount < allReplies.length;
 
-  let repliesHTML = visibleReplies.map(r => `
-    <div class="comment-item ${r.teamKey}-item-bg">
-      <div class="commenter-left-box">
-        <div class="avatar-circle-sm ${r.teamKey}-avatar" style="width: 1.875rem; height: 1.875rem; font-size: 0.75rem;">${r.avatar}</div>
-        <span class="team-tag-pill ${r.teamKey}-pill" style="font-size: 0.6rem; padding: 0.1rem 0.35rem; margin-top: 0.2rem;">${r.team}</span>
-      </div>
-      <div class="comment-content-meta">
-        <div class="comment-author-line">
-          <span class="comment-author">${escapeHtml(r.author)}</span>
-          <span class="comment-time">${r.time}</span>
+  let repliesHTML = visibleReplies.map(r => {
+    if (isAnon) {
+      return `
+        <div class="comment-item ${r.teamKey}-item-bg anonymous-comment">
+          <div class="comment-content-meta">
+            <div class="comment-author-line">
+              <span class="anon-badge-pill">● ${r.team}</span>
+              <span class="comment-time">${r.time}</span>
+            </div>
+            <p class="comment-body">${escapeHtml(r.text)}</p>
+            <button type="button" class="comment-like-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              <span>${r.likes}</span>
+            </button>
+          </div>
         </div>
-        <p class="comment-body">${escapeHtml(r.text)}</p>
-        <button type="button" class="comment-like-btn">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-          <span>${r.likes}</span>
-        </button>
+      `;
+    }
+
+    return `
+      <div class="comment-item ${r.teamKey}-item-bg">
+        <div class="commenter-left-box">
+          <div class="avatar-circle-sm ${r.teamKey}-avatar" style="width: 1.875rem; height: 1.875rem; font-size: 0.75rem;">${r.avatar}</div>
+          <span class="team-tag-pill ${r.teamKey}-pill" style="font-size: 0.6rem; padding: 0.1rem 0.35rem; margin-top: 0.2rem;">${r.team}</span>
+        </div>
+        <div class="comment-content-meta">
+          <div class="comment-author-line">
+            <span class="comment-author">${escapeHtml(r.author)}</span>
+            <span class="comment-time">${r.time}</span>
+          </div>
+          <p class="comment-body">${escapeHtml(r.text)}</p>
+          <button type="button" class="comment-like-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span>${r.likes}</span>
+          </button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   return `
     <div class="card-comments-view">
@@ -473,7 +542,7 @@ function renderFullCommentsView(post) {
       ` : ''}
 
       <div class="add-comment-row">
-        <input type="text" id="input-tg-comment-${post.id}" class="comment-input-field" placeholder="Add a reply to this connected thread...">
+        <input type="text" id="input-tg-comment-${post.id}" class="comment-input-field" placeholder="Add an anonymous reply to this connected thread...">
         <button type="button" class="btn-send-comment" onclick="addTwoGroupComment('${post.id}')" title="Send">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -484,6 +553,7 @@ function renderFullCommentsView(post) {
     </div>
   `;
 }
+
 
 // DOUBLE TAP DETECTOR & SWIPE GESTURES FOR TWOGROUPS
 function setupDoubleTapAndSwipeTwoGroups(cardElement, post) {

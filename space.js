@@ -325,8 +325,32 @@ function renderFeed() {
 
 
 
-// 1. DEFAULT POST VIEW HTML (ONLY '289 comments' IN BOTTOM RIGHT CORNER)
+// 1. DEFAULT POST VIEW HTML
 function renderDefaultView(post) {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
+
+  if (isAnon) {
+    return `
+      <div class="card-default-view">
+        <div class="post-anon-header">
+          <span class="anon-badge-pill">● Anonymous</span>
+          <span class="post-time">${post.time}</span>
+        </div>
+
+        <div class="post-text-body">${escapeHtml(post.content)}</div>
+
+        <div class="post-card-bottom-row">
+          <div class="swipe-hints-inline">
+            <span>💡 Double tap to react · Swipe right for comments</span>
+          </div>
+          <button type="button" class="btn-comments-corner" onclick="switchCardView('${post.id}', 'comments')">
+            ${post.commentsCount} comments
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="card-default-view">
       <div class="post-author-row">
@@ -354,7 +378,40 @@ function renderDefaultView(post) {
 
 // 2. REPLY VIEW HTML
 function renderReplyView(post) {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
   const shortSnippet = post.content.length > 70 ? post.content.slice(0, 70) + '...' : post.content;
+
+  if (isAnon) {
+    return `
+      <div class="card-reply-view">
+        <div class="reply-header-bar">
+          <span class="reply-title-text">ANONYMOUS REPLY</span>
+          <button type="button" class="btn-close-view" onclick="switchCardView('${post.id}', 'default')">&times;</button>
+        </div>
+
+        <div class="quote-snippet-box">
+          <div class="quote-meta">
+            <span class="anon-badge-pill" style="font-size: 0.65rem;">● Anonymous</span>
+            <span class="quote-time">${post.time}</span>
+          </div>
+          <p class="quote-text">${escapeHtml(shortSnippet)}</p>
+        </div>
+
+        <form onsubmit="submitReply(event, '${post.id}')" class="reply-input-box">
+          <textarea id="reply-text-${post.id}" class="reply-textarea" placeholder="Write your anonymous reply..." rows="3" required></textarea>
+        </form>
+
+        <div class="reply-footer-row">
+          <span class="char-count">280</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn-cancel-sm" onclick="switchCardView('${post.id}', 'default')">Cancel</button>
+            <button type="button" class="btn-post-gold" onclick="triggerReplySubmit('${post.id}')">Post Reply</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="card-reply-view">
       <div class="reply-header-bar">
@@ -387,31 +444,54 @@ function renderReplyView(post) {
   `;
 }
 
-// 3. COMMENTS VIEW HTML (8 AT A TIME)
+// 3. COMMENTS VIEW HTML
 function renderCommentsView(post) {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
   const allComments = commentsDatabase[post.id] || commentsDatabase.post_1;
   const visibleCount = post.commentsPage * 8;
   const visibleComments = allComments.slice(0, visibleCount);
   const hasMore = visibleCount < allComments.length;
 
-  let commentsHTML = visibleComments.map(c => `
-    <div class="comment-item">
-      <div class="avatar-circle-sm" style="width: 1.875rem; height: 1.875rem; font-size: 0.75rem;">${c.avatar}</div>
-      <div class="comment-content-meta">
-        <div class="comment-author-line">
-          <span class="comment-author">${escapeHtml(c.author)}</span>
-          <span class="comment-time">${c.time}</span>
+  let commentsHTML = visibleComments.map(c => {
+    if (isAnon) {
+      return `
+        <div class="comment-item anonymous-comment">
+          <div class="comment-content-meta">
+            <div class="comment-author-line">
+              <span class="anon-badge-pill" style="font-size: 0.65rem;">● Anonymous</span>
+              <span class="comment-time">${c.time}</span>
+            </div>
+            <p class="comment-body">${escapeHtml(c.text)}</p>
+            <button type="button" class="comment-like-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              <span>${c.likes}</span>
+            </button>
+          </div>
         </div>
-        <p class="comment-body">${escapeHtml(c.text)}</p>
-        <button type="button" class="comment-like-btn">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-          <span>${c.likes}</span>
-        </button>
+      `;
+    }
+
+    return `
+      <div class="comment-item">
+        <div class="avatar-circle-sm" style="width: 1.875rem; height: 1.875rem; font-size: 0.75rem;">${c.avatar}</div>
+        <div class="comment-content-meta">
+          <div class="comment-author-line">
+            <span class="comment-author">${escapeHtml(c.author)}</span>
+            <span class="comment-time">${c.time}</span>
+          </div>
+          <p class="comment-body">${escapeHtml(c.text)}</p>
+          <button type="button" class="comment-like-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span>${c.likes}</span>
+          </button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   return `
     <div class="card-comments-view">
@@ -437,7 +517,7 @@ function renderCommentsView(post) {
       ` : ''}
 
       <div class="add-comment-row">
-        <input type="text" id="input-comment-${post.id}" class="comment-input-field" placeholder="Add a reply...">
+        <input type="text" id="input-comment-${post.id}" class="comment-input-field" placeholder="Add an anonymous reply...">
         <button type="button" class="btn-send-comment" onclick="addComment('${post.id}')" title="Send">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -448,6 +528,7 @@ function renderCommentsView(post) {
     </div>
   `;
 }
+
 
 // DOUBLE TAP DETECTOR & CUSTOM WEBSITE EMOJI PICKER + SWIPE GESTURES
 function setupDoubleTapAndSwipe(cardElement, post) {

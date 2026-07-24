@@ -331,6 +331,13 @@ function updateCardTinyHoleIndicator(cardElement, postId) {
 
 // OPEN STICKER DRAWER FOR SELECTED MESSAGE
 function openStickerDrawer(postId) {
+  if (typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive) {
+    if (typeof showAnonymousToast === 'function') {
+      showAnonymousToast("🔒 Premium stickers are disabled in Anonymous Mode");
+    }
+    return;
+  }
+
   activeStickerPostId = postId;
   const modal = document.getElementById('sticker-drawer-modal');
   if (!modal) return;
@@ -340,6 +347,7 @@ function openStickerDrawer(postId) {
 
   modal.classList.add('active');
 }
+
 
 // CLOSE STICKER DRAWER
 function closeStickerDrawer() {
