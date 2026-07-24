@@ -192,28 +192,39 @@ if (typeof window !== 'undefined') {
 export const dbService = {
   // --- AUTH METHODS ---
   async getCurrentUser(): Promise<Profile | null> {
-    if (!supabase) {
-      const val = typeof window !== 'undefined' ? localStorage.getItem('joault_active_user') : null;
-      return val ? JSON.parse(val) : null;
+    if (typeof window !== 'undefined') {
+      const localVal = localStorage.getItem('joault_active_user');
+      if (localVal) {
+        try {
+          const parsed = JSON.parse(localVal);
+          if (parsed && parsed.id) return parsed;
+        } catch (e) {}
+      }
     }
+
+    if (!supabase) return null;
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session || !session.user) {
-        if (typeof window !== 'undefined') localStorage.removeItem('joault_active_user');
-        return null;
+      if (session && session.user) {
+        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single().catch(() => ({ data: null }));
+        const prof: Profile = data || {
+          id: session.user.id,
+          username: session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+        };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('joault_active_user', JSON.stringify(prof));
+        }
+        return prof;
       }
-
-      const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single().catch(() => ({ data: null }));
-      return data || {
-        id: session.user.id,
-        username: session.user.email?.split('@')[0] || 'User',
-        email: session.user.email || '',
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
-      };
     } catch (e) {
-      return null;
+      console.warn("Session check notice:", e);
     }
+    return null;
   },
+
 
 
 
@@ -349,14 +360,14 @@ export const dbService = {
 
 
   async logout(): Promise<void> {
-    if (isDemoMode) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('joault_active_user');
-      }
-      return;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('joault_active_user');
     }
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut().catch(() => {});
+    }
   },
+
 
   // --- SPACES ---
   async getMySpaces(userId: string): Promise<Space[]> {
