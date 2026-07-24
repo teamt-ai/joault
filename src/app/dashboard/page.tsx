@@ -86,21 +86,25 @@ export default function DashboardPage() {
     if (!newSpaceName.trim() || !user) return;
 
     try {
-      const created = await dbService.createSpace(newSpaceName.trim(), user.id);
-      if (newAuthProtocol.trim()) {
-        created.auth_protocol = newAuthProtocol.trim();
-      }
+      const created = await dbService.createSpace(
+        newSpaceName.trim(),
+        user.id,
+        newAuthProtocol.trim()
+      );
       setNewSpaceName('');
       setNewAuthProtocol('');
       setCreateModalOpen(false);
 
       const updated = await dbService.getMySpaces(user.id);
       setSpaces(updated || []);
+
+      alert(`🎉 Space Created Successfully!\n\nSpace Name: ${created.name}\nYour Unique Auth Protocol: ${created.auth_protocol}\n\nShare this Auth Protocol code with members so they can connect to your space.`);
       router.push(`/space/${created.id}`);
     } catch (err: any) {
       alert(err.message || 'Failed to create space');
     }
   };
+
 
   const getUserInitials = () => {
     if (!user) return 'AN';

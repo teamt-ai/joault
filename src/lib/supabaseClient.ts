@@ -369,9 +369,9 @@ export const dbService = {
     return data || [];
   },
 
-  async createSpace(name: string, ownerId: string): Promise<Space> {
+  async createSpace(name: string, ownerId: string, customProtocol?: string): Promise<Space> {
     const randSegment = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-    const authProtocol = `SPACE-${randSegment()}-${randSegment()}`;
+    const authProtocol = customProtocol?.trim() || `SPACE-${randSegment()}-${randSegment()}`;
 
     if (isDemoMode) {
       const spaces = getLocalStorageData<Space[]>('spaces', []);
@@ -411,6 +411,7 @@ export const dbService = {
     if (error) throw new Error(error.message);
     return data;
   },
+
 
   async inviteSecondGroupToSpace(spaceId: string, guestSpaceAuthProtocol: string): Promise<Space> {
     if (isDemoMode) {
