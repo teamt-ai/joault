@@ -1173,6 +1173,84 @@ body.anonymous-night-mode .tiny-threaded-hole {
   display: none !important;
 }
 
+/* SEARCH PILL IN ANONYMOUS MODE */
+body.anonymous-night-mode .search-pill {
+  background: #141418 !important;
+  border: 1px solid #27272A !important;
+  box-shadow: none !important;
+}
+
+body.anonymous-night-mode .search-pill:focus-within {
+  border-color: #52525B !important;
+}
+
+body.anonymous-night-mode .search-icon {
+  color: #A1A1AA !important;
+  stroke: #A1A1AA !important;
+}
+
+body.anonymous-night-mode .search-input {
+  color: #FFFFFF !important;
+}
+
+body.anonymous-night-mode .search-input::placeholder {
+  color: #71717A !important;
+}
+
+/* TOP PROFILE AVATAR PILL (AN) IN ANONYMOUS MODE */
+body.anonymous-night-mode .user-avatar-pill {
+  background: linear-gradient(135deg, #27272A, #18181C) !important;
+  border: 1px solid #3F3F46 !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+
+body.anonymous-night-mode .user-avatar-pill span,
+body.anonymous-night-mode #user-avatar-text {
+  color: #FFFFFF !important;
+}
+
+/* TWOGROUPS ROTATION BANNER PILL IN ANONYMOUS MODE */
+body.anonymous-night-mode .rotation-info-pill {
+  background: #141418 !important;
+  border: 1px solid #27272A !important;
+  color: #D4D4D8 !important;
+}
+
+body.anonymous-night-mode .rotation-info-pill svg {
+  color: #A1A1AA !important;
+  stroke: #A1A1AA !important;
+}
+
+/* BACK LINKS AND BACK ARROWS IN ANONYMOUS MODE */
+body.anonymous-night-mode .back-link,
+body.anonymous-night-mode .btn-back-link,
+body.anonymous-night-mode .btn-close-view {
+  color: #A1A1AA !important;
+}
+
+body.anonymous-night-mode .back-link:hover,
+body.anonymous-night-mode .btn-back-link:hover {
+  color: #FFFFFF !important;
+}
+
+body.anonymous-night-mode .back-link svg,
+body.anonymous-night-mode .btn-back-link svg {
+  stroke: #FFFFFF !important;
+}
+
+/* COMPOSE CARD COLLAPSED AVATAR */
+body.anonymous-night-mode .compose-collapsed .avatar-circle-sm {
+  background: #27272A !important;
+  border: 1px solid #3F3F46 !important;
+  color: #FFFFFF !important;
+}
+
+body.anonymous-night-mode .compose-collapsed .placeholder-text {
+  color: #71717A !important;
+}
+
+
 
 
 
