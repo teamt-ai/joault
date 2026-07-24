@@ -184,8 +184,33 @@ const PREMIUM_STICKER_PACKS = [
   }
 ];
 
-// THREADED STICKERS DATABASE BY POST ID
-const threadedStickersDB = {};
+// THREADED STICKERS DATABASE BY POST ID (Pre-populated for instant testing on post_1 & tg_1)
+const threadedStickersDB = {
+  post_1: [
+    {
+      sticker: { id: 'p1_1', name: 'Royal Crown', content: '👑' },
+      pack: { id: 'pack_1', name: 'Emoji Gold', type: 'emoji' },
+      timestamp: Date.now()
+    },
+    {
+      sticker: { id: 'p1_2', name: 'Diamond Core', content: '💎' },
+      pack: { id: 'pack_1', name: 'Emoji Gold', type: 'emoji' },
+      timestamp: Date.now()
+    }
+  ],
+  tg_1: [
+    {
+      sticker: { id: 'p1_1', name: 'Royal Crown', content: '👑' },
+      pack: { id: 'pack_1', name: 'Emoji Gold', type: 'emoji' },
+      timestamp: Date.now()
+    },
+    {
+      sticker: { id: 'p3_1', name: 'Bitcoin Gold', content: 'https://raw.githubusercontent.com/spothit/public-assets/main/crypto_btc.png' },
+      pack: { id: 'pack_3', name: 'Web3 & Crypto', type: 'image' },
+      timestamp: Date.now()
+    }
+  ]
+};
 
 // GLOBAL ACTIVE STATE
 let activeStickerPostId = null;
@@ -200,9 +225,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Attach secret hotzone to cards
   setupSecretStickerHotzones();
 
-  // Middle-of-Screen Observer for Threaded Stickers (6 Minutes Stay)
+  // Middle-of-Screen Observer for Threaded Stickers
   setupStickerMiddleScreenObserver();
 });
+
 
 // CREATE DRAWER MODAL DOM STRUCTURE (REGION A & REGION B)
 function createStickerDrawerModalHTML() {
@@ -443,13 +469,11 @@ function triggerTikTokGiftAnimation(sticker, pack) {
   }, 360000); // 6 Minutes!
 }
 
-// SCROLL TO MIDDLE OF SCREEN OBSERVER FOR THREADED STICKERS (6 MINUTES)
+// SCROLL TO MIDDLE OF SCREEN OBSERVER FOR THREADED STICKERS (EVERY TIME MESSAGE REACHES MIDDLE OF SCREEN)
 function setupStickerMiddleScreenObserver() {
   if (!('IntersectionObserver' in window)) return;
 
   if (stickerMiddleObserver) stickerMiddleObserver.disconnect();
-
-  const triggeredPostsSet = new Set();
 
   stickerMiddleObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -457,25 +481,26 @@ function setupStickerMiddleScreenObserver() {
       const postId = cardBox.dataset.postId;
 
       if (entry.isIntersecting) {
-        // When card reaches MIDDLE of screen
-        if (postId && threadedStickersDB[postId] && threadedStickersDB[postId].length > 0 && !triggeredPostsSet.has(postId)) {
-          triggeredPostsSet.add(postId);
+        if (postId && threadedStickersDB[postId] && threadedStickersDB[postId].length > 0) {
+          if (!cardBox.dataset.stickerPlaying) {
+            cardBox.dataset.stickerPlaying = 'true';
 
-          // Play all threaded stickers for this post!
-          threadedStickersDB[postId].forEach((item, index) => {
-            setTimeout(() => {
-              triggerTikTokGiftAnimation(item.sticker, item.pack);
-            }, index * 800);
-          });
+            // Play all threaded stickers for this post!
+            threadedStickersDB[postId].forEach((item, index) => {
+              setTimeout(() => {
+                triggerTikTokGiftAnimation(item.sticker, item.pack);
+              }, index * 800);
+            });
+          }
         }
       } else {
-        // Reset when scrolled out of view so it triggers again when scrolled back to middle!
-        if (postId) triggeredPostsSet.delete(postId);
+        delete cardBox.dataset.stickerPlaying;
       }
     });
-  }, { rootMargin: '-35% 0px -35% 0px', threshold: 0.1 });
+  }, { rootMargin: '-30% 0px -30% 0px', threshold: 0.1 });
 
   // Observe all cards
   const cardBoxes = document.querySelectorAll('.post-card-box, .twogroup-card-box');
   cardBoxes.forEach(card => stickerMiddleObserver.observe(card));
 }
+
