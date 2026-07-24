@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joault Multi-Group Feed - #two-groups</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="space.css">
+  <link rel="stylesheet" href="twogroups.css">
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="space-body twogroups-body">
+
+  <!-- TOP APP HEADER -->
+  <header class="space-header">
+    <div class="space-header-container">
+      
+      <!-- LEFT BRAND & SPACE TITLE -->
+      <div class="header-left">
+        <a href="space.html" class="back-link" title="Back to Single Space Feed">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <div class="brand-badge">
+          <span class="brand-square">J</span>
+          <span class="brand-name">joault</span>
+        </div>
+      </div>
+
+      <!-- RIGHT SEARCH & USER AVATAR -->
+      <div class="header-right">
+        <div class="search-pill">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Search" class="search-input">
+        </div>
+
+        <div class="user-avatar-pill">
+          <span>AN</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SUB-HEADER SPACE METADATA & NAV TABS -->
+    <div class="space-subheader-container">
+      <div class="space-meta-row">
+        <h1 class="space-name-tag">#two-groups</h1>
+        <span class="space-members-count">· 2,480 members across 2 connected groups</span>
+      </div>
+
+      <!-- NAV TABS -->
+      <nav class="space-nav-tabs">
+        <a href="space.html" class="tab-item">Feed</a>
+        <a href="twogroups.html" class="tab-item active">Groups (2)</a>
+        <a href="#" class="tab-item">Explore</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN DUAL GROUPS FEED CONTAINER -->
+  <main class="space-main">
+    <div class="feed-wrapper">
+
+      <!-- ROTATION SPEED BANNER -->
+      <div class="rotation-info-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Live connected thread: replies auto-rotate every 3 seconds (Swipe right for all 8 replies)</span>
+      </div>
+
+      <!-- DUAL GROUPS FEED CONTAINER (POPULATED DYNAMICALLY BY JS) -->
+      <div id="twogroups-posts-container" class="feed-posts-list">
+        <!-- Message card boxes with S-curve line layout rendered here -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FLOATING HELP BUTTON -->
+  <button type="button" id="btn-twogroups-help" class="floating-help-btn" title="Help & Info">?</button>
+
+  <!-- JavaScript File -->
+  <script src="twogroups.js"></script>
+</body>
+</html>
