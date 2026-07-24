@@ -48,14 +48,14 @@ export default function JoaultAuthPage() {
     try {
       if (activeTab === 'signup') {
         const userNm = username.trim() || email.split('@')[0];
-        const res = await dbService.signUp(userNm, email);
+        const res = await dbService.signUp(userNm, email, password);
         if (res.success) {
           router.push('/dashboard');
         } else {
           setError(res.error || 'Signup failed.');
         }
       } else {
-        const res = await dbService.login(email);
+        const res = await dbService.login(email, password);
         if (res.success) {
           router.push('/dashboard');
         } else {
@@ -73,7 +73,7 @@ export default function JoaultAuthPage() {
     setGoogleLoading(true);
     setError(null);
     try {
-      const res = await dbService.login('demo_user@gmail.com');
+      const res = await dbService.loginWithGoogle();
       if (res.success) {
         router.push('/dashboard');
       } else {
@@ -85,6 +85,7 @@ export default function JoaultAuthPage() {
       setGoogleLoading(false);
     }
   };
+
 
   return (
     <div className="auth-container">
