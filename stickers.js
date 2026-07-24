@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// CREATE DRAWER MODAL DOM STRUCTURE (REGION A & REGION B)
+// CREATE DRAWER MODAL DOM STRUCTURE (GOOGLE & X CLASS CENTERED FLOATING SHEET)
 function createStickerDrawerModalHTML() {
   if (document.getElementById('sticker-drawer-modal')) return;
 
@@ -239,26 +239,35 @@ function createStickerDrawerModalHTML() {
   modal.className = 'sticker-drawer-modal';
 
   modal.innerHTML = `
-    <button type="button" class="btn-close-sticker-drawer" onclick="closeStickerDrawer()" title="Close">&times;</button>
-
-    <!-- REGION A: LEFT SIDE (1 COLUMN x 4 ROWS SCROLLABLE PACKS) -->
-    <div class="sticker-region-a">
-      <div class="region-title-a">
-        <span>🎁 Premium Packs</span>
+    <div class="sticker-picker-card">
+      <!-- HEADER BAR -->
+      <div class="picker-header-bar">
+        <div class="picker-brand-title">
+          <div class="picker-crown-icon">👑</div>
+          <div>
+            <h3>Premium Stickers</h3>
+            <p>Tap any sticker to thread to message</p>
+          </div>
+        </div>
+        <div class="picker-header-actions">
+          <span class="vip-badge-pill">✨ VIP Vault</span>
+          <button type="button" class="btn-close-sticker-drawer" onclick="closeStickerDrawer()" title="Close">&times;</button>
+        </div>
       </div>
-      <div class="packs-column-scroll" id="packs-column-container">
+
+      <!-- HORIZONTAL PACK CATEGORY PILL TABS (GOOGLE & X STYLE) -->
+      <div class="picker-category-tabs-row" id="packs-column-container">
         <!-- Rendered via JS -->
       </div>
-    </div>
 
-    <!-- REGION B: RIGHT SIDE (3 COLUMNS x 8 ROWS SCROLLABLE STICKER GRID) -->
-    <div class="sticker-region-b">
-      <div class="region-title-b">
-        <span id="region-b-pack-name">Emoji Gold</span>
-        <span style="font-size: 0.75rem; color: #D9A273; font-weight: 500;">Tap to thread sticker</span>
-      </div>
-      <div class="stickers-grid-scroll" id="stickers-grid-container">
+      <!-- MAIN STICKERS GRID VIEWPORT -->
+      <div class="picker-grid-viewport" id="stickers-grid-container">
         <!-- Rendered via JS -->
+      </div>
+
+      <!-- FOOTER HINT BAR -->
+      <div class="picker-footer-bar">
+        <span>⚡ 3s TikTok Gift Animation + 2x/3x Stack Badges</span>
       </div>
     </div>
   `;
@@ -336,7 +345,7 @@ function closeStickerDrawer() {
   if (modal) modal.classList.remove('active');
 }
 
-// RENDER REGION A: 5 PACKS (1 COLUMN x 4 ROWS SCROLLABLE)
+// RENDER HORIZONTAL PACK CATEGORY PILLS (GOOGLE & X STYLE)
 function renderRegionAPacks() {
   const container = document.getElementById('packs-column-container');
   if (!container) return;
@@ -345,34 +354,29 @@ function renderRegionAPacks() {
 
   PREMIUM_STICKER_PACKS.forEach(pack => {
     const isSelected = pack.id === activeSelectedPackId;
-    const card = document.createElement('div');
-    card.className = `pack-card-item ${isSelected ? 'selected' : ''}`;
-    card.onclick = () => {
+    const tabPill = document.createElement('div');
+    tabPill.className = `pack-tab-pill ${isSelected ? 'selected' : ''}`;
+    tabPill.onclick = () => {
       activeSelectedPackId = pack.id;
       renderRegionAPacks();
       renderRegionBStickers();
     };
 
-    card.innerHTML = `
-      <div class="pack-icon-box">${pack.icon}</div>
-      <div class="pack-meta-info">
-        <span class="pack-name-text">${pack.name}</span>
-        <span class="pack-count-badge">${pack.count}</span>
-      </div>
+    tabPill.innerHTML = `
+      <span class="pack-tab-icon">${pack.icon}</span>
+      <span>${pack.name}</span>
     `;
 
-    container.appendChild(card);
+    container.appendChild(tabPill);
   });
 }
 
-// RENDER REGION B: 27 STICKERS GRID (3 COLUMNS x 8 ROWS SCROLLABLE)
+// RENDER STICKERS GRID (GOOGLE & X HIGH-DENSITY GRID)
 function renderRegionBStickers() {
   const container = document.getElementById('stickers-grid-container');
-  const nameLabel = document.getElementById('region-b-pack-name');
   if (!container) return;
 
   const currentPack = PREMIUM_STICKER_PACKS.find(p => p.id === activeSelectedPackId) || PREMIUM_STICKER_PACKS[0];
-  if (nameLabel) nameLabel.textContent = `${currentPack.name} Pack`;
 
   container.innerHTML = '';
 
@@ -398,6 +402,7 @@ function renderRegionBStickers() {
     container.appendChild(tile);
   });
 }
+
 
 // THREAD STICKER TO MESSAGE & TRIGGER TIKTOK GIFT ANIMATION
 function threadStickerToPost(postId, sticker, pack) {
