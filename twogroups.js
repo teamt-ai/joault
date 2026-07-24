@@ -156,20 +156,14 @@ function renderConnectedSLineView(post) {
 
       <!-- FOOTER ACTION BAR -->
       <div class="twogroup-card-footer">
-        <div class="swipe-hints-row" style="margin: 0; padding: 0;">
-          <span>👉 Swipe right (or tap button) for all ${replies.length} replies</span>
+        <div class="swipe-hints-row" style="margin: 0; padding: 0; width: 100%;">
+          <span>👉 Swipe right to view all ${replies.length} replies (8 at a time)</span>
         </div>
-        <button type="button" class="btn-view-all-replies" onclick="switchTwoGroupView('${post.id}', 'comments')">
-          <span>All Replies (8 at a time)</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
       </div>
-
     </div>
   `;
 }
+
 
 // 2. RENDER FULL COMMENTS VIEW (SWIPE RIGHT RESULT - 8 AT A TIME)
 function renderFullCommentsView(post) {
