@@ -633,9 +633,34 @@ function triggerFloatingEmojiBurst(cardElement, emoji, count) {
   }, 3000);
 }
 
+// Render Feed
+function renderTwoGroupsFeed() {
+  container.innerHTML = '';
+
+  twogroupsPostsData.forEach(post => {
+    const cardBox = document.createElement('div');
+    cardBox.className = `twogroup-card-box ${post.teamKey}`;
+    cardBox.dataset.postId = post.id;
+
+    if (post.viewState === 'comments') {
+      cardBox.innerHTML = renderFullCommentsView(post);
+    } else {
+      cardBox.innerHTML = renderConnectedSLineView(post);
+    }
+
+    container.appendChild(cardBox);
+    setupDoubleTapAndSwipeTwoGroups(cardBox, post);
+  });
+
+  // Re-observe all rendered cards for scroll-into-view emoji reaction popups
+  setupTwoGroupsScrollObserver();
+}
+
 // SCROLL-INTO-VIEW OBSERVER FOR TWOGROUPS: Pops up sent emojis EVERY TIME someone scrolls to a message card!
 function setupTwoGroupsScrollObserver() {
   if (!('IntersectionObserver' in window)) return;
+
+  if (twoGroupsScrollObserver) twoGroupsScrollObserver.disconnect();
 
   twoGroupsScrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -645,15 +670,21 @@ function setupTwoGroupsScrollObserver() {
 
       if (entry.isIntersecting) {
         if (post && post.reactions && Object.keys(post.reactions).length > 0) {
-          showScrollReactionPopup(cardBox, post.reactions);
+          if (!cardBox.querySelector('.scroll-reaction-popup')) {
+            showScrollReactionPopup(cardBox, post.reactions);
+          }
         }
       } else {
         const existing = cardBox.querySelector('.scroll-reaction-popup');
         if (existing) existing.remove();
       }
     });
-  }, { threshold: 0.35 });
+  }, { threshold: 0.05 });
+
+  const cardBoxes = document.querySelectorAll('.twogroup-card-box');
+  cardBoxes.forEach(card => twoGroupsScrollObserver.observe(card));
 }
+
 
 // Show 3-Second Scroll Reaction Popup
 function showScrollReactionPopup(cardBox, reactions) {

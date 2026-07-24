@@ -314,13 +314,12 @@ function renderFeed() {
 
     // Setup Double Tap Reaction & Swipe Gestures
     setupDoubleTapAndSwipe(cardBox, post);
-
-    // Observe element for scroll-into-view emoji reaction popups
-    if (scrollObserver) {
-      scrollObserver.observe(cardBox);
-    }
   });
+
+  // Re-observe all rendered cards for scroll-into-view emoji reaction popups
+  setupScrollReactionObserver();
 }
+
 
 // 1. DEFAULT POST VIEW HTML (ONLY '289 comments' IN BOTTOM RIGHT CORNER)
 function renderDefaultView(post) {
@@ -608,6 +607,8 @@ function triggerFloatingEmojiBurst(cardElement, emoji, count) {
 function setupScrollReactionObserver() {
   if (!('IntersectionObserver' in window)) return;
 
+  if (scrollObserver) scrollObserver.disconnect();
+
   scrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const cardBox = entry.target;
@@ -616,14 +617,19 @@ function setupScrollReactionObserver() {
 
       if (entry.isIntersecting) {
         if (post && post.reactions && Object.keys(post.reactions).length > 0) {
-          showScrollReactionPopup(cardBox, post.reactions);
+          if (!cardBox.querySelector('.scroll-reaction-popup')) {
+            showScrollReactionPopup(cardBox, post.reactions);
+          }
         }
       } else {
         const existing = cardBox.querySelector('.scroll-reaction-popup');
         if (existing) existing.remove();
       }
     });
-  }, { threshold: 0.35 });
+  }, { threshold: 0.05 });
+
+  const cardBoxes = document.querySelectorAll('.post-card-box');
+  cardBoxes.forEach(card => scrollObserver.observe(card));
 }
 
 // Show 3-Second Floating Reaction Strip when scrolling into view
@@ -646,6 +652,7 @@ function showScrollReactionPopup(cardBox, reactions) {
     if (popup.parentNode) popup.remove();
   }, 3000);
 }
+
 
 
 // Switch Card View
