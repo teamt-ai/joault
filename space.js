@@ -355,16 +355,17 @@ function addComment(postId) {
   }
 }
 
-// SWIPE GESTURE IMPLEMENTATION (Mobile Touch & Mouse Drag)
+// SWIPE GESTURE IMPLEMENTATION (Touch Swipe & Desktop Mouse Drag)
 function setupCardSwipeGestures(cardElement, post) {
   let startX = 0;
   let currentX = 0;
   let isDragging = false;
 
-  // Touch Events
+  // 1. TOUCH EVENTS (Mobile / Tablet)
   cardElement.addEventListener('touchstart', (e) => {
     if (e.target.closest('button, input, textarea, a')) return;
     startX = e.touches[0].clientX;
+    currentX = startX;
     isDragging = true;
   }, { passive: true });
 
@@ -373,31 +374,70 @@ function setupCardSwipeGestures(cardElement, post) {
     currentX = e.touches[0].clientX;
     const deltaX = currentX - startX;
 
-    // Apply smooth dragging effect
-    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 120) {
+    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
       cardElement.classList.add('swiping');
-      cardElement.style.transform = `translateX(${deltaX * 0.4}px)`;
+      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
     }
   }, { passive: true });
 
-  cardElement.addEventListener('touchend', (e) => {
+  cardElement.addEventListener('touchend', () => {
     if (!isDragging) return;
     isDragging = false;
     cardElement.classList.remove('swiping');
     cardElement.style.transform = '';
 
     const deltaX = currentX - startX;
-    if (deltaX < -50) {
-      // Swiped Left -> Reply View!
-      switchCardView(post.id, 'reply');
-    } else if (deltaX > 50) {
-      // Swiped Right -> Comments View!
+    if (deltaX > 40) {
+      // Swipe Right -> Show Comments View (8 at a time)!
       switchCardView(post.id, 'comments');
+    } else if (deltaX < -40) {
+      // Swipe Left -> Show Reply View!
+      switchCardView(post.id, 'reply');
+    }
+    startX = 0;
+    currentX = 0;
+  });
+
+  // 2. MOUSE DRAG EVENTS (Desktop Browsers)
+  cardElement.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button, input, textarea, a')) return;
+    startX = e.clientX;
+    currentX = startX;
+    isDragging = true;
+    cardElement.style.cursor = 'grabbing';
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    currentX = e.clientX;
+    const deltaX = currentX - startX;
+
+    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
+      cardElement.classList.add('swiping');
+      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    cardElement.style.cursor = '';
+    cardElement.classList.remove('swiping');
+    cardElement.style.transform = '';
+
+    const deltaX = currentX - startX;
+    if (deltaX > 40) {
+      // Mouse Drag Right -> Show Comments View (8 at a time)!
+      switchCardView(post.id, 'comments');
+    } else if (deltaX < -40) {
+      // Mouse Drag Left -> Show Reply View!
+      switchCardView(post.id, 'reply');
     }
     startX = 0;
     currentX = 0;
   });
 }
+
 
 // Setup Composer ("What's on your mind?")
 function setupComposer() {
