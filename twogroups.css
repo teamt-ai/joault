@@ -321,3 +321,71 @@
   background-color: rgba(54, 28, 16, 0.75);
   border: 1px solid rgba(224, 163, 112, 0.35);
 }
+
+/* CUSTOM WEBSITE DOUBLE-TAP EMOJI REACTION PICKER */
+.emoji-picker-box {
+  position: absolute;
+  top: -2.75rem;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background-color: rgba(35, 18, 9, 0.96);
+  border: 1px solid var(--space-gold-bright);
+  border-radius: 9999px;
+  padding: 0.35rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(197, 155, 115, 0.25);
+  backdrop-filter: blur(12px);
+  z-index: 60;
+  animation: pickerPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pickerPop {
+  to { transform: translateX(-50%) scale(1); }
+}
+
+.emoji-option-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 9999px;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.emoji-option-btn:hover {
+  transform: scale(1.4);
+}
+
+/* 3-SECOND BEAUTIFUL FLOATING EMOJI REACTION BURST */
+.floating-emoji-burst {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, rgba(45, 23, 11, 0.95), rgba(75, 42, 22, 0.95));
+  border: 1px solid var(--space-gold-bright);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(197, 155, 115, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+  z-index: 100;
+  animation: floatPopFade 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.burst-emoji {
+  font-size: 1.75rem;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+}
+
+.burst-count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--space-cream);
+}
+

@@ -1,6 +1,5 @@
-// Joault Space Feed & Interactive Card Box Implementation
+// Joault Space Feed & Interactive Card Box Implementation with Double-Tap Emoji Reactions
 
-// Initial Sample Posts Data (matching user's design screenshots)
 const postsData = [
   {
     id: 'post_1',
@@ -11,7 +10,8 @@ const postsData = [
     commentsCount: 289,
     liked: false,
     viewState: 'default', // 'default' | 'reply' | 'comments'
-    commentsPage: 1
+    commentsPage: 1,
+    reactions: { '🔥': 12, '❤️': 45, '🚀': 8 }
   },
   {
     id: 'post_2',
@@ -22,7 +22,8 @@ const postsData = [
     commentsCount: 312,
     liked: false,
     viewState: 'default',
-    commentsPage: 1
+    commentsPage: 1,
+    reactions: { '💯': 24, '👏': 18, '🔥': 32 }
   },
   {
     id: 'post_3',
@@ -33,7 +34,8 @@ const postsData = [
     commentsCount: 134,
     liked: false,
     viewState: 'default',
-    commentsPage: 1
+    commentsPage: 1,
+    reactions: { '❤️': 64, '💡': 15, '🚀': 21 }
   },
   {
     id: 'post_4',
@@ -44,67 +46,62 @@ const postsData = [
     commentsCount: 88,
     liked: false,
     viewState: 'default',
-    commentsPage: 1
+    commentsPage: 1,
+    reactions: { '💡': 9, '👍': 14 }
   }
 ];
 
-// Generate sample comments database (16+ comments per post for 8-at-a-time pagination)
+// Available Custom Website Emojis
+const AVAILABLE_EMOJIS = ['❤️', '🔥', '👍', '👏', '🚀', '😂', '💡', '🎉', '💯'];
+
+// Comments Database
 const commentsDatabase = {
   post_1: [
     { id: 'c1', author: 'Chidi Eze', avatar: 'CE', time: '3h', text: "Real question: how do we move from conversation to coordinated action? That's where I keep getting stuck.", likes: 130 },
     { id: 'c2', author: 'Amara Nwosu', avatar: 'AN', time: '3h 45m', text: "The historical parallel here is sharper than most people realize. We've been here before.", likes: 140 },
     { id: 'c3', author: 'Kofi Mensah', avatar: 'KM', time: '4h', text: "I'd push back slightly — the conditions aren't the same. Context matters enormously.", likes: 77 },
-    { id: 'c4', author: 'Tunde O.', avatar: 'TO', time: '4h 10m', text: "Stable electricity alone determines whether an engineer can deliver or get fired. It's a real issue.", likes: 92 },
-    { id: 'c5', author: 'Sara M.', avatar: 'SM', time: '4h 25m', text: "Co-working hubs with backup power are helping, but infrastructure needs to catch up nationwide.", likes: 45 },
+    { id: 'c4', author: 'Tunde O.', avatar: 'TO', time: '4h 10m', text: "Stable electricity alone determines whether an engineer can deliver or get fired.", likes: 92 },
+    { id: 'c5', author: 'Sara M.', avatar: 'SM', time: '4h 25m', text: "Co-working hubs with backup power are helping, but infrastructure needs to catch up.", likes: 45 },
     { id: 'c6', author: 'DevKev', avatar: 'DK', time: '4h 30m', text: "Starlink and solar batteries are becoming essential dev gear nowadays.", likes: 112 },
     { id: 'c7', author: 'Nneka A.', avatar: 'NA', time: '4h 45m', text: "Spot on Kofi! Networking offline still plays a massive role in opening remote doors.", likes: 64 },
     { id: 'c8', author: 'Farouk B.', avatar: 'FB', time: '5h', text: "We need more decentralized remote hubs across smaller cities to level this out.", likes: 58 },
     { id: 'c9', author: 'Grace E.', avatar: 'GE', time: '5h 15m', text: "Camera setups are secondary compared to internet reliability IMO.", likes: 33 },
-    { id: 'c10', author: 'Liam K.', avatar: 'LK', time: '5h 30m', text: "Agreed. Async work async protocols help offset timezone and connectivity gaps.", likes: 81 },
-    { id: 'c11', author: 'Yusuf S.', avatar: 'YS', time: '5h 40m', text: "Great points all around. Infrastructure investment is key.", likes: 29 },
-    { id: 'c12', author: 'Maya R.', avatar: 'MR', time: '5h 50m', text: "Community mentorship programs can bridge the network gap significantly.", likes: 42 },
-    { id: 'c13', author: 'David O.', avatar: 'DO', time: '6h', text: "Building local tech hubs is the real long term fix.", likes: 37 },
-    { id: 'c14', author: 'Zoe P.', avatar: 'ZP', time: '6h 15m', text: "Valid perspective Kofi. Thanks for highlighting this.", likes: 19 },
-    { id: 'c15', author: 'Ibrahim H.', avatar: 'IH', time: '6h 30m', text: "Capital allocation to remote enablers is growing rapidly.", likes: 51 },
-    { id: 'c16', author: 'Rita B.', avatar: 'RB', time: '6h 45m', text: "Couldn't agree more with this thread!", likes: 24 }
+    { id: 'c10', author: 'Yusuf S.', avatar: 'YS', time: '5h 40m', text: "Great points all around. Infrastructure investment is key.", likes: 29 }
   ],
   post_3: [
     { id: 'c101', author: 'Chidi Eze', avatar: 'CE', time: '3h', text: "Real question: how do we move from conversation to coordinated action? That's where I keep getting stuck.", likes: 130 },
     { id: 'c102', author: 'Amara Nwosu', avatar: 'AN', time: '3h 45m', text: "The historical parallel here is sharper than most people realize. We've been here before.", likes: 140 },
     { id: 'c103', author: 'Kofi Mensah', avatar: 'KM', time: '4h', text: "I'd push back slightly — the conditions aren't the same. Context matters enormously.", likes: 77 },
-    { id: 'c104', author: 'Zara Ahmed', avatar: 'ZA', time: '4h 15m', text: "Infrastructure first, applications follow. We're at a pivotal moment.", likes: 63 },
-    { id: 'c105', author: 'Paul K.', avatar: 'PK', time: '4h 30m', text: "Venture capital inflow has tripled in the past 3 years.", likes: 89 },
-    { id: 'c106', author: 'Linda M.', avatar: 'LM', time: '4h 45m', text: "Local solutions for local challenges — that's the superpower.", likes: 104 },
-    { id: 'c107', author: 'Samuel O.', avatar: 'SO', time: '5h', text: "The next tech unicorns will emerge right here.", likes: 115 },
-    { id: 'c108', author: 'Evelyn W.', avatar: 'EW', time: '5h 15m', text: "Exciting times ahead for African tech builders!", likes: 47 },
-    { id: 'c109', author: 'Michael T.', avatar: 'MT', time: '5h 30m', text: "Engineering talent here is world-class.", likes: 72 }
+    { id: 'c104', author: 'Zara Ahmed', avatar: 'ZA', time: '4h 15m', text: "Infrastructure first, applications follow. We're at a pivotal moment.", likes: 63 }
   ]
 };
 
-// Fill fallback comments for other posts dynamically
+// Fallback comments
 postsData.forEach(p => {
   if (!commentsDatabase[p.id]) {
     commentsDatabase[p.id] = commentsDatabase.post_1;
   }
 });
 
-// DOM Elements
+// DOM Elements & Observers
 const feedPostsContainer = document.getElementById('feed-posts-container');
 const composeCollapsed = document.getElementById('compose-collapsed');
-const composeExpanded = document.getElementById('compose-expanded');
 const formCreatePost = document.getElementById('form-create-post');
 const postTextarea = document.getElementById('post-textarea');
 const btnCancelPost = document.getElementById('btn-cancel-post');
 const postCharCount = document.getElementById('post-char-count');
 const btnSpaceHelp = document.getElementById('btn-space-help');
 
+let scrollObserver = null;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   renderFeed();
   setupComposer();
+  setupScrollReactionObserver();
 });
 
-// Render Main Feed
+// Render Feed
 function renderFeed() {
   feedPostsContainer.innerHTML = '';
 
@@ -113,7 +110,6 @@ function renderFeed() {
     cardBox.className = 'post-card-box';
     cardBox.dataset.postId = post.id;
 
-    // Render depending on card viewState ('default' | 'reply' | 'comments')
     if (post.viewState === 'reply') {
       cardBox.innerHTML = renderReplyView(post);
     } else if (post.viewState === 'comments') {
@@ -124,12 +120,17 @@ function renderFeed() {
 
     feedPostsContainer.appendChild(cardBox);
 
-    // Attach Touch & Drag Swipe Listeners to Card Box
-    setupCardSwipeGestures(cardBox, post);
+    // Setup Double Tap Reaction & Swipe Gestures
+    setupDoubleTapAndSwipe(cardBox, post);
+
+    // Observe element for scroll-into-view emoji reaction popups
+    if (scrollObserver) {
+      scrollObserver.observe(cardBox);
+    }
   });
 }
 
-// 1. DEFAULT POST VIEW HTML
+// 1. DEFAULT POST VIEW HTML (ONLY '289 comments' IN BOTTOM RIGHT CORNER)
 function renderDefaultView(post) {
   return `
     <div class="card-default-view">
@@ -146,7 +147,7 @@ function renderDefaultView(post) {
 
       <div class="post-card-bottom-row">
         <div class="swipe-hints-inline">
-          <span>← swipe right for comments</span>
+          <span>💡 Double tap to react with custom emojis</span>
         </div>
         <button type="button" class="btn-comments-corner" onclick="switchCardView('${post.id}', 'comments')">
           ${post.commentsCount} comments
@@ -156,8 +157,7 @@ function renderDefaultView(post) {
   `;
 }
 
-
-// 2. REPLY VIEW HTML (SWIPE LEFT RESULT)
+// 2. REPLY VIEW HTML
 function renderReplyView(post) {
   const shortSnippet = post.content.length > 70 ? post.content.slice(0, 70) + '...' : post.content;
   return `
@@ -192,7 +192,7 @@ function renderReplyView(post) {
   `;
 }
 
-// 3. COMMENTS VIEW HTML (SWIPE RIGHT RESULT - SHOWS 8 AT A TIME)
+// 3. COMMENTS VIEW HTML (8 AT A TIME)
 function renderCommentsView(post) {
   const allComments = commentsDatabase[post.id] || commentsDatabase.post_1;
   const visibleCount = post.commentsPage * 8;
@@ -254,87 +254,29 @@ function renderCommentsView(post) {
   `;
 }
 
-// Switch Card View ('default' | 'reply' | 'comments')
-function switchCardView(postId, targetView) {
-  const p = postsData.find(item => item.id === postId);
-  if (p) {
-    p.viewState = targetView;
-    renderFeed();
-  }
-}
-
-// Load 8 More Comments
-function loadMoreComments(postId) {
-  const p = postsData.find(item => item.id === postId);
-  if (p) {
-    p.commentsPage += 1;
-    renderFeed();
-  }
-}
-
-// Toggle Like
-function toggleLike(postId) {
-  const p = postsData.find(item => item.id === postId);
-  if (p) {
-    p.liked = !p.liked;
-    p.likes += p.liked ? 1 : -1;
-    renderFeed();
-  }
-}
-
-// Submit Reply Action
-function triggerReplySubmit(postId) {
-  const textarea = document.getElementById(`reply-text-${postId}`);
-  if (textarea && textarea.value.trim()) {
-    submitReplyInternal(postId, textarea.value.trim());
-  }
-}
-
-function submitReply(e, postId) {
-  e.preventDefault();
-  const textarea = document.getElementById(`reply-text-${postId}`);
-  if (textarea && textarea.value.trim()) {
-    submitReplyInternal(postId, textarea.value.trim());
-  }
-}
-
-function submitReplyInternal(postId, replyText) {
-  const p = postsData.find(item => item.id === postId);
-  if (p) {
-    // Append reply comment
-    if (!commentsDatabase[postId]) commentsDatabase[postId] = [];
-    commentsDatabase[postId].unshift({
-      id: 'c_' + Date.now(),
-      author: 'Amara Nwosu',
-      avatar: 'AN',
-      time: 'Just now',
-      text: replyText,
-      likes: 1
-    });
-
-    p.commentsCount += 1;
-    p.viewState = 'comments'; // Automatically open comments view after replying!
-    renderFeed();
-  }
-}
-
-// Add direct comment from input
-function addComment(postId) {
-  const input = document.getElementById(`input-comment-${postId}`);
-  if (input && input.value.trim()) {
-    submitReplyInternal(postId, input.value.trim());
-  }
-}
-
-// SWIPE GESTURE IMPLEMENTATION (Touch Swipe & Desktop Mouse Drag)
-function setupCardSwipeGestures(cardElement, post) {
+// DOUBLE TAP DETECTOR & CUSTOM WEBSITE EMOJI PICKER + SWIPE GESTURES
+function setupDoubleTapAndSwipe(cardElement, post) {
+  let lastTapTime = 0;
   let startX = 0;
   let currentX = 0;
   let isDragging = false;
 
-  // 1. TOUCH EVENTS (Mobile / Tablet)
+  // Double Tap Handler (Touch / Click)
+  cardElement.addEventListener('click', (e) => {
+    if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
+    const now = Date.now();
+    if (now - lastTapTime < 300) {
+      // Double Tap detected! Show website custom emoji reaction bar
+      openWebsiteEmojiPicker(cardElement, post);
+      lastTapTime = 0;
+    } else {
+      lastTapTime = now;
+    }
+  });
+
+  // Touch Swipe
   cardElement.addEventListener('touchstart', (e) => {
-    if (e.target.closest('button, input, textarea, a')) return;
+    if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
     startX = e.touches[0].clientX;
     currentX = startX;
     isDragging = true;
@@ -359,49 +301,8 @@ function setupCardSwipeGestures(cardElement, post) {
 
     const deltaX = currentX - startX;
     if (deltaX > 40) {
-      // Swipe Right -> Show Comments View (8 at a time)!
       switchCardView(post.id, 'comments');
     } else if (deltaX < -40) {
-      // Swipe Left -> Show Reply View!
-      switchCardView(post.id, 'reply');
-    }
-    startX = 0;
-    currentX = 0;
-  });
-
-  // 2. MOUSE DRAG EVENTS (Desktop Browsers)
-  cardElement.addEventListener('mousedown', (e) => {
-    if (e.target.closest('button, input, textarea, a')) return;
-    startX = e.clientX;
-    currentX = startX;
-    isDragging = true;
-    cardElement.style.cursor = 'grabbing';
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    currentX = e.clientX;
-    const deltaX = currentX - startX;
-
-    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
-      cardElement.classList.add('swiping');
-      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
-    }
-  });
-
-  window.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    cardElement.style.cursor = '';
-    cardElement.classList.remove('swiping');
-    cardElement.style.transform = '';
-
-    const deltaX = currentX - startX;
-    if (deltaX > 40) {
-      // Mouse Drag Right -> Show Comments View (8 at a time)!
-      switchCardView(post.id, 'comments');
-    } else if (deltaX < -40) {
-      // Mouse Drag Left -> Show Reply View!
       switchCardView(post.id, 'reply');
     }
     startX = 0;
@@ -409,8 +310,165 @@ function setupCardSwipeGestures(cardElement, post) {
   });
 }
 
+// Open Custom Website Emoji Reaction Bar
+function openWebsiteEmojiPicker(cardElement, post) {
+  const existingPicker = cardElement.querySelector('.emoji-picker-box');
+  if (existingPicker) existingPicker.remove();
 
-// Setup Composer ("What's on your mind?")
+  const pickerBox = document.createElement('div');
+  pickerBox.className = 'emoji-picker-box';
+
+  AVAILABLE_EMOJIS.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'emoji-option-btn';
+    btn.textContent = emoji;
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      addEmojiReaction(post.id, emoji, cardElement);
+      pickerBox.remove();
+    };
+    pickerBox.appendChild(btn);
+  });
+
+  cardElement.appendChild(pickerBox);
+
+  // Auto-remove picker after 4 seconds if no selection made
+  setTimeout(() => {
+    if (pickerBox.parentNode) pickerBox.remove();
+  }, 4000);
+}
+
+// Add Emoji Reaction & Trigger 3-Second Beautiful Floating Burst Animation
+function addEmojiReaction(postId, emoji, cardElement) {
+  const post = postsData.find(p => p.id === postId);
+  if (!post) return;
+
+  if (!post.reactions) post.reactions = {};
+  post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
+
+  // Create 3-Second Animated Floating Burst Pop Up
+  triggerFloatingEmojiBurst(cardElement, emoji, post.reactions[emoji]);
+}
+
+// 3-SECOND BEAUTIFUL ANIMATED FLOATING BURST
+function triggerFloatingEmojiBurst(cardElement, emoji, count) {
+  const burst = document.createElement('div');
+  burst.className = 'floating-emoji-burst';
+  burst.innerHTML = `
+    <span class="burst-emoji">${emoji}</span>
+    <span class="burst-count">${count}</span>
+  `;
+
+  cardElement.appendChild(burst);
+
+  // Automatically vanishes after 3 seconds!
+  setTimeout(() => {
+    if (burst.parentNode) burst.remove();
+  }, 3000);
+}
+
+// SCROLL-INTO-VIEW OBSERVER: Pops up sent emojis for 3 seconds when someone scrolls to a message card!
+function setupScrollReactionObserver() {
+  if (!('IntersectionObserver' in window)) return;
+
+  const triggeredPosts = new Set();
+
+  scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const cardBox = entry.target;
+        const postId = cardBox.dataset.postId;
+        const post = postsData.find(p => p.id === postId);
+
+        if (post && post.reactions && Object.keys(post.reactions).length > 0 && !triggeredPosts.has(postId)) {
+          triggeredPosts.add(postId);
+          showScrollReactionPopup(cardBox, post.reactions);
+        }
+      }
+    });
+  }, { threshold: 0.5 });
+}
+
+// Show 3-Second Floating Reaction Strip when scrolling into view
+function showScrollReactionPopup(cardBox, reactions) {
+  const popup = document.createElement('div');
+  popup.className = 'scroll-reaction-popup';
+
+  const tagsHTML = Object.entries(reactions).map(([emoji, count]) => `
+    <span class="scroll-emoji-tag">${emoji} ${count}</span>
+  `).join('');
+
+  popup.innerHTML = tagsHTML;
+  cardBox.appendChild(popup);
+
+  // Vanishes after 3 seconds!
+  setTimeout(() => {
+    if (popup.parentNode) popup.remove();
+  }, 3000);
+}
+
+// Switch Card View
+function switchCardView(postId, targetView) {
+  const p = postsData.find(item => item.id === postId);
+  if (p) {
+    p.viewState = targetView;
+    renderFeed();
+  }
+}
+
+// Load 8 More Comments
+function loadMoreComments(postId) {
+  const p = postsData.find(item => item.id === postId);
+  if (p) {
+    p.commentsPage += 1;
+    renderFeed();
+  }
+}
+
+// Submit Reply
+function triggerReplySubmit(postId) {
+  const textarea = document.getElementById(`reply-text-${postId}`);
+  if (textarea && textarea.value.trim()) {
+    submitReplyInternal(postId, textarea.value.trim());
+  }
+}
+
+function submitReply(e, postId) {
+  e.preventDefault();
+  const textarea = document.getElementById(`reply-text-${postId}`);
+  if (textarea && textarea.value.trim()) {
+    submitReplyInternal(postId, textarea.value.trim());
+  }
+}
+
+function submitReplyInternal(postId, replyText) {
+  const p = postsData.find(item => item.id === postId);
+  if (p) {
+    if (!commentsDatabase[postId]) commentsDatabase[postId] = [];
+    commentsDatabase[postId].unshift({
+      id: 'c_' + Date.now(),
+      author: 'Amara Nwosu',
+      avatar: 'AN',
+      time: 'Just now',
+      text: replyText,
+      likes: 1
+    });
+
+    p.commentsCount += 1;
+    p.viewState = 'comments';
+    renderFeed();
+  }
+}
+
+function addComment(postId) {
+  const input = document.getElementById(`input-comment-${postId}`);
+  if (input && input.value.trim()) {
+    submitReplyInternal(postId, input.value.trim());
+  }
+}
+
+// Setup Composer
 function setupComposer() {
   composeCollapsed.addEventListener('click', () => {
     composeCollapsed.classList.add('hidden');
@@ -443,7 +501,8 @@ function setupComposer() {
       commentsCount: 0,
       liked: true,
       viewState: 'default',
-      commentsPage: 1
+      commentsPage: 1,
+      reactions: {}
     };
 
     postsData.unshift(newPost);
@@ -457,17 +516,12 @@ function setupComposer() {
   });
 }
 
-// Floating Help Alert
+// Help Alert
 btnSpaceHelp.addEventListener('click', () => {
-  alert('Joault Space Feed Help:\n\n• Swipe Left (or click Reply) on any post box to reply.\n• Swipe Right (or click comments count) on any post box to view comments 8 at a time.');
+  alert('Joault Space Feed Help:\n\n• Double tap any message box to open custom website emoji reactions!\n• Emojis pop up floating on screen for 3 seconds then vanish.\n• When scrolling to a message, reaction numbers pop up on screen for 3 seconds.\n• Swipe Right to view all comments 8 at a time.');
 });
 
-// Helper XSS Escape & Number Format
+// Helpers
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function formatNumber(num) {
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-  return num;
 }

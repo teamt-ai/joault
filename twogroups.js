@@ -1,5 +1,4 @@
-// Joault Two-Groups Feed & 3-Second Auto-Rotating S-Line Card Implementation
-// Distinct Team Brown Shades: Team A (Tech Builders - Dark Espresso) & Team B (Product Creators - Copper Chestnut)
+// Joault Two-Groups Feed & 3-Second Auto-Rotating S-Line Card Implementation with Double-Tap Emoji Reactions
 
 const twogroupsPostsData = [
   {
@@ -14,7 +13,8 @@ const twogroupsPostsData = [
     liked: false,
     viewState: 'default',
     activeReplyIndex: 0,
-    commentsPage: 1
+    commentsPage: 1,
+    reactions: { '🔥': 12, '❤️': 45, '🚀': 8 }
   },
   {
     id: 'tg_2',
@@ -28,7 +28,8 @@ const twogroupsPostsData = [
     liked: false,
     viewState: 'default',
     activeReplyIndex: 0,
-    commentsPage: 1
+    commentsPage: 1,
+    reactions: { '💯': 24, '👏': 18, '🔥': 32 }
   },
   {
     id: 'tg_3',
@@ -42,52 +43,45 @@ const twogroupsPostsData = [
     liked: false,
     viewState: 'default',
     activeReplyIndex: 0,
-    commentsPage: 1
+    commentsPage: 1,
+    reactions: { '❤️': 64, '💡': 15, '🚀': 21 }
   }
 ];
 
-// Rich Replies Database with distinct team attributes for each group
+// Available Custom Website Emojis
+const AVAILABLE_EMOJIS = ['❤️', '🔥', '👍', '👏', '🚀', '😂', '💡', '🎉', '💯'];
+
+// Replies Thread
 const threadRepliesDatabase = {
   tg_1: [
     { id: 'r1', team: 'Product Creators', teamKey: 'team-b', author: 'Chidi Eze', avatar: 'CE', time: '3h', text: "Real question: how do we move from conversation to coordinated action? That's where I keep getting stuck.", likes: 130 },
     { id: 'r2', team: 'Tech Builders', teamKey: 'team-a', author: 'Amara Nwosu', avatar: 'AN', time: '3h 45m', text: "The historical parallel here is sharper than most people realize. We've been here before.", likes: 140 },
     { id: 'r3', team: 'Tech Builders', teamKey: 'team-a', author: 'Kofi Mensah', avatar: 'KM', time: '4h', text: "I'd push back slightly — the conditions aren't the same. Context matters enormously.", likes: 77 },
     { id: 'r4', team: 'Product Creators', teamKey: 'team-b', author: 'Tunde O.', avatar: 'TO', time: '4h 10m', text: "Stable electricity alone determines whether an engineer can deliver or get fired.", likes: 92 },
-    { id: 'r5', team: 'Tech Builders', teamKey: 'team-a', author: 'Sara M.', avatar: 'SM', time: '4h 25m', text: "Co-working hubs with backup power are helping, but infrastructure needs to catch up.", likes: 45 },
-    { id: 'r6', team: 'Product Creators', teamKey: 'team-b', author: 'DevKev', avatar: 'DK', time: '4h 30m', text: "Starlink and solar batteries are becoming essential dev gear nowadays.", likes: 112 },
-    { id: 'r7', team: 'Tech Builders', teamKey: 'team-a', author: 'Nneka A.', avatar: 'NA', time: '4h 45m', text: "Spot on Kofi! Networking offline still plays a massive role in opening remote doors.", likes: 64 },
-    { id: 'r8', team: 'Product Creators', teamKey: 'team-b', author: 'Farouk B.', avatar: 'FB', time: '5h', text: "We need more decentralized remote hubs across smaller cities to level this out.", likes: 58 },
-    { id: 'r9', team: 'Tech Builders', teamKey: 'team-a', author: 'Grace E.', avatar: 'GE', time: '5h 15m', text: "Camera setups are secondary compared to internet reliability IMO.", likes: 33 },
-    { id: 'r10', team: 'Product Creators', teamKey: 'team-b', author: 'Yusuf S.', avatar: 'YS', time: '5h 40m', text: "Great points all around. Infrastructure investment is key.", likes: 29 }
+    { id: 'r5', team: 'Tech Builders', teamKey: 'team-a', author: 'Sara M.', avatar: 'SM', time: '4h 25m', text: "Co-working hubs with backup power are helping, but infrastructure needs to catch up.", likes: 45 }
   ],
   tg_2: [
     { id: 'r101', team: 'Tech Builders', teamKey: 'team-a', author: 'Chidi Eze', avatar: 'CE', time: '3h', text: "Real question: how do we move from conversation to coordinated action? That's where I keep getting stuck.", likes: 130 },
-    { id: 'r102', team: 'Product Creators', teamKey: 'team-b', author: 'Amara Nwosu', avatar: 'AN', time: '3h 45m', text: "The historical parallel here is sharper than most people realize. We've been here before.", likes: 140 },
-    { id: 'r103', team: 'Tech Builders', teamKey: 'team-a', author: 'Kofi Mensah', avatar: 'KM', time: '4h', text: "I'd push back slightly — the conditions aren't the same. Context matters enormously.", likes: 77 },
-    { id: 'r104', team: 'Product Creators', teamKey: 'team-b', author: 'Zara Ahmed', avatar: 'ZA', time: '4h 15m', text: "Infrastructure first, applications follow. We're at a pivotal moment.", likes: 63 },
-    { id: 'r105', team: 'Tech Builders', teamKey: 'team-a', author: 'Paul K.', avatar: 'PK', time: '4h 30m', text: "Venture capital inflow has tripled in the past 3 years.", likes: 89 },
-    { id: 'r106', team: 'Product Creators', teamKey: 'team-b', author: 'Linda M.', avatar: 'LM', time: '4h 45m', text: "Local solutions for local challenges — that's the superpower.", likes: 104 },
-    { id: 'r107', team: 'Tech Builders', teamKey: 'team-a', author: 'Samuel O.', avatar: 'SO', time: '5h', text: "The next tech unicorns will emerge right here.", likes: 115 },
-    { id: 'r108', team: 'Product Creators', teamKey: 'team-b', author: 'Evelyn W.', avatar: 'EW', time: '5h 15m', text: "Exciting times ahead for African tech builders!", likes: 47 },
-    { id: 'r109', team: 'Tech Builders', teamKey: 'team-a', author: 'Michael T.', avatar: 'MT', time: '5h 30m', text: "Engineering talent here is world-class.", likes: 72 }
+    { id: 'r102', team: 'Product Creators', teamKey: 'team-b', author: 'Amara Nwosu', avatar: 'AN', time: '3h 45m', text: "The historical parallel here is sharper than most people realize. We've been here before.", likes: 140 }
   ]
 };
 
-// Fallback for tg_3
 twogroupsPostsData.forEach(p => {
   if (!threadRepliesDatabase[p.id]) {
     threadRepliesDatabase[p.id] = threadRepliesDatabase.tg_1;
   }
 });
 
-// DOM Container
+// DOM Elements
 const container = document.getElementById('twogroups-posts-container');
 let autoRotateTimer = null;
+let twoGroupsScrollObserver = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   renderTwoGroupsFeed();
   startAutoRotationTimer();
+  setupTwoGroupsScrollObserver();
 });
 
 // Render Feed
@@ -106,19 +100,21 @@ function renderTwoGroupsFeed() {
     }
 
     container.appendChild(cardBox);
-    setupTwoGroupCardGestures(cardBox, post);
+    setupDoubleTapAndSwipeTwoGroups(cardBox, post);
+
+    if (twoGroupsScrollObserver) {
+      twoGroupsScrollObserver.observe(cardBox);
+    }
   });
 }
 
-// 1. RENDER CONNECTED S-LINE VIEW (WITH DISTINCT TEAM SHADES)
+// 1. RENDER CONNECTED S-LINE VIEW
 function renderConnectedSLineView(post) {
   const replies = threadRepliesDatabase[post.id] || threadRepliesDatabase.tg_1;
   const currentReply = replies[post.activeReplyIndex % replies.length];
 
   return `
     <div class="card-sline-layout">
-      
-      <!-- TOP ROW: ORIGINAL MESSAGE AT TOP LEFT, ORIGINAL AVATAR AT TOP RIGHT -->
       <div class="sline-top-row">
         <div class="original-sender-info">
           <div class="original-header-line">
@@ -135,14 +131,12 @@ function renderConnectedSLineView(post) {
         </div>
       </div>
 
-      <!-- MIDDLE SVG CONNECTING S-LINE -->
       <div class="sline-svg-container">
         <svg width="100%" height="48" viewBox="0 0 500 48" preserveAspectRatio="none">
           <path d="M 40 4 C 40 44, 460 4, 460 44" class="sline-path ${post.teamKey}-path" />
         </svg>
       </div>
 
-      <!-- BOTTOM ROW: COMMENTER AT BOTTOM LEFT, COMMENT AT BOTTOM RIGHT (3s AUTO ROTATION WITH DISTINCT TEAM SHADE) -->
       <div class="sline-bottom-row ${currentReply.teamKey}-comment-bg" id="bottom-row-${post.id}">
         <div class="commenter-avatar-left">
           <div class="commenter-avatar-circle ${currentReply.teamKey}-avatar">${currentReply.avatar}</div>
@@ -162,18 +156,16 @@ function renderConnectedSLineView(post) {
         </div>
       </div>
 
-      <!-- FOOTER ACTION BAR -->
       <div class="twogroup-card-footer">
         <div class="swipe-hints-row" style="margin: 0; padding: 0; width: 100%;">
-          <span>👉 Swipe right to view all ${replies.length} replies (8 at a time)</span>
+          <span>👉 Double tap to react | Swipe right for all ${replies.length} replies</span>
         </div>
       </div>
-
     </div>
   `;
 }
 
-// 2. RENDER FULL COMMENTS VIEW (SWIPE RIGHT RESULT - WITH OPPOSITE TEAM SHADES)
+// 2. RENDER FULL COMMENTS VIEW
 function renderFullCommentsView(post) {
   const allReplies = threadRepliesDatabase[post.id] || threadRepliesDatabase.tg_1;
   const visibleCount = post.commentsPage * 8;
@@ -238,7 +230,154 @@ function renderFullCommentsView(post) {
   `;
 }
 
-// 3-SECOND AUTOMATIC COMMENT ROTATION TIMER (WITH TEAM SHADE TRANSITIONS)
+// DOUBLE TAP DETECTOR & SWIPE GESTURES FOR TWOGROUPS
+function setupDoubleTapAndSwipeTwoGroups(cardElement, post) {
+  let lastTapTime = 0;
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+
+  // Double Tap Handler
+  cardElement.addEventListener('click', (e) => {
+    if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
+    const now = Date.now();
+    if (now - lastTapTime < 300) {
+      openWebsiteEmojiPicker(cardElement, post);
+      lastTapTime = 0;
+    } else {
+      lastTapTime = now;
+    }
+  });
+
+  // Touch
+  cardElement.addEventListener('touchstart', (e) => {
+    if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
+    startX = e.touches[0].clientX;
+    currentX = startX;
+    isDragging = true;
+  }, { passive: true });
+
+  cardElement.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    currentX = e.touches[0].clientX;
+    const deltaX = currentX - startX;
+
+    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
+      cardElement.classList.add('swiping');
+      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
+    }
+  }, { passive: true });
+
+  cardElement.addEventListener('touchend', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    cardElement.classList.remove('swiping');
+    cardElement.style.transform = '';
+
+    const deltaX = currentX - startX;
+    if (deltaX > 40) {
+      switchTwoGroupView(post.id, 'comments');
+    }
+    startX = 0;
+    currentX = 0;
+  });
+}
+
+// Open Website Emoji Picker Bar
+function openWebsiteEmojiPicker(cardElement, post) {
+  const existingPicker = cardElement.querySelector('.emoji-picker-box');
+  if (existingPicker) existingPicker.remove();
+
+  const pickerBox = document.createElement('div');
+  pickerBox.className = 'emoji-picker-box';
+
+  AVAILABLE_EMOJIS.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'emoji-option-btn';
+    btn.textContent = emoji;
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      addEmojiReactionTwoGroups(post.id, emoji, cardElement);
+      pickerBox.remove();
+    };
+    pickerBox.appendChild(btn);
+  });
+
+  cardElement.appendChild(pickerBox);
+
+  setTimeout(() => {
+    if (pickerBox.parentNode) pickerBox.remove();
+  }, 4000);
+}
+
+// Add Emoji Reaction & Trigger 3-Second Burst
+function addEmojiReactionTwoGroups(postId, emoji, cardElement) {
+  const post = twogroupsPostsData.find(p => p.id === postId);
+  if (!post) return;
+
+  if (!post.reactions) post.reactions = {};
+  post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
+
+  triggerFloatingEmojiBurst(cardElement, emoji, post.reactions[emoji]);
+}
+
+// 3-SECOND BEAUTIFUL ANIMATED FLOATING BURST
+function triggerFloatingEmojiBurst(cardElement, emoji, count) {
+  const burst = document.createElement('div');
+  burst.className = 'floating-emoji-burst';
+  burst.innerHTML = `
+    <span class="burst-emoji">${emoji}</span>
+    <span class="burst-count">${count}</span>
+  `;
+
+  cardElement.appendChild(burst);
+
+  setTimeout(() => {
+    if (burst.parentNode) burst.remove();
+  }, 3000);
+}
+
+// SCROLL-INTO-VIEW OBSERVER FOR TWOGROUPS
+function setupTwoGroupsScrollObserver() {
+  if (!('IntersectionObserver' in window)) return;
+
+  const triggeredPosts = new Set();
+
+  twoGroupsScrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const cardBox = entry.target;
+        const postId = cardBox.dataset.postId;
+        const post = twogroupsPostsData.find(p => p.id === postId);
+
+        if (post && post.reactions && Object.keys(post.reactions).length > 0 && !triggeredPosts.has(postId)) {
+          triggeredPosts.add(postId);
+          showScrollReactionPopup(cardBox, post.reactions);
+        }
+      }
+    });
+  }, { threshold: 0.5 });
+}
+
+// Show 3-Second Scroll Reaction Popup
+function showScrollReactionPopup(cardBox, reactions) {
+  const popup = document.createElement('div');
+  popup.className = 'scroll-reaction-popup';
+
+  const tagsHTML = Object.entries(reactions).map(([emoji, count]) => `
+    <span class="scroll-emoji-tag">${emoji} ${count}</span>
+  `).join('');
+
+  popup.innerHTML = tagsHTML;
+  cardBox.appendChild(popup);
+
+  setTimeout(() => {
+    if (popup.parentNode) popup.remove();
+  }, 3000);
+}
+
+// 3-SECOND AUTOMATIC COMMENT ROTATION TIMER
 function startAutoRotationTimer() {
   if (autoRotateTimer) clearInterval(autoRotateTimer);
 
@@ -255,7 +394,6 @@ function startAutoRotationTimer() {
             post.activeReplyIndex = (post.activeReplyIndex + 1) % replies.length;
             const nextReply = replies[post.activeReplyIndex];
 
-            // Update background team shade class
             bottomRowEl.className = `sline-bottom-row ${nextReply.teamKey}-comment-bg fade-out`;
 
             const avatarEl = bottomRowEl.querySelector('.commenter-avatar-circle');
@@ -289,7 +427,6 @@ function startAutoRotationTimer() {
   }, 3000);
 }
 
-// Switch View State
 function switchTwoGroupView(postId, targetView) {
   const p = twogroupsPostsData.find(item => item.id === postId);
   if (p) {
@@ -298,7 +435,6 @@ function switchTwoGroupView(postId, targetView) {
   }
 }
 
-// Load 8 More Comments
 function loadMoreTwoGroupComments(postId) {
   const p = twogroupsPostsData.find(item => item.id === postId);
   if (p) {
@@ -307,7 +443,6 @@ function loadMoreTwoGroupComments(postId) {
   }
 }
 
-// Add New Comment to Thread
 function addTwoGroupComment(postId) {
   const input = document.getElementById(`input-tg-comment-${postId}`);
   if (input && input.value.trim()) {
@@ -330,90 +465,14 @@ function addTwoGroupComment(postId) {
   }
 }
 
-// Touch & Mouse Drag Swipe Gesture Setup for twogroups.html
-function setupTwoGroupCardGestures(cardElement, post) {
-  let startX = 0;
-  let currentX = 0;
-  let isDragging = false;
-
-  // Touch
-  cardElement.addEventListener('touchstart', (e) => {
-    if (e.target.closest('button, input, textarea, a')) return;
-    startX = e.touches[0].clientX;
-    currentX = startX;
-    isDragging = true;
-  }, { passive: true });
-
-  cardElement.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
-    currentX = e.touches[0].clientX;
-    const deltaX = currentX - startX;
-
-    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
-      cardElement.classList.add('swiping');
-      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
-    }
-  }, { passive: true });
-
-  cardElement.addEventListener('touchend', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    cardElement.classList.remove('swiping');
-    cardElement.style.transform = '';
-
-    const deltaX = currentX - startX;
-    if (deltaX > 40) {
-      switchTwoGroupView(post.id, 'comments');
-    }
-    startX = 0;
-    currentX = 0;
-  });
-
-  // Mouse Drag
-  cardElement.addEventListener('mousedown', (e) => {
-    if (e.target.closest('button, input, textarea, a')) return;
-    startX = e.clientX;
-    currentX = startX;
-    isDragging = true;
-    cardElement.style.cursor = 'grabbing';
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    currentX = e.clientX;
-    const deltaX = currentX - startX;
-
-    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
-      cardElement.classList.add('swiping');
-      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
-    }
-  });
-
-  window.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    cardElement.style.cursor = '';
-    cardElement.classList.remove('swiping');
-    cardElement.style.transform = '';
-
-    const deltaX = currentX - startX;
-    if (deltaX > 40) {
-      switchTwoGroupView(post.id, 'comments');
-    }
-    startX = 0;
-    currentX = 0;
-  });
-}
-
 // Help Alert
 const btnTwogroupsHelp = document.getElementById('btn-twogroups-help');
 if (btnTwogroupsHelp) {
   btnTwogroupsHelp.addEventListener('click', () => {
-    alert('Joault Two-Groups Feed Help:\n\n• Team A (Tech Builders) and Team B (Product Creators) use distinct shades of brown and team badges.\n• 3-second auto-rotating comments highlight the commenter\'s group.\n• Swipe Right to view all comments 8 at a time with distinct group brown shades.');
+    alert('Joault Two-Groups Feed Help:\n\n• Double tap any message to react with custom website emojis!\n• Reaction burst pops up on screen for 3s then vanishes.\n• Scrolling to a message pops up its reaction totals for 3s.\n• Swipe right for all comments 8 at a time.');
   });
 }
 
-// XSS Escape Helper
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
