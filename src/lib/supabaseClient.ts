@@ -183,6 +183,32 @@ if (typeof window !== 'undefined') {
 // -------------------------------------------------------------
 // UNIFIED DATA SERVICE (Abstracts Real Supabase vs Demo Mode)
 // -------------------------------------------------------------
+export function extractProfileFromSession(session: any): Profile {
+  if (!session || !session.user) {
+    return { id: '', username: 'User', email: '', avatar_url: '' };
+  }
+  const meta = session.user.user_metadata || {};
+  const username = meta.full_name || meta.name || meta.username || session.user.email?.split('@')[0] || 'User';
+  const avatar = meta.avatar_url || meta.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`;
+
+  try {
+    supabase.from('profiles').upsert({
+      id: session.user.id,
+      email: session.user.email || '',
+      username: username.toLowerCase().replace(/\s+/g, '_'),
+      updated_at: new Date().toISOString()
+    });
+  } catch (e) {}
+
+
+  return {
+    id: session.user.id,
+    username: username,
+    email: session.user.email || '',
+    avatar_url: avatar
+  };
+}
+
 export const dbService = {
   // --- AUTH METHODS ---
   async getCurrentUser(): Promise<Profile | null> {
@@ -197,19 +223,14 @@ export const dbService = {
           profileData = res.data;
         } catch (e) {}
 
-        const prof: Profile = profileData || {
-          id: session.user.id,
-          username: session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
-        };
-        return prof;
+        return profileData || extractProfileFromSession(session);
       }
     } catch (e) {
       console.warn("Session check notice:", e);
     }
     return null;
   },
+
 
   async signUp(username: string, email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (!email || !email.includes('@')) {

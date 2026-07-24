@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { dbService, supabase, Profile, Space } from '@/lib/supabaseClient';
+import { dbService, supabase, extractProfileFromSession, Profile, Space } from '@/lib/supabaseClient';
 
 
 export default function DashboardPage() {
@@ -27,12 +27,7 @@ export default function DashboardPage() {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        const u: Profile = {
-          id: session.user.id,
-          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
-        };
+        const u = extractProfileFromSession(session);
         setUser(u);
         dbService.getMySpaces(session.user.id).then(mySpaces => setSpaces(mySpaces || []));
       }
@@ -41,12 +36,7 @@ export default function DashboardPage() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        const u: Profile = {
-          id: session.user.id,
-          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
-        };
+        const u = extractProfileFromSession(session);
         setUser(u);
         dbService.getMySpaces(session.user.id).then(mySpaces => setSpaces(mySpaces || []));
       } else {
@@ -61,6 +51,7 @@ export default function DashboardPage() {
       document.body.classList.remove('dashboard-body');
     };
   }, []);
+
 
 
 
