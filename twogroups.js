@@ -838,8 +838,14 @@ function startAutoRotationTimer() {
   }, 3000);
 }
 
+function getActiveTwoGroupDataset() {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
+  return isAnon ? anonymousTwogroupsPostsData : twogroupsPostsData;
+}
+
 function switchTwoGroupView(postId, targetView) {
-  const p = twogroupsPostsData.find(item => item.id === postId);
+  const dataset = getActiveTwoGroupDataset();
+  const p = dataset.find(item => item.id === postId);
   if (p) {
     p.viewState = targetView;
     renderTwoGroupsFeed();
@@ -847,7 +853,8 @@ function switchTwoGroupView(postId, targetView) {
 }
 
 function loadMoreTwoGroupComments(postId) {
-  const p = twogroupsPostsData.find(item => item.id === postId);
+  const dataset = getActiveTwoGroupDataset();
+  const p = dataset.find(item => item.id === postId);
   if (p) {
     p.commentsPage += 1;
     renderTwoGroupsFeed();
@@ -862,9 +869,9 @@ function addTwoGroupComment(postId) {
 
     threadRepliesDatabase[postId].unshift({
       id: 'r_' + Date.now(),
-      team: 'Product Creators',
+      team: 'Group B',
       teamKey: 'team-b',
-      author: 'Amara Nwosu',
+      author: 'Anonymous',
       avatar: 'AN',
       time: 'Just now',
       text: text,
@@ -875,6 +882,7 @@ function addTwoGroupComment(postId) {
     renderTwoGroupsFeed();
   }
 }
+
 
 // Help Alert
 const btnTwogroupsHelp = document.getElementById('btn-twogroups-help');

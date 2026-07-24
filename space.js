@@ -748,9 +748,20 @@ function showScrollReactionPopup(cardBox, reactions) {
 
 
 
+function getActivePostsDataset() {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
+  return isAnon ? anonymousPostsData : postsData;
+}
+
+function getActiveCommentsDB() {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
+  return isAnon ? anonymousCommentsDatabase : commentsDatabase;
+}
+
 // Switch Card View
 function switchCardView(postId, targetView) {
-  const p = postsData.find(item => item.id === postId);
+  const dataset = getActivePostsDataset();
+  const p = dataset.find(item => item.id === postId);
   if (p) {
     p.viewState = targetView;
     renderFeed();
@@ -759,7 +770,8 @@ function switchCardView(postId, targetView) {
 
 // Load 8 More Comments
 function loadMoreComments(postId) {
-  const p = postsData.find(item => item.id === postId);
+  const dataset = getActivePostsDataset();
+  const p = dataset.find(item => item.id === postId);
   if (p) {
     p.commentsPage += 1;
     renderFeed();
@@ -783,12 +795,14 @@ function submitReply(e, postId) {
 }
 
 function submitReplyInternal(postId, replyText) {
-  const p = postsData.find(item => item.id === postId);
+  const dataset = getActivePostsDataset();
+  const db = getActiveCommentsDB();
+  const p = dataset.find(item => item.id === postId);
   if (p) {
-    if (!commentsDatabase[postId]) commentsDatabase[postId] = [];
-    commentsDatabase[postId].unshift({
+    if (!db[postId]) db[postId] = [];
+    db[postId].unshift({
       id: 'c_' + Date.now(),
-      author: 'Amara Nwosu',
+      author: 'Anonymous',
       avatar: 'AN',
       time: 'Just now',
       text: replyText,
@@ -807,6 +821,7 @@ function addComment(postId) {
     submitReplyInternal(postId, input.value.trim());
   }
 }
+
 
 // Setup Composer
 function setupComposer() {
