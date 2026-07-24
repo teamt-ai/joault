@@ -24,15 +24,13 @@ export default function JoaultAuthPage() {
       try {
         const u = await dbService.getCurrentUser();
         setUser(u);
-        if (u) {
-          router.push('/dashboard');
-        }
       } catch (err) {
         console.error(err);
       }
     }
     checkUser();
-  }, [router]);
+  }, []);
+
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();

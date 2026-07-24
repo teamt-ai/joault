@@ -29,12 +29,14 @@ html, body {
   overflow-x: hidden;
 }
 
-body.dashboard-body {
-  background-color: var(--dash-bg);
-  color: var(--dash-cream);
+body.dashboard-body,
+.dashboard-body {
+  background-color: var(--dash-bg) !important;
+  color: var(--dash-cream) !important;
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
 }
+
 
 /* HEADER BAR */
 .dash-header {

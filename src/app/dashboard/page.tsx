@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [newAuthProtocol, setNewAuthProtocol] = useState('');
 
   useEffect(() => {
+    document.body.classList.add('dashboard-body');
     async function loadData() {
       try {
         const u = await dbService.getCurrentUser();
@@ -39,7 +40,12 @@ export default function DashboardPage() {
       }
     }
     loadData();
+
+    return () => {
+      document.body.classList.remove('dashboard-body');
+    };
   }, [router]);
+
 
   const handleLogout = async () => {
     await dbService.logout();
