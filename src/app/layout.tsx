@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "../../style.css";
 import "../../dashboard.css";
+import "../../space.css";
+import "../../twogroups.css";
+
 
 
 

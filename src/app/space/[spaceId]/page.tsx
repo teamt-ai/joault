@@ -3,520 +3,393 @@
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  ArrowLeft, 
-  Send, 
-  Users, 
-  Copy, 
-  Check, 
-  Loader2, 
-  ShieldAlert, 
-  X, 
-  Sparkles, 
-  MessageSquare,
-  Key,
-  Clock,
-  Moon,
-  Sun,
-  Flame,
-  Heart,
-  Eye
-} from 'lucide-react';
-import { dbService, Profile, Space, SpaceMember, Message, Comment, MessageReaction } from '@/lib/supabaseClient';
+import { dbService, Profile, Space, Message } from '@/lib/supabaseClient';
 
-export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: string }> }) {
+export default function SpaceFeedPage({ params }: { params: Promise<{ spaceId: string }> }) {
   const resolvedParams = use(params);
   const spaceId = resolvedParams.spaceId;
   const router = useRouter();
 
-  const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  const [user, setUser] = useState<Profile | null>(null);
   const [space, setSpace] = useState<Space | null>(null);
-  const [members, setMembers] = useState<SpaceMember[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  
-  const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [sendLoading, setSendLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
 
-  // Dark Mode Anonymous Toggle State
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Night/Anonymous Mode State
+  const [isAnonymousNight, setIsAnonymousNight] = useState(false);
 
-  // Interactive Gesture States
-  const [replyingMessageId, setReplyingMessageId] = useState<string | null>(null);
-  const [expandedCommentsMessageId, setExpandedCommentsMessageId] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState('');
+  // Compose Post State
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [postContent, setPostContent] = useState('');
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [linkAttachment, setLinkAttachment] = useState<string | null>(null);
 
-  // Joault Gift Floating Emojis State
+  // Active Card Modal State (Replies/Comments View)
+  const [activeReplyMsg, setActiveReplyMsg] = useState<Message | null>(null);
+  const [replyInputText, setReplyInputText] = useState('');
 
-  const [floatingEmojis, setFloatingEmojis] = useState<{ id: string; emoji: string; x: number }[]>([]);
-  const seenReactionsRef = useRef<Set<string>>(new Set());
+  // Lightbox State
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function loadSpaceData() {
       try {
         const u = await dbService.getCurrentUser();
         if (!u) {
-          router.push('/login');
+          window.location.href = '/';
           return;
         }
-        setCurrentUser(u);
+        setUser(u);
 
         const currentSpace = await dbService.getSpaceById(spaceId);
-        if (!currentSpace) {
-          setLoading(false);
-          return;
-        }
-
-        const spaceMembers = await dbService.getSpaceMembers(spaceId);
-        const isMember = spaceMembers.some(m => m.profile_id === u.id);
-        const isOwner = currentSpace.owner_id === u.id;
-
-        if (!isMember && !isOwner) {
-          router.push('/dashboard');
-          return;
-        }
-
         setSpace(currentSpace);
-        setIsDarkMode(!!currentSpace.is_anonymous_mode);
-        setMembers(spaceMembers);
 
         const msgs = await dbService.getMessages(spaceId);
-        setMessages(msgs);
-
-        triggerJoaultGiftsForUnseenReactions(msgs);
-
+        setMessages(msgs || []);
       } catch (err) {
-        console.error('Failed to load space room:', err);
+        console.error("Error loading space:", err);
       } finally {
         setLoading(false);
       }
     }
-
     loadSpaceData();
-  }, [spaceId, router]);
-
-  useEffect(() => {
-    if (!spaceId) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const [msgs, currentSpace] = await Promise.all([
-          dbService.getMessages(spaceId),
-          dbService.getSpaceById(spaceId)
-        ]);
-        setMessages(msgs);
-        if (currentSpace) {
-          setIsDarkMode(!!currentSpace.is_anonymous_mode);
-        }
-        triggerJoaultGiftsForUnseenReactions(msgs);
-      } catch (err) {
-        console.error('Error polling room:', err);
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
   }, [spaceId]);
 
-  const triggerJoaultGiftsForUnseenReactions = (msgs: Message[]) => {
-    msgs.forEach(msg => {
-      if (msg.reactions && msg.reactions.length > 0) {
-        msg.reactions.forEach(r => {
-          if (!seenReactionsRef.current.has(r.id)) {
-            seenReactionsRef.current.add(r.id);
-            spawnFloatingEmoji(r.emoji);
-          }
-        });
-      }
-    });
+  const toggleAnonymousNightMode = () => {
+    setIsAnonymousNight(!isAnonymousNight);
   };
 
-  const spawnFloatingEmoji = (emoji: string) => {
-    const id = `gift-${Math.random().toString(36).substr(2, 9)}`;
-    const x = Math.floor(Math.random() * 70) + 15;
-    setFloatingEmojis(prev => [...prev, { id, emoji, x }]);
-    setTimeout(() => {
-      setFloatingEmojis(prev => prev.filter(e => e.id !== id));
-    }, 2200);
-  };
-
-  const handleToggleAnonymousDarkMode = async () => {
-    const nextState = !isDarkMode;
-    setIsDarkMode(nextState);
-    if (space) {
-      await dbService.toggleSpaceAnonymousMode(space.id, nextState);
-    }
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !currentUser || !space) return;
+    if (!postContent.trim() || !user) return;
 
-    setSendLoading(true);
     try {
-      const myMem = members.find(m => m.profile_id === currentUser.id);
-      await dbService.sendMessage(space.id, currentUser.id, newMessage.trim(), myMem?.group_name || space.name);
-      setNewMessage('');
-      const updatedMsgs = await dbService.getMessages(space.id);
-      setMessages(updatedMsgs);
-    } catch (err) {
-      console.error('Failed to send message:', err);
-    } finally {
-      setSendLoading(false);
+      const newMsg = await dbService.sendMessage(spaceId, user.id, postContent.trim());
+      setPostContent('');
+      setSelectedImages([]);
+      setLinkAttachment(null);
+      setIsExpanded(false);
+
+      const msgs = await dbService.getMessages(spaceId);
+      setMessages(msgs || []);
+    } catch (err: any) {
+      alert(err.message || 'Failed to post message');
     }
   };
 
-  const handleSwipeLeftComment = (messageId: string) => {
-    setReplyingMessageId(messageId === replyingMessageId ? null : messageId);
-    setExpandedCommentsMessageId(messageId);
-  };
-
-  const handleSwipeRightViewComments = (messageId: string) => {
-    setExpandedCommentsMessageId(messageId === expandedCommentsMessageId ? null : messageId);
-  };
-
-  const handleDoubleTapReact = async (messageId: string, emoji: string = '🔥') => {
-    if (!currentUser) return;
-    spawnFloatingEmoji(emoji);
+  const handleAddComment = async (msgId: string) => {
+    if (!replyInputText.trim() || !user) return;
     try {
-      await dbService.addReaction(messageId, currentUser.id, emoji);
-      const updatedMsgs = await dbService.getMessages(spaceId);
-      setMessages(updatedMsgs);
-    } catch (err) {
-      console.error('Failed to react:', err);
+      await dbService.addComment(msgId, user.id, replyInputText.trim(), 'fellow');
+      setReplyInputText('');
+      const msgs = await dbService.getMessages(spaceId);
+      setMessages(msgs || []);
+      if (activeReplyMsg) {
+        const updated = msgs.find(m => m.id === activeReplyMsg.id);
+        if (updated) setActiveReplyMsg(updated);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to add comment');
     }
   };
 
-  const handleAddComment = async (messageId: string) => {
-    if (!commentText.trim() || !currentUser) return;
-    try {
-      await dbService.addComment(messageId, currentUser.id, commentText.trim(), 'fellow');
-      setCommentText('');
-      setReplyingMessageId(null);
-      const updatedMsgs = await dbService.getMessages(spaceId);
-      setMessages(updatedMsgs);
-    } catch (err) {
-      console.error('Failed to add comment:', err);
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      const isVideo = files.some(f => f.type.startsWith('video/'));
+      if (isVideo) {
+        alert("Videos are not supported. Please upload images or links.");
+        return;
+      }
+      const newImgs: string[] = [];
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          if (evt.target?.result) {
+            newImgs.push(evt.target.result as string);
+            if (newImgs.length === files.length) {
+              setSelectedImages(prev => [...prev, ...newImgs]);
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
-  const copyProtocol = () => {
-    if (space) {
-      navigator.clipboard.writeText(space.auth_protocol);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const getUserInitials = () => {
+    if (!user) return 'AN';
+    const name = user.username || user.email || 'AN';
+    return name.slice(0, 2).toUpperCase();
   };
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center gap-3 font-sans ${
-        isDarkMode ? 'bg-black text-white' : 'bg-white text-black'
-      }`}>
-        <Loader2 className="w-8 h-8 animate-spin" />
-        <span className="text-xs font-bold tracking-wider">Connecting to Space Protocol...</span>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF6F0', color: '#23150D', fontFamily: 'sans-serif' }}>
+        <span>Syncing Joault Space Feed...</span>
       </div>
     );
   }
-
-  if (!space) {
-    return (
-      <div className={`min-h-screen flex flex-col items-center justify-center gap-3 font-sans ${
-        isDarkMode ? 'bg-black text-white' : 'bg-white text-black'
-      }`}>
-        <ShieldAlert className="w-10 h-10 text-red-500" />
-        <span className="text-xs font-bold">Space not found or permission denied.</span>
-        <Link href="/dashboard" className="px-5 py-2 rounded-full bg-black text-white text-xs font-bold">
-          Return to Dashboard
-        </Link>
-      </div>
-    );
-  }
-
-  const isOwner = space.owner_id === currentUser?.id;
-  const isDualGroupMode = !!space.guest_space_name;
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-200 ${
-      isDarkMode ? 'dark bg-black text-[#f7f9f9]' : 'bg-white text-[#0f1419]'
-    } font-sans select-none relative overflow-x-hidden`}>
-      
-      {/* JOAULT GIFT FLOATING EMOJIS */}
-      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-        {floatingEmojis.map(item => (
-          <div 
-            key={item.id} 
-            className="joault-gift-emoji"
-            style={{ left: `${item.x}%`, bottom: '15%' }}
-          >
-            {item.emoji}
-          </div>
-        ))}
-      </div>
-
-
-      {/* THREADS MINIMALIST HEADER */}
-      <header className={`sticky top-0 z-40 w-full border-b transition-colors duration-200 ${
-        isDarkMode ? 'bg-black/95 border-[#18181b]' : 'bg-white/95 border-[#f0f0f1]'
-      } backdrop-blur-md`}>
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          
-          <div className="flex items-center gap-4">
-            <Link 
-              href="/dashboard"
-              className="p-2 rounded-full border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
-              title="Back to Dashboard"
-            >
-              <ArrowLeft className="w-4 h-4" />
+    <div className={`space-body ${isAnonymousNight ? 'anonymous-night' : ''}`} style={{ minHeight: '100vh' }}>
+      {/* TOP APP HEADER */}
+      <header className="space-header">
+        <div className="space-header-container">
+          {/* LEFT BRAND & SPACE TITLE */}
+          <div className="header-left">
+            <Link href="/dashboard" className="back-link" title="Back to Dashboard">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
             </Link>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-outfit font-bold text-xl">{space.name}</h1>
-                {isDualGroupMode && (
-                  <span className="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 px-2.5 py-0.5 rounded-full font-mono font-bold">
-                    Dual Group: {space.guest_space_name}
-                  </span>
-                )}
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
-                  isOwner ? 'bg-black text-white dark:bg-white dark:text-black border-transparent' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500 border-zinc-200 dark:border-zinc-800'
-                }`}>
-                  {isOwner ? 'Admin' : 'Member'}
-                </span>
-              </div>
-              <p className="text-xs text-zinc-400 font-mono mt-0.5">{space.auth_protocol}</p>
+            <div className="brand-badge">
+              <span className="brand-square">J</span>
+              <span className="brand-name">joault</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* RIGHT SEARCH & USER AVATAR */}
+          <div className="header-right">
+            <div className="search-pill">
+              <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" placeholder="Search" className="search-input" />
+            </div>
+
+            {/* NIGHT ANONYMOUS MODE TOGGLE BUTTON */}
             <button
-              onClick={handleToggleAnonymousDarkMode}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold transition cursor-pointer ${
-                isDarkMode 
-                  ? 'bg-zinc-900 text-zinc-200 border-zinc-800' 
-                  : 'bg-zinc-100 text-zinc-800 border-zinc-200'
-              }`}
+              type="button"
+              className="btn-night-anonymous-toggle"
+              onClick={toggleAnonymousNightMode}
+              title="Toggle Anonymous Night Mode"
             >
-              {isDarkMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-              <span>{isDarkMode ? 'Dark Mode (ANONYMOUS ON)' : 'Light Mode (Identities Shown)'}</span>
+              <svg className="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+              <span className="night-toggle-text">{isAnonymousNight ? 'Standard' : 'Anonymous'}</span>
             </button>
 
-            <button onClick={copyProtocol} className="px-4 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold">
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 inline" /> : <Copy className="w-3.5 h-3.5 inline" />}
-              <span className="ml-1">{copied ? 'Copied!' : 'Code'}</span>
-            </button>
+            <div className="user-avatar-pill" id="user-avatar-head">
+              <span id="user-avatar-text">{getUserInitials()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SUB-HEADER SPACE METADATA & NAV TABS */}
+        <div className="space-subheader-container">
+          <div className="space-meta-row">
+            <h1 className="space-name-tag" id="current-space-title">#{space?.name || 'tech-builders'}</h1>
+            <span className="space-members-count" id="current-space-members">· 1,240 members</span>
           </div>
 
+          {/* FEED / GROUPS / EXPLORE TABS */}
+          <nav className="space-nav-tabs">
+            <button type="button" className="tab-item active">Feed</button>
+            <Link href="/twogroups" className="tab-item">Groups</Link>
+            <button type="button" className="tab-item">Explore</button>
+          </nav>
         </div>
       </header>
 
-      {/* ROOM MAIN CONTENT GRID */}
-      <main className="max-w-6xl w-full mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
-        
-        {/* SIDEBAR MEMBERS */}
-        <aside className="lg:col-span-1 flex flex-col gap-6">
-          <div className={`p-5 rounded-3xl border ${
-            isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-white border-[#f0f0f1]'
-          } space-y-3`}>
-            
-            <h3 className="font-outfit font-bold text-sm flex items-center gap-2">
-              <Users className="w-4 h-4" /> Space Members ({members.length})
-            </h3>
-
-            <div className="space-y-2">
-              {members.map((mem) => {
-                const profile = mem.profile;
-                const isMemOwner = mem.profile_id === space.owner_id;
-                
-                const displayName = isDarkMode ? `Ghost Member #${mem.id.slice(-4)}` : profile?.username;
-                const displayAvatar = isDarkMode ? `https://api.dicebear.com/7.x/bottts/svg?seed=ghost-${mem.id}` : profile?.avatar_url;
-
-                return (
-                  <div key={mem.id} className="p-2.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <img src={displayAvatar} alt={displayName} className="w-7 h-7 rounded-full bg-white border border-black dark:border-white" />
-                      <div>
-                        <h5 className="font-bold">{displayName}</h5>
-                        <span className="text-[10px] text-zinc-400 block">{isMemOwner ? 'Admin' : 'Member'}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-          </div>
-        </aside>
-
-        {/* MAIN THREADS FEED */}
-        <section className="lg:col-span-3 flex flex-col justify-between h-[calc(100vh-140px)]">
-          
-          <div className="flex-grow overflow-y-auto pr-2 space-y-4 pb-6">
-            
-            <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-between text-zinc-500">
-              <span>Swipe Left = Comment | Swipe Right = View Comments | Double Tap = React with Joault Emojis</span>
-              <span className="font-mono text-[10px] font-bold">{messages.length} Messages</span>
-            </div>
-
-
-
-            {messages.length === 0 ? (
-              <div className="text-center py-16 text-xs text-zinc-400">
-                No messages posted yet. Start the discussion below!
+      {/* MAIN FEED CONTAINER */}
+      <main className="space-main">
+        <div className="feed-wrapper">
+          {/* CREATE POST BOX ("WHAT'S ON YOUR MIND?") */}
+          <div className="compose-card-box" id="compose-box">
+            {!isExpanded ? (
+              <div className="compose-collapsed" onClick={() => setIsExpanded(true)}>
+                <div className="avatar-circle-sm">{getUserInitials()}</div>
+                <span className="placeholder-text">What's on your mind?</span>
               </div>
             ) : (
-              messages.map((msg) => {
-                const isMyMessage = msg.sender_id === currentUser?.id;
-                
-                const senderName = isDarkMode ? `Anonymous Phantom` : msg.profile?.username || 'Member';
-                const senderAvatar = isDarkMode ? `https://api.dicebear.com/7.x/bottts/svg?seed=ghost-${msg.sender_id}` : msg.profile?.avatar_url;
+              <form id="form-create-post" className="compose-expanded" onSubmit={handlePostSubmit}>
+                <div className="compose-header">
+                  <div className="avatar-circle-sm">{getUserInitials()}</div>
+                  <textarea
+                    value={postContent}
+                    onChange={(e) => setPostContent(e.target.value)}
+                    className="compose-textarea"
+                    placeholder="What's on your mind?"
+                    rows={3}
+                    required
+                  />
+                </div>
 
-                const hasComments = msg.comments && msg.comments.length > 0;
-                const isReplying = replyingMessageId === msg.id;
-                const isExpanded = expandedCommentsMessageId === msg.id;
-
-                return (
-                  <div 
-                    key={msg.id}
-                    onDoubleClick={() => handleDoubleTapReact(msg.id, '🔥')}
-                    className="threads-post-card rounded-2xl border border-zinc-200 dark:border-zinc-800"
-                  >
-                    
-                    {/* DUAL GROUP DIAGONAL SPLIT MODE */}
-                    {isDualGroupMode ? (
-                      <div className="space-y-3">
-                        <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2.5">
-                              <img src={senderAvatar} alt={senderName} className="w-8 h-8 rounded-full bg-white border border-black dark:border-white" />
-                              <div>
-                                <h5 className="text-xs font-bold">{senderName}</h5>
-                                <span className="text-[10px] text-zinc-400 font-mono">{msg.group_name || space.name} &bull; {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                              </div>
-                            </div>
-                            {isDarkMode && <span className="text-[9px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full font-mono">ANONYMOUS</span>}
-                          </div>
-                          <p className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed">{msg.content}</p>
-                        </div>
-
-                        {/* Comments Sub-Rectangles */}
-                        <div className="space-y-2 pt-1">
-                          <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
-                            <span>Comments ({msg.comments?.length || 0})</span>
-                            <button onClick={() => handleSwipeLeftComment(msg.id)} className="hover:underline flex items-center gap-1">
-                              <MessageSquare className="w-3.5 h-3.5" /> Comment
-                            </button>
-                          </div>
-                          {msg.comments?.map(cmt => {
-                            const cmtName = isDarkMode ? `Ghost Commenter` : cmt.profile?.username || 'Member';
-                            return (
-                              <div key={cmt.id} className="threads-sub-rectangle text-xs space-y-1">
-                                <div className="flex justify-between font-bold text-[10px]">
-                                  <span>{cmtName}</span>
-                                  <span className="text-zinc-400">{new Date(cmt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
-                                <p className="text-zinc-700 dark:text-zinc-300">{cmt.content}</p>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : (
-                      /* SINGLE GROUP THREADS RECTANGLE */
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <img src={senderAvatar} alt={senderName} className="w-8 h-8 rounded-full bg-white border border-black dark:border-white" />
-                            <div>
-                              <h5 className="text-xs font-bold flex items-center gap-1">
-                                {senderName}
-                                {isMyMessage && !isDarkMode && <span className="text-[9px] bg-black text-white px-1.5 rounded-full">YOU</span>}
-                              </h5>
-                              <span className="text-[10px] text-zinc-400 font-mono">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1 text-xs">
-                            <button onClick={() => handleDoubleTapReact(msg.id, '🔥')} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">🔥</button>
-                            <button onClick={() => handleDoubleTapReact(msg.id, '🚀')} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">🚀</button>
-                            <button onClick={() => handleDoubleTapReact(msg.id, '❤️')} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">❤️</button>
-                          </div>
-                        </div>
-
-                        <p className="text-xs leading-relaxed text-zinc-800 dark:text-zinc-200">
-                          {msg.content}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800 text-[11px] font-semibold text-zinc-400">
-                          <button onClick={() => handleSwipeLeftComment(msg.id)} className="hover:text-black dark:hover:text-white transition flex items-center gap-1">
-                            <MessageSquare className="w-3.5 h-3.5" /> Comment (Swipe Left)
-                          </button>
-                          <button onClick={() => handleSwipeRightViewComments(msg.id)} className="hover:text-black dark:hover:text-white transition flex items-center gap-1">
-                            <Eye className="w-3.5 h-3.5" /> Comments ({msg.comments?.length || 0})
-                          </button>
-                        </div>
-
-                        {(isExpanded || hasComments) && (
-                          <div className="space-y-2 pt-2">
-                            {msg.comments?.map(cmt => {
-                              const cmtName = isDarkMode ? `Ghost Commenter` : cmt.profile?.username || 'Member';
-                              return (
-                                <div key={cmt.id} className="threads-sub-rectangle text-xs space-y-1">
-                                  <div className="flex justify-between font-bold text-[10px]">
-                                    <span>{cmtName}</span>
-                                    <span className="text-zinc-400">{new Date(cmt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                  </div>
-                                  <p className="text-zinc-700 dark:text-zinc-300">{cmt.content}</p>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-
-                        {isReplying && (
-                          <div className="flex gap-2 pt-2">
-                            <input
-                              type="text"
-                              value={commentText}
-                              onChange={(e) => setCommentText(e.target.value)}
-                              placeholder="Write a comment..."
-                              className="flex-grow px-3 py-1.5 rounded-full border text-xs outline-none bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
-                            />
-                            <button onClick={() => handleAddComment(msg.id)} className="px-4 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold">
-                              Post
-                            </button>
-                          </div>
-                        )}
-
+                {/* ATTACHMENT PREVIEW TRAY */}
+                {(selectedImages.length > 0 || linkAttachment) && (
+                  <div className="attachment-preview-tray" style={{ display: 'flex', gap: '8px', padding: '8px 0', flexWrap: 'wrap' }}>
+                    {selectedImages.map((img, i) => (
+                      <img
+                        key={i}
+                        src={img}
+                        alt="attachment"
+                        style={{ width: '84px', height: '84px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer' }}
+                        onClick={() => setLightboxImg(img)}
+                      />
+                    ))}
+                    {linkAttachment && (
+                      <div style={{ background: '#FAF6F0', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', color: '#23150D' }}>
+                        🔗 {linkAttachment}
                       </div>
                     )}
-
                   </div>
-                );
-              })
-            )}
+                )}
 
+                <div className="compose-footer">
+                  <div className="compose-tools-row">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageFileChange}
+                      accept="image/*"
+                      multiple
+                      style={{ display: 'none' }}
+                    />
+                    <button type="button" className="btn-attach-tool" onClick={() => fileInputRef.current?.click()} title="Attach Images">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                      <span>Images</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn-attach-tool"
+                      onClick={() => {
+                        const url = prompt("Enter link URL:");
+                        if (url) setLinkAttachment(url);
+                      }}
+                      title="Attach Link"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                      </svg>
+                      <span>Link</span>
+                    </button>
+                    <span className="char-count" id="post-char-count">{280 - postContent.length}</span>
+                  </div>
+
+                  <div className="compose-actions">
+                    <button type="button" onClick={() => setIsExpanded(false)} className="btn-cancel-sm">Cancel</button>
+                    <button type="submit" className="btn-post-gold">Post</button>
+                  </div>
+                </div>
+              </form>
+            )}
           </div>
 
-          {/* CHAT INPUT BAR */}
-          <form onSubmit={handleSendMessage} className="flex gap-2 pt-2">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={`Post update to space, ${isDarkMode ? 'Anonymous Phantom' : currentUser?.username}...`}
-              className="flex-grow px-5 py-3 rounded-full border text-xs outline-none bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus:border-black dark:focus:border-white transition"
-              id="message_input"
-            />
-            <button type="submit" disabled={sendLoading || !newMessage.trim()} className="px-6 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold shrink-0">
-              {sendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            </button>
-          </form>
+          {/* FEED DIVIDER TIMELINE LABEL */}
+          <div className="timeline-divider">
+            <span>LATEST</span>
+          </div>
 
-        </section>
+          {/* FEED POST CARDS CONTAINER */}
+          <div id="feed-posts-container" className="feed-posts-list">
+            {messages.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#786C60', fontSize: '0.875rem' }}>
+                No messages yet. Be the first to share your thoughts in this space!
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <div key={msg.id} className="card-outer-wrapper">
+                  <div className="card-box card-face-main" onClick={() => setActiveReplyMsg(msg)}>
+                    <div className="card-author-row">
+                      <div className="author-left">
+                        <div className="avatar-circle-sm">
+                          {msg.profile?.username ? msg.profile.username.slice(0, 2).toUpperCase() : 'AN'}
+                        </div>
+                        <div className="author-meta">
+                          <span className="author-name">{msg.profile?.username || 'Anonymous Member'}</span>
+                          <span className="post-timestamp">
+                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
+                    <div className="post-body">
+                      <p className="post-text">{msg.content}</p>
+                    </div>
+
+                    <div className="card-footer-metrics">
+                      <span className="metric-pill">💬 {msg.comments?.length || 0} Replies</span>
+                      <span className="metric-pill">🔥 {msg.reactions?.length || 0} Joault Gifts</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </main>
 
+      {/* COMMENTS / REPLIES MODAL */}
+      {activeReplyMsg && (
+        <div className="modal-backdrop" onClick={() => setActiveReplyMsg(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Conversation Thread</h3>
+              <button type="button" onClick={() => setActiveReplyMsg(null)} className="modal-close-btn">&times;</button>
+            </div>
+            <div style={{ padding: '1rem', borderBottom: '1px solid #EDE4D7' }}>
+              <p style={{ fontWeight: 600, color: '#23150D' }}>{activeReplyMsg.content}</p>
+              <span style={{ fontSize: '0.75rem', color: '#786C60' }}>
+                Posted by {activeReplyMsg.profile?.username || 'Anonymous Member'}
+              </span>
+            </div>
+
+            <div style={{ maxHeight: '250px', overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(activeReplyMsg.comments || []).length === 0 ? (
+                <span style={{ fontSize: '0.8rem', color: '#786C60' }}>No comments yet. Add a reply below.</span>
+              ) : (
+                (activeReplyMsg.comments || []).map((c) => (
+                  <div key={c.id} style={{ background: '#FAF6F0', padding: '8px 12px', borderRadius: '8px', fontSize: '0.8125rem' }}>
+                    <span style={{ fontWeight: 700, color: '#23150D', display: 'inline-block', marginRight: '6px' }}>
+
+                      {c.profile?.username || 'Member'}:
+                    </span>
+                    <span>{c.content}</span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div style={{ padding: '1rem', borderTop: '1px solid #EDE4D7', display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                value={replyInputText}
+                onChange={(e) => setReplyInputText(e.target.value)}
+                placeholder="Write a reply..."
+                style={{ flex: 1, padding: '8px 12px', borderRadius: '9999px', border: '1px solid #EDE4D7', fontSize: '0.8125rem' }}
+              />
+              <button
+                type="button"
+                onClick={() => handleAddComment(activeReplyMsg.id)}
+                style={{ background: '#23150D', color: '#FFF', padding: '8px 16px', borderRadius: '9999px', fontSize: '0.8125rem', fontWeight: 600 }}
+              >
+                Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GLOBAL IMAGE LIGHTBOX FULL-SIZE OVERLAY */}
+      {lightboxImg && (
+        <div className="lightbox-modal" onClick={() => setLightboxImg(null)}>
+          <span className="lightbox-close-btn" onClick={() => setLightboxImg(null)}>&times;</span>
+          <img className="lightbox-img" src={lightboxImg} alt="Full size preview" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 }
