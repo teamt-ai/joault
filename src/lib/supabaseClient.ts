@@ -192,22 +192,29 @@ if (typeof window !== 'undefined') {
 export const dbService = {
   // --- AUTH METHODS ---
   async getCurrentUser(): Promise<Profile | null> {
-    if (isDemoMode || !supabase) {
-      return getLocalStorageData<Profile | null>('active_user', null);
+    if (!supabase) {
+      const val = typeof window !== 'undefined' ? localStorage.getItem('joault_active_user') : null;
+      return val ? JSON.parse(val) : null;
     }
-    const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
-    if (!user) {
-      return getLocalStorageData<Profile | null>('active_user', null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user) {
+        if (typeof window !== 'undefined') localStorage.removeItem('joault_active_user');
+        return null;
+      }
+
+      const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single().catch(() => ({ data: null }));
+      return data || {
+        id: session.user.id,
+        username: session.user.email?.split('@')[0] || 'User',
+        email: session.user.email || '',
+        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+      };
+    } catch (e) {
+      return null;
     }
-    
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single().catch(() => ({ data: null }));
-    return data || {
-      id: user.id,
-      username: user.email?.split('@')[0] || 'User',
-      email: user.email || '',
-      avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`
-    };
   },
+
 
 
   async signUp(username: string, email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
