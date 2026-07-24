@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joault Space Feed - #tech-builders</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="space.css">
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="space-body">
+
+  <!-- TOP APP HEADER -->
+  <header class="space-header">
+    <div class="space-header-container">
+      
+      <!-- LEFT BRAND & SPACE TITLE -->
+      <div class="header-left">
+        <a href="dashboard.html" class="back-link" title="Back to Dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <div class="brand-badge">
+          <span class="brand-square">J</span>
+          <span class="brand-name">joault</span>
+        </div>
+      </div>
+
+      <!-- RIGHT SEARCH & USER AVATAR -->
+      <div class="header-right">
+        <div class="search-pill">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Search" class="search-input">
+        </div>
+
+        <div class="user-avatar-pill" id="user-avatar-head">
+          <span id="user-avatar-text">AN</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SUB-HEADER SPACE METADATA & NAV TABS -->
+    <div class="space-subheader-container">
+      <div class="space-meta-row">
+        <h1 class="space-name-tag" id="current-space-title">#tech-builders</h1>
+        <span class="space-members-count" id="current-space-members">· 1,240 members</span>
+      </div>
+
+      <!-- FEED / GROUPS / EXPLORE TABS -->
+      <nav class="space-nav-tabs">
+        <button type="button" class="tab-item active">Feed</button>
+        <button type="button" class="tab-item">Groups</button>
+        <button type="button" class="tab-item">Explore</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN FEED CONTAINER -->
+  <main class="space-main">
+    <div class="feed-wrapper">
+
+      <!-- CREATE POST BOX ("WHAT'S ON YOUR MIND?") -->
+      <div class="compose-card-box" id="compose-box">
+        <div class="compose-collapsed" id="compose-collapsed">
+          <div class="avatar-circle-sm">AN</div>
+          <span class="placeholder-text">What's on your mind?</span>
+        </div>
+
+        <form id="form-create-post" class="compose-expanded hidden">
+          <div class="compose-header">
+            <div class="avatar-circle-sm">AN</div>
+            <textarea id="post-textarea" class="compose-textarea" placeholder="What's on your mind?" rows="3" required></textarea>
+          </div>
+          <div class="compose-footer">
+            <span class="char-count" id="post-char-count">280</span>
+            <div class="compose-actions">
+              <button type="button" id="btn-cancel-post" class="btn-cancel-sm">Cancel</button>
+              <button type="submit" class="btn-post-gold">Post</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- FEED DIVIDER TIMELINE LABEL -->
+      <div class="timeline-divider">
+        <span>LATEST</span>
+      </div>
+
+      <!-- FEED POST CARDS CONTAINER (POPULATED DYNAMICALLY BY JS) -->
+      <div id="feed-posts-container" class="feed-posts-list">
+        <!-- Message card boxes will be rendered here -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FLOATING HELP BUTTON -->
+  <button type="button" id="btn-space-help" class="floating-help-btn" title="Help & Info">?</button>
+
+  <!-- JavaScript File -->
+  <script src="space.js"></script>
+</body>
+</html>

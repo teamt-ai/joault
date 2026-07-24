@@ -268,8 +268,9 @@ formCreateSpace.addEventListener('submit', (e) => {
 
 // Enter Space Action
 function enterSpace(spaceId, spaceName) {
-  alert(`Entering Space "${spaceName}"... Real-time messaging and collaborative tools active!`);
+  window.location.href = `space.html?id=${spaceId}&name=${encodeURIComponent(spaceName)}`;
 }
+
 
 // Logout Action
 btnLogout.addEventListener('click', async () => {
