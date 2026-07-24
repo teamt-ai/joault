@@ -420,7 +420,6 @@ function renderReplyView(post) {
       <div class="card-reply-view">
         <div class="reply-header-bar">
           <span class="reply-title-text">ANONYMOUS REPLY</span>
-          <button type="button" class="btn-close-view" onclick="switchCardView('${post.id}', 'default')">&times;</button>
         </div>
 
         <div class="quote-snippet-box">
@@ -450,7 +449,6 @@ function renderReplyView(post) {
     <div class="card-reply-view">
       <div class="reply-header-bar">
         <span class="reply-title-text">REPLYING TO ${post.author.handle.toUpperCase()}</span>
-        <button type="button" class="btn-close-view" onclick="switchCardView('${post.id}', 'default')">&times;</button>
       </div>
 
       <div class="quote-snippet-box">
@@ -539,9 +537,10 @@ function renderCommentsView(post) {
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
-          <span>Back to Post</span>
+          <span>Back to Conversation</span>
         </button>
       </div>
+
 
       <div class="comments-list-box">
         ${commentsHTML}
