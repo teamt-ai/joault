@@ -96,8 +96,7 @@ export default function DashboardPage() {
 
       const updated = await dbService.getMySpaces(user.id);
       setSpaces(updated || []);
-
-      router.push('/space.html');
+      router.push(`/space/${created.id}`);
     } catch (err: any) {
       alert(err.message || 'Failed to create space');
     }
@@ -156,25 +155,21 @@ export default function DashboardPage() {
               type="button"
               onClick={handleLogout}
               className="btn-logout"
-              title="Log Out"
+              title="Sign Out"
             >
-              <svg className="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
+              Sign out
             </button>
           </div>
         </div>
       </header>
 
-      {/* MAIN DASHBOARD CONTENT CONTAINER */}
+      {/* MAIN DASHBOARD CONTENT */}
       <main className="dash-main">
-        <div className="dash-content-wrapper">
-          {/* HERO BANNER SECTION */}
+        <div className="dash-content-container">
+          {/* HERO GREETING BANNER */}
           <section className="dash-hero">
-            <h1 className="hero-title">Your Spaces Portal</h1>
-            <p className="hero-subtitle">Enter an Auth Protocol code to connect to a space or launch your own collaborative environment.</p>
+            <h1 className="hero-greeting">Welcome back, <span id="hero-username">{user?.username || 'Creator'}</span></h1>
+            <p className="hero-subtext">Manage your connected spaces or join a new space via Auth Protocol.</p>
           </section>
 
           {/* AUTH PROTOCOL INPUT PILL SECTION */}
@@ -262,8 +257,8 @@ export default function DashboardPage() {
                     <p style={{ fontSize: '0.8125rem', color: '#786C60', margin: '0.5rem 0 1rem 0' }}>
                       Active space feed with 3D card layout, double-tap reactions, and connected threads.
                     </p>
-                    <a
-                      href="/space.html"
+                    <Link
+                      href={`/space/${sp.id}`}
                       style={{
                         display: 'inline-block',
                         background: '#23150D',
@@ -276,7 +271,7 @@ export default function DashboardPage() {
                       }}
                     >
                       Enter Space Feed &rarr;
-                    </a>
+                    </Link>
                   </div>
                 ))}
               </div>
