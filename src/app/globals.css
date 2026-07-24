@@ -1,53 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
+  --font-inter: 'Inter', sans-serif;
   --font-outfit: 'Outfit', sans-serif;
   --font-plus-jakarta: 'Plus Jakarta Sans', sans-serif;
 
-  /* Premium Warm Coffee & Chocolate Design System */
-  --bg-deep: #120907;        /* Very dark rich espresso */
-  --bg-card: #1c100c;        /* Deep warm chocolate card */
-  --bg-input: #231612;       /* Medium warm dark brown */
-  --bg-hover: #2d1d18;       /* Lighter warm brown for hover states */
-  
-  --primary: #8b4f30;        /* Roasted coffee brown */
-  --primary-hover: #a1603d;  /* Roasted coffee hover */
-  --primary-light: #522f1d;  /* Deep shadow brown */
-  
-  --accent: #dca385;         /* Soft sand cream gold */
-  --accent-hover: #ebc0a8;   /* Soft sand cream gold hover */
-  
-  --text-primary: #fbf8f7;   /* Off-white warm cream */
-  --text-muted: #9e8e89;     /* Soft warm grey-brown */
-  --text-dark: #3b2821;      /* Deep coffee text for bright backgrounds */
-  
-  --border-light: rgba(139, 79, 48, 0.2);  /* Transparent brown border */
-  --border-focus: rgba(220, 163, 133, 0.4); /* Transparent accent focus border */
+  /* Google Material Design 3 Tokens - Light Mode */
+  --google-bg: #f8f9fa;
+  --google-card: #ffffff;
+  --google-card-subtle: #f1f3f4;
+  --google-primary: #1a73e8;
+  --google-primary-hover: #1557b0;
+  --google-text: #202124;
+  --google-text-muted: #5f6368;
+  --google-border: #dadce0;
+}
+
+/* Dark Mode Tokens (Anonymous Mode Activated!) */
+.dark {
+  --google-bg: #121316;
+  --google-card: #1e1f23;
+  --google-card-subtle: #292a2e;
+  --google-primary: #8ab4f8;
+  --google-primary-hover: #a6c8ff;
+  --google-text: #e8eaed;
+  --google-text-muted: #9aa0a6;
+  --google-border: #303134;
 }
 
 @theme inline {
-  --font-sans: var(--font-plus-jakarta);
+  --font-sans: var(--font-inter);
   --font-outfit: var(--font-outfit);
-  
-  --color-bg-deep: var(--bg-deep);
-  --color-bg-card: var(--bg-card);
-  --color-bg-input: var(--bg-input);
-  --color-bg-hover: var(--bg-hover);
-  
-  --color-brand-primary: var(--primary);
-  --color-brand-primary-hover: var(--primary-hover);
-  --color-brand-primary-light: var(--primary-light);
-  
-  --color-brand-accent: var(--accent);
-  --color-brand-accent-hover: var(--accent-hover);
-  
-  --color-txt-primary: var(--text-primary);
-  --color-txt-muted: var(--text-muted);
-  --color-txt-dark: var(--text-dark);
-  
-  --color-border-light: var(--border-light);
-  --color-border-focus: var(--border-focus);
+  --font-jakarta: var(--font-plus-jakarta);
 }
 
 * {
@@ -57,83 +42,130 @@
 }
 
 body {
-  background-color: var(--bg-deep);
-  color: var(--text-primary);
-  font-family: var(--font-plus-jakarta);
+  background-color: var(--google-bg);
+  color: var(--google-text);
+  font-family: var(--font-inter);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Premium Scrollbar design */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Google Cards (X-Style Rectangles with Slightly Curved Edges) */
+.google-x-card {
+  background-color: var(--google-card);
+  border: 1px solid var(--google-border);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-deep);
+.google-x-card:hover {
+  border-color: var(--google-primary);
+  box-shadow: 0 4px 16px rgba(26, 115, 232, 0.1);
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--bg-input);
-  border-radius: 4px;
+/* Sub-Rectangle for Comments (Inside Main Message Rectangle) */
+.google-sub-rectangle {
+  background-color: var(--google-card-subtle);
+  border: 1px solid var(--google-border);
+  border-radius: 12px;
+  padding: 10px 14px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+/* Dual-Group Diagonal Split Rectangle */
+.dual-group-card {
+  background-color: var(--google-card);
+  border: 1.5px solid var(--google-border);
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Custom glowing and ambient utilities */
-.glow-card {
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-light);
+.dual-split-top-left {
+  background: linear-gradient(135deg, rgba(26, 115, 232, 0.06) 0%, rgba(26, 115, 232, 0.01) 100%);
+  border-bottom: 1.5px solid var(--google-border);
+  padding: 16px;
 }
 
-.glow-card:hover {
-  border-color: rgba(220, 163, 133, 0.3);
-  box-shadow: 0 8px 32px rgba(139, 79, 48, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+.dual-split-bottom-right {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.06) 0%, rgba(217, 119, 6, 0.01) 100%);
+  padding: 16px;
 }
 
-.text-gradient {
-  background: linear-gradient(135deg, #fbf8f7 30%, #dca385 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Google Pill Buttons */
+.google-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #1a73e8;
+  color: #ffffff;
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  border: none;
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.text-gradient-brown {
-  background: linear-gradient(135deg, #dca385 0%, #8b4f30 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.google-pill-btn:hover {
+  background-color: #1557b0;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.35);
 }
 
-/* Ambient radial glow background */
-.ambient-bg {
+.google-pill-outlined {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: transparent;
+  color: var(--google-text);
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  border: 1px solid var(--google-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.google-pill-outlined:hover {
+  background-color: var(--google-card-subtle);
+  border-color: var(--google-primary);
+  color: var(--google-primary);
+}
+
+/* TikTok Gift Floating Emojis Animation */
+@keyframes tiktokGiftFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.5) rotate(-10deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-40px) scale(1.4) rotate(10deg);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-180px) scale(1.1) rotate(-5deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-260px) scale(0.6) rotate(15deg);
+  }
+}
+
+.tiktok-gift-emoji {
   position: absolute;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(139, 79, 48, 0.12) 0%, rgba(0,0,0,0) 70%);
-  filter: blur(40px);
   pointer-events: none;
-  z-index: 0;
-}
-
-/* Custom Animation classes */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes pulse-gentle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-}
-
-.animate-pulse-gentle {
-  animation: pulse-gentle 4s ease-in-out infinite;
+  font-size: 3rem;
+  z-index: 100;
+  animation: tiktokGiftFloat 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
 }

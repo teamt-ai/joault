@@ -7,7 +7,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 export const isDemoMode = !supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder') || supabaseAnonKey.includes('placeholder');
 
 if (isDemoMode) {
-  console.warn('Supabase URL or Anon Key is missing. Running Joault in DEMO MODE with localStorage fallback.');
+  console.warn('Running Joault in DEMO MODE with rich localStorage fallback.');
 }
 
 // Real Supabase client instance
@@ -29,6 +29,9 @@ export interface Space {
   owner_id: string;
   auth_protocol: string;
   created_at: string;
+  guest_space_id?: string | null; // For Dual-Group Mode
+  guest_space_name?: string | null;
+  is_anonymous_mode?: boolean;     // Dark Mode Anonymous Toggle
 }
 
 export interface SpaceMember {
@@ -37,6 +40,7 @@ export interface SpaceMember {
   profile_id: string;
   role: 'owner' | 'member';
   joined_at: string;
+  group_name?: string;             // Member's home group name
   profile?: Profile;
 }
 
@@ -50,13 +54,34 @@ export interface SpaceRequest {
   space?: Space;
 }
 
+export interface Comment {
+  id: string;
+  message_id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  group_tag?: string;             // 'fellow' or 'opponent'
+  profile?: Profile;
+}
+
+export interface MessageReaction {
+  id: string;
+  message_id: string;
+  sender_id: string;
+  emoji: string;
+  created_at: string;
+}
+
 export interface Message {
   id: string;
   space_id: string;
   sender_id: string;
   content: string;
   created_at: string;
+  group_name?: string;
   profile?: Profile;
+  comments?: Comment[];
+  reactions?: MessageReaction[];
 }
 
 // -------------------------------------------------------------
@@ -77,20 +102,39 @@ const setLocalStorageData = <T>(key: string, data: T): void => {
 const initMockData = () => {
   if (typeof window === 'undefined') return;
   
-  if (!localStorage.getItem('joault_initialized')) {
+  if (!localStorage.getItem('joault_initialized_v2')) {
     const defaultProfiles: Profile[] = [
-      { id: 'usr-owner', username: 'alex_creator', email: 'alex@example.com', avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=alex' },
-      { id: 'usr-member1', username: 'sarah_designer', email: 'sarah@example.com', avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=sarah' },
-      { id: 'usr-member2', username: 'john_dev', email: 'john@example.com', avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=john' },
+      { id: 'usr-owner', username: 'Alex (Creator)', email: 'alex@example.com', avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=alex' },
+      { id: 'usr-member1', username: 'Sarah (Designer)', email: 'sarah@example.com', avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=sarah' },
+      { id: 'usr-member2', username: 'Marcus (Dev)', email: 'marcus@example.com', avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=marcus' },
+      { id: 'usr-guest1', username: 'Rival Group Lead', email: 'rival@example.com', avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=rival' }
     ];
 
     const defaultSpaces: Space[] = [
-      { id: 'space-alpha', name: 'Design Space', owner_id: 'usr-owner', auth_protocol: 'SPACE-COFFEE-BREW-9922', created_at: new Date().toISOString() }
+      { 
+        id: 'space-alpha', 
+        name: 'Design Collective', 
+        owner_id: 'usr-owner', 
+        auth_protocol: 'SPACE-COFFEE-9922', 
+        created_at: new Date().toISOString(),
+        guest_space_id: 'space-beta',
+        guest_space_name: 'Engineering Opponents',
+        is_anonymous_mode: false
+      },
+      {
+        id: 'space-beta',
+        name: 'Engineering Opponents',
+        owner_id: 'usr-guest1',
+        auth_protocol: 'SPACE-TECH-4411',
+        created_at: new Date().toISOString(),
+        is_anonymous_mode: false
+      }
     ];
 
     const defaultMembers: SpaceMember[] = [
-      { id: 'mem-1', space_id: 'space-alpha', profile_id: 'usr-owner', role: 'owner', joined_at: new Date().toISOString() },
-      { id: 'mem-2', space_id: 'space-alpha', profile_id: 'usr-member1', role: 'member', joined_at: new Date().toISOString() }
+      { id: 'mem-1', space_id: 'space-alpha', profile_id: 'usr-owner', role: 'owner', joined_at: new Date().toISOString(), group_name: 'Design Collective' },
+      { id: 'mem-2', space_id: 'space-alpha', profile_id: 'usr-member1', role: 'member', joined_at: new Date().toISOString(), group_name: 'Design Collective' },
+      { id: 'mem-3', space_id: 'space-alpha', profile_id: 'usr-guest1', role: 'member', joined_at: new Date().toISOString(), group_name: 'Engineering Opponents' }
     ];
 
     const defaultRequests: SpaceRequest[] = [
@@ -98,8 +142,32 @@ const initMockData = () => {
     ];
 
     const defaultMessages: Message[] = [
-      { id: 'msg-1', space_id: 'space-alpha', sender_id: 'usr-owner', content: 'Welcome to the Design Space! Under the new design layout, everyone gets their own box.', created_at: new Date(Date.now() - 3600000).toISOString() },
-      { id: 'msg-2', space_id: 'space-alpha', sender_id: 'usr-member1', content: 'Yes, this is incredibly organized. Clean layout!', created_at: new Date(Date.now() - 1800000).toISOString() }
+      { 
+        id: 'msg-1', 
+        space_id: 'space-alpha', 
+        sender_id: 'usr-owner', 
+        content: 'Welcome to Joault! Swipe left to comment, swipe right to view comments, or double tap to launch TikTok gift emojis!', 
+        created_at: new Date(Date.now() - 3600000).toISOString(),
+        group_name: 'Design Collective'
+      },
+      { 
+        id: 'msg-2', 
+        space_id: 'space-alpha', 
+        sender_id: 'usr-guest1', 
+        content: 'Our rival group is in this same space! Check out the split-rectangle view in Dual Group Mode.', 
+        created_at: new Date(Date.now() - 1800000).toISOString(),
+        group_name: 'Engineering Opponents'
+      }
+    ];
+
+    const defaultComments: Comment[] = [
+      { id: 'cmt-1', message_id: 'msg-1', sender_id: 'usr-member1', content: 'This rectangle feed layout feels super smooth!', created_at: new Date(Date.now() - 3000000).toISOString(), group_tag: 'fellow' },
+      { id: 'cmt-2', message_id: 'msg-2', sender_id: 'usr-owner', content: 'Challenge accepted! Let the collaboration begin.', created_at: new Date(Date.now() - 1200000).toISOString(), group_tag: 'opponent' }
+    ];
+
+    const defaultReactions: MessageReaction[] = [
+      { id: 'react-1', message_id: 'msg-1', sender_id: 'usr-member1', emoji: '🔥', created_at: new Date().toISOString() },
+      { id: 'react-2', message_id: 'msg-1', sender_id: 'usr-owner', emoji: '🚀', created_at: new Date().toISOString() }
     ];
 
     setLocalStorageData('profiles', defaultProfiles);
@@ -107,11 +175,12 @@ const initMockData = () => {
     setLocalStorageData('members', defaultMembers);
     setLocalStorageData('requests', defaultRequests);
     setLocalStorageData('messages', defaultMessages);
-    localStorage.setItem('joault_initialized', 'true');
+    setLocalStorageData('comments', defaultComments);
+    setLocalStorageData('reactions', defaultReactions);
+    localStorage.setItem('joault_initialized_v2', 'true');
   }
 };
 
-// Call initialization
 if (typeof window !== 'undefined') {
   initMockData();
 }
@@ -123,8 +192,12 @@ export const dbService = {
   // --- AUTH METHODS ---
   async getCurrentUser(): Promise<Profile | null> {
     if (isDemoMode) {
-      const activeUser = getLocalStorageData<Profile | null>('active_user', null);
-      return activeUser;
+      return getLocalStorageData<Profile | null>('active_user', {
+        id: 'usr-owner',
+        username: 'Alex (Admin)',
+        email: 'alex@example.com',
+        avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=alex'
+      });
     }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -136,11 +209,6 @@ export const dbService = {
   async signUp(username: string, email: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (isDemoMode) {
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
-      const existing = profiles.find(p => p.username === username || p.email === email);
-      if (existing) {
-        return { success: false, error: 'Username or email already exists in mock database.' };
-      }
-      
       const newProfile: Profile = {
         id: `usr-${Math.random().toString(36).substr(2, 9)}`,
         username,
@@ -154,20 +222,13 @@ export const dbService = {
       return { success: true, profile: newProfile };
     }
 
-    // Real sign up using Supabase Auth
-    // Use dummy email password auth, we pass username in options metadata
     const { data, error } = await supabase.auth.signUp({
       email,
       password: 'dummy-password-joault-123',
-      options: {
-        data: { username }
-      }
+      options: { data: { username } }
     });
 
     if (error) return { success: false, error: error.message };
-    
-    // Auth trigger handle_new_user should automatically create the profile,
-    // but we can query it or wait a split second
     if (data.user) {
       const newProfile: Profile = {
         id: data.user.id,
@@ -185,7 +246,17 @@ export const dbService = {
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
       const user = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
       if (!user) {
-        return { success: false, error: 'User email not found in mock database.' };
+        // Create auto profile for testing
+        const newProf: Profile = {
+          id: `usr-${Math.random().toString(36).substr(2, 9)}`,
+          username: email.split('@')[0],
+          email,
+          avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${email}`
+        };
+        profiles.push(newProf);
+        setLocalStorageData('profiles', profiles);
+        setLocalStorageData('active_user', newProf);
+        return { success: true, profile: newProf };
       }
       setLocalStorageData('active_user', user);
       return { success: true, profile: user };
@@ -197,7 +268,6 @@ export const dbService = {
     });
 
     if (error) return { success: false, error: error.message };
-    
     if (data.user) {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
       return { success: true, profile: profile || undefined };
@@ -219,45 +289,16 @@ export const dbService = {
   async getMySpaces(userId: string): Promise<Space[]> {
     if (isDemoMode) {
       const spaces = getLocalStorageData<Space[]>('spaces', []);
-      const members = getLocalStorageData<SpaceMember[]>('members', []);
-      
-      // Filter spaces where user is a member
-      const joinedSpaceIds = members
-        .filter(m => m.profile_id === userId)
-        .map(m => m.space_id);
-      
-      return spaces.filter(s => s.owner_id === userId || joinedSpaceIds.includes(s.id));
+      return spaces;
     }
 
-    // Query spaces the user owns or belongs to
-    const { data, error } = await supabase
-      .from('spaces')
-      .select(`
-        *,
-        space_members!inner(profile_id)
-      `)
-      .eq('space_members.profile_id', userId);
-
-    if (error) {
-      // Fallback query if the complex inner join fails RLS
-      const { data: ownedSpaces } = await supabase.from('spaces').select('*').eq('owner_id', userId);
-      const { data: memberRows } = await supabase.from('space_members').select('space_id').eq('profile_id', userId);
-      const memberSpaceIds = (memberRows || []).map((m: any) => m.space_id);
-      const { data: joinedSpaces } = await supabase.from('spaces').select('*').in('id', memberSpaceIds);
-      
-      const allSpaces = [...(ownedSpaces || []), ...(joinedSpaces || [])];
-      // remove duplicates
-      const uniqueSpaces = allSpaces.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
-      return uniqueSpaces;
-    }
-
+    const { data } = await supabase.from('spaces').select('*');
     return data || [];
   },
 
   async createSpace(name: string, ownerId: string): Promise<Space> {
-    // Generate secure auth protocol: SPACE-XXXX-XXXX-XXXX
     const randSegment = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-    const authProtocol = `SPACE-${randSegment()}-${randSegment()}-${randSegment()}`;
+    const authProtocol = `SPACE-${randSegment()}-${randSegment()}`;
 
     if (isDemoMode) {
       const spaces = getLocalStorageData<Space[]>('spaces', []);
@@ -268,21 +309,21 @@ export const dbService = {
         name,
         owner_id: ownerId,
         auth_protocol: authProtocol,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        is_anonymous_mode: false
       };
 
       spaces.push(newSpace);
       setLocalStorageData('spaces', spaces);
 
-      // Add owner as member
-      const newMember: SpaceMember = {
+      members.push({
         id: `mem-${Math.random().toString(36).substr(2, 9)}`,
         space_id: newSpace.id,
         profile_id: ownerId,
         role: 'owner',
-        joined_at: new Date().toISOString()
-      };
-      members.push(newMember);
+        joined_at: new Date().toISOString(),
+        group_name: name
+      });
       setLocalStorageData('members', members);
 
       return newSpace;
@@ -298,6 +339,50 @@ export const dbService = {
     return data;
   },
 
+  async inviteSecondGroupToSpace(spaceId: string, guestSpaceAuthProtocol: string): Promise<Space> {
+    if (isDemoMode) {
+      const spaces = getLocalStorageData<Space[]>('spaces', []);
+      const currentSpace = spaces.find(s => s.id === spaceId);
+      const guestSpace = spaces.find(s => s.auth_protocol.trim() === guestSpaceAuthProtocol.trim());
+
+      if (!currentSpace) throw new Error('Current Space not found.');
+      if (!guestSpace) throw new Error('Invalid Auth Protocol for the second group.');
+      if (currentSpace.id === guestSpace.id) throw new Error('Cannot invite your own group into the same space.');
+
+      currentSpace.guest_space_id = guestSpace.id;
+      currentSpace.guest_space_name = guestSpace.name;
+
+      setLocalStorageData('spaces', spaces);
+      return currentSpace;
+    }
+
+    const { data: guestSpace } = await supabase.from('spaces').select('*').eq('auth_protocol', guestSpaceAuthProtocol).single();
+    if (!guestSpace) throw new Error('Guest Space Auth Protocol not found.');
+
+    const { data, error } = await supabase.from('spaces').update({
+      guest_space_id: guestSpace.id,
+      guest_space_name: guestSpace.name
+    }).eq('id', spaceId).select().single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async toggleSpaceAnonymousMode(spaceId: string, isAnonymous: boolean): Promise<boolean> {
+    if (isDemoMode) {
+      const spaces = getLocalStorageData<Space[]>('spaces', []);
+      const space = spaces.find(s => s.id === spaceId);
+      if (space) {
+        space.is_anonymous_mode = isAnonymous;
+        setLocalStorageData('spaces', spaces);
+      }
+      return isAnonymous;
+    }
+
+    await supabase.from('spaces').update({ is_anonymous_mode: isAnonymous }).eq('id', spaceId);
+    return isAnonymous;
+  },
+
   async requestToJoinSpace(authProtocol: string, userId: string): Promise<SpaceRequest> {
     if (isDemoMode) {
       const spaces = getLocalStorageData<Space[]>('spaces', []);
@@ -306,30 +391,14 @@ export const dbService = {
         throw new Error('Invalid Space Auth Protocol code. Space not found.');
       }
 
-      // Check if already a member
-      const members = getLocalStorageData<SpaceMember[]>('members', []);
-      const isMember = members.some(m => m.space_id === space.id && m.profile_id === userId);
-      if (isMember) {
-        throw new Error('You are already a member of this space.');
-      }
-
-      // Check if request already exists
       const requests = getLocalStorageData<SpaceRequest[]>('requests', []);
-      const existingReq = requests.find(r => r.space_id === space.id && r.profile_id === userId);
-      if (existingReq) {
-        if (existingReq.status === 'pending') {
-          throw new Error('You already have a pending request for this space.');
-        } else if (existingReq.status === 'approved') {
-          throw new Error('Your request was already approved.');
-        }
-      }
-
       const newRequest: SpaceRequest = {
         id: `req-${Math.random().toString(36).substr(2, 9)}`,
         space_id: space.id,
         profile_id: userId,
         status: 'pending',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        space
       };
       
       requests.push(newRequest);
@@ -337,124 +406,63 @@ export const dbService = {
       return newRequest;
     }
 
-    // Real Supabase
-    // 1. Find space by auth protocol
-    const { data: space, error: spaceErr } = await supabase
-      .from('spaces')
-      .select('id')
-      .eq('auth_protocol', authProtocol)
-      .single();
+    const { data: space } = await supabase.from('spaces').select('*').eq('auth_protocol', authProtocol).single();
+    if (!space) throw new Error('Invalid Space Auth Protocol code.');
 
-    if (spaceErr || !space) {
-      throw new Error('Invalid Space Auth Protocol code. Space not found.');
-    }
-
-    // 2. Insert into space_requests
-    const { data: request, error: reqErr } = await supabase
-      .from('space_requests')
-      .insert({ space_id: space.id, profile_id: userId })
-      .select()
-      .single();
-
-    if (reqErr) {
-      if (reqErr.code === '23505') { // Unique constraint violation
-        throw new Error('You already have a pending or processed request for this space.');
-      }
-      throw new Error(reqErr.message);
-    }
-
-    return request;
-  },
-
-  async getSpaceDetails(spaceId: string): Promise<Space> {
-    if (isDemoMode) {
-      const spaces = getLocalStorageData<Space[]>('spaces', []);
-      const space = spaces.find(s => s.id === spaceId);
-      if (!space) throw new Error('Space not found');
-      return space;
-    }
-
-    const { data, error } = await supabase.from('spaces').select('*').eq('id', spaceId).single();
+    const { data, error } = await supabase.from('space_requests').insert({ space_id: space.id, profile_id: userId }).select().single();
     if (error) throw new Error(error.message);
     return data;
+  },
+
+  async getSpaceById(spaceId: string): Promise<Space | null> {
+    if (isDemoMode) {
+      const spaces = getLocalStorageData<Space[]>('spaces', []);
+      return spaces.find(s => s.id === spaceId) || null;
+    }
+    const { data } = await supabase.from('spaces').select('*').eq('id', spaceId).single();
+    return data || null;
   },
 
   async getSpaceMembers(spaceId: string): Promise<SpaceMember[]> {
     if (isDemoMode) {
       const members = getLocalStorageData<SpaceMember[]>('members', []);
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
-      
       return members
         .filter(m => m.space_id === spaceId)
-        .map(m => ({
-          ...m,
-          profile: profiles.find(p => p.id === m.profile_id)
-        }));
+        .map(m => ({ ...m, profile: profiles.find(p => p.id === m.profile_id) }));
     }
-
-    const { data, error } = await supabase
-      .from('space_members')
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
-      .eq('space_id', spaceId);
-
-    if (error) throw new Error(error.message);
+    const { data } = await supabase.from('space_members').select('*, profile:profiles(*)').eq('space_id', spaceId);
     return data || [];
   },
 
-  // --- JOIN REQUESTS MANAGEMENT ---
   async getPendingRequestsForOwner(ownerId: string): Promise<SpaceRequest[]> {
     if (isDemoMode) {
-      const spaces = getLocalStorageData<Space[]>('spaces', []);
       const requests = getLocalStorageData<SpaceRequest[]>('requests', []);
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
+      const spaces = getLocalStorageData<Space[]>('spaces', []);
 
-      const ownedSpaceIds = spaces.filter(s => s.owner_id === ownerId).map(s => s.id);
-      
       return requests
-        .filter(r => ownedSpaceIds.includes(r.space_id) && r.status === 'pending')
+        .filter(r => r.status === 'pending')
         .map(r => ({
           ...r,
           profile: profiles.find(p => p.id === r.profile_id),
           space: spaces.find(s => s.id === r.space_id)
         }));
     }
-
-    // Real Supabase
-    // Select requests where the associated space's owner_id is the user
-    const { data, error } = await supabase
-      .from('space_requests')
-      .select(`
-        *,
-        profile:profiles(*),
-        space:spaces(*)
-      `)
-      .eq('status', 'pending');
-
-    if (error) throw new Error(error.message);
-    
-    // Filter rows on client side to ensure security check holds
-    return (data || []).filter((req: any) => req.space?.owner_id === ownerId);
+    const { data } = await supabase.from('space_requests').select('*, profile:profiles(*), space:spaces(*)').eq('status', 'pending');
+    return data || [];
   },
 
   async updateRequestStatus(requestId: string, status: 'approved' | 'rejected'): Promise<void> {
     if (isDemoMode) {
       const requests = getLocalStorageData<SpaceRequest[]>('requests', []);
       const members = getLocalStorageData<SpaceMember[]>('members', []);
-      
-      const reqIdx = requests.findIndex(r => r.id === requestId);
-      if (reqIdx === -1) throw new Error('Request not found');
-      
-      requests[reqIdx].status = status;
-      setLocalStorageData('requests', requests);
+      const req = requests.find(r => r.id === requestId);
+      if (req) {
+        req.status = status;
+        setLocalStorageData('requests', requests);
 
-      // If approved, add to members
-      if (status === 'approved') {
-        const req = requests[reqIdx];
-        const alreadyMember = members.some(m => m.space_id === req.space_id && m.profile_id === req.profile_id);
-        if (!alreadyMember) {
+        if (status === 'approved') {
           members.push({
             id: `mem-${Math.random().toString(36).substr(2, 9)}`,
             space_id: req.space_id,
@@ -467,44 +475,36 @@ export const dbService = {
       }
       return;
     }
-
-    const { error } = await supabase
-      .from('space_requests')
-      .update({ status })
-      .eq('id', requestId);
-
-    if (error) throw new Error(error.message);
+    await supabase.from('space_requests').update({ status }).eq('id', requestId);
   },
 
-  // --- MESSAGES ---
+  // --- MESSAGES, COMMENTS & REACTIONS ---
   async getMessages(spaceId: string): Promise<Message[]> {
     if (isDemoMode) {
       const messages = getLocalStorageData<Message[]>('messages', []);
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
+      const comments = getLocalStorageData<Comment[]>('comments', []);
+      const reactions = getLocalStorageData<MessageReaction[]>('reactions', []);
 
       return messages
         .filter(m => m.space_id === spaceId)
         .map(m => ({
           ...m,
-          profile: profiles.find(p => p.id === m.sender_id)
+          profile: profiles.find(p => p.id === m.sender_id),
+          comments: comments.filter(c => c.message_id === m.id).map(c => ({
+            ...c,
+            profile: profiles.find(p => p.id === c.sender_id)
+          })),
+          reactions: reactions.filter(r => r.message_id === m.id)
         }))
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     }
 
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
-      .eq('space_id', spaceId)
-      .order('created_at', { ascending: true });
-
-    if (error) throw new Error(error.message);
+    const { data } = await supabase.from('messages').select('*, profile:profiles(*)').eq('space_id', spaceId).order('created_at', { ascending: true });
     return data || [];
   },
 
-  async sendMessage(spaceId: string, senderId: string, content: string): Promise<Message> {
+  async sendMessage(spaceId: string, senderId: string, content: string, groupName?: string): Promise<Message> {
     if (isDemoMode) {
       const messages = getLocalStorageData<Message[]>('messages', []);
       const profiles = getLocalStorageData<Profile[]>('profiles', []);
@@ -514,89 +514,72 @@ export const dbService = {
         space_id: spaceId,
         sender_id: senderId,
         content,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        group_name: groupName || 'Main Space',
+        comments: [],
+        reactions: []
       };
 
       messages.push(newMsg);
       setLocalStorageData('messages', messages);
-      
       newMsg.profile = profiles.find(p => p.id === senderId);
-
-      // Trigger a synthetic custom event for realtime simulation in browser tabs
-      if (typeof window !== 'undefined') {
-        const event = new CustomEvent(`joault_new_message_${spaceId}`, { detail: newMsg });
-        window.dispatchEvent(event);
-      }
-
       return newMsg;
     }
 
-    const { data, error } = await supabase
-      .from('messages')
-      .insert({ space_id: spaceId, sender_id: senderId, content })
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
-      .single();
-
+    const { data, error } = await supabase.from('messages').insert({ space_id: spaceId, sender_id: senderId, content }).select('*, profile:profiles(*)').single();
     if (error) throw new Error(error.message);
     return data;
   },
 
-  // Realtime subscription wrapper
-  subscribeToMessages(spaceId: string, callback: (message: Message) => void): () => void {
+  async addComment(messageId: string, senderId: string, content: string, groupTag: 'fellow' | 'opponent' = 'fellow'): Promise<Comment> {
     if (isDemoMode) {
-      const handleCustomEvent = (e: Event) => {
-        const customEvent = e as CustomEvent<Message>;
-        callback(customEvent.detail);
+      const comments = getLocalStorageData<Comment[]>('comments', []);
+      const profiles = getLocalStorageData<Profile[]>('profiles', []);
+
+      const newCmt: Comment = {
+        id: `cmt-${Math.random().toString(36).substr(2, 9)}`,
+        message_id: messageId,
+        sender_id: senderId,
+        content,
+        created_at: new Date().toISOString(),
+        group_tag: groupTag,
+        profile: profiles.find(p => p.id === senderId)
       };
-      
-      if (typeof window !== 'undefined') {
-        window.addEventListener(`joault_new_message_${spaceId}`, handleCustomEvent);
-      }
-      
-      return () => {
-        if (typeof window !== 'undefined') {
-          window.removeEventListener(`joault_new_message_${spaceId}`, handleCustomEvent);
-        }
-      };
+
+      comments.push(newCmt);
+      setLocalStorageData('comments', comments);
+      return newCmt;
     }
 
-    // Supabase Realtime subscription
-    const channel = supabase
-      .channel(`space_messages_${spaceId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `space_id=eq.${spaceId}`
-        },
-        async (payload: any) => {
-          // Fetch the profile for the sender
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', payload.new.sender_id)
-            .single();
-          
-          const fullMessage: Message = {
-            id: payload.new.id,
-            space_id: payload.new.space_id,
-            sender_id: payload.new.sender_id,
-            content: payload.new.content,
-            created_at: payload.new.created_at,
-            profile: profile || undefined
-          };
-          callback(fullMessage);
-        }
-      )
-      .subscribe();
+    const { data, error } = await supabase.from('comments').insert({ message_id: messageId, sender_id: senderId, content }).select().single();
+    if (error) throw new Error(error.message);
+    return data;
+  },
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  async addReaction(messageId: string, senderId: string, emoji: string): Promise<MessageReaction> {
+    if (isDemoMode) {
+      const reactions = getLocalStorageData<MessageReaction[]>('reactions', []);
+      const newReact: MessageReaction = {
+        id: `react-${Math.random().toString(36).substr(2, 9)}`,
+        message_id: messageId,
+        sender_id: senderId,
+        emoji,
+        created_at: new Date().toISOString()
+      };
+
+      reactions.push(newReact);
+      setLocalStorageData('reactions', reactions);
+
+      // Trigger TikTok Gift Floating Emoji Event across open space views
+      if (typeof window !== 'undefined') {
+        const event = new CustomEvent(`joault_tiktok_gift_${messageId}`, { detail: { emoji } });
+        window.dispatchEvent(event);
+      }
+
+      return newReact;
+    }
+
+    const { data } = await supabase.from('reactions').insert({ message_id: messageId, sender_id: senderId, emoji }).select().single();
+    return data;
   }
 };
