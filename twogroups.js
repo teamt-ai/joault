@@ -343,7 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderTwoGroupsFeed() {
   container.innerHTML = '';
 
-  twogroupsPostsData.forEach(post => {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
+  const currentFeedData = isAnon ? anonymousTwogroupsPostsData : twogroupsPostsData;
+
+  currentFeedData.forEach(post => {
     const cardBox = document.createElement('div');
     cardBox.className = `twogroup-card-box ${post.teamKey}`;
     cardBox.dataset.postId = post.id;
@@ -362,6 +365,7 @@ function renderTwoGroupsFeed() {
     }
   });
 }
+
 
 // 1. RENDER CONNECTED S-LINE VIEW
 function renderConnectedSLineView(post) {

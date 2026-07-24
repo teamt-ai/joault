@@ -297,7 +297,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderFeed() {
   feedPostsContainer.innerHTML = '';
 
-  postsData.forEach(post => {
+  const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
+  const currentFeedData = isAnon ? anonymousPostsData : postsData;
+
+  currentFeedData.forEach(post => {
     const cardBox = document.createElement('div');
     cardBox.className = 'post-card-box';
     cardBox.dataset.postId = post.id;
@@ -322,6 +325,7 @@ function renderFeed() {
     setupSecretStickerHotzones();
   }
 }
+
 
 
 
@@ -447,8 +451,11 @@ function renderReplyView(post) {
 // 3. COMMENTS VIEW HTML
 function renderCommentsView(post) {
   const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
-  const allComments = commentsDatabase[post.id] || commentsDatabase.post_1;
+  const db = isAnon ? anonymousCommentsDatabase : commentsDatabase;
+  const fallback = isAnon ? (anonymousCommentsDatabase.anon_post_1 || []) : (commentsDatabase.post_1 || []);
+  const allComments = db[post.id] || fallback;
   const visibleCount = post.commentsPage * 8;
+
   const visibleComments = allComments.slice(0, visibleCount);
   const hasMore = visibleCount < allComments.length;
 
@@ -825,8 +832,10 @@ function setupComposer() {
     const text = postTextarea.value.trim();
     if (!text) return;
 
+    const isAnon = typeof isAnonymousNightModeActive !== 'undefined' && isAnonymousNightModeActive;
+
     const newPost = {
-      id: 'post_' + Date.now(),
+      id: isAnon ? 'anon_post_' + Date.now() : 'post_' + Date.now(),
       author: { name: 'Amara Nwosu', handle: '@amara_n', avatar: 'AN' },
       time: 'Just now',
       content: text,
@@ -838,8 +847,13 @@ function setupComposer() {
       reactions: {}
     };
 
-    postsData.unshift(newPost);
-    commentsDatabase[newPost.id] = [];
+    if (isAnon) {
+      anonymousPostsData.unshift(newPost);
+      anonymousCommentsDatabase[newPost.id] = [];
+    } else {
+      postsData.unshift(newPost);
+      commentsDatabase[newPost.id] = [];
+    }
 
     postTextarea.value = '';
     formCreatePost.classList.add('hidden');
@@ -848,6 +862,7 @@ function setupComposer() {
     renderFeed();
   });
 }
+
 
 // Help Alert
 btnSpaceHelp.addEventListener('click', () => {
