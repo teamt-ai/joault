@@ -6,6 +6,10 @@ const postsData = [
     author: { name: 'Kofi Mensah', handle: '@kofimensah', avatar: 'KM' },
     time: '1h',
     content: "Hot take: remote work didn't level the playing field — it just moved the gatekeeping online. If you don't have the right network, stable power, and a decent camera setup, you're still locked out of the conversation.",
+    images: [
+      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80'
+    ],
     likes: 1240,
     commentsCount: 289,
     liked: false,
@@ -18,6 +22,7 @@ const postsData = [
     author: { name: 'Zara Ahmed', handle: '@zara_talks', avatar: 'ZA' },
     time: '2h',
     content: "Just hit 10,000 users on our platform with zero paid marketing. Community-led growth is the most underrated strategy in B2C. Your early users are your best salespeople — treat them like it. Everything else flows from there.",
+    link: 'https://github.com/teamt-ai/joault',
     likes: 1520,
     commentsCount: 312,
     liked: false,
@@ -30,6 +35,9 @@ const postsData = [
     author: { name: 'Amara Nwosu', handle: '@amara_n', avatar: 'AN' },
     time: '3h',
     content: "The way African tech is growing right now is genuinely exciting. We're not just consumers anymore — we're building the infrastructure the whole continent will run on for the next 50 years. The talent pipeline is world-class and capital is finally following.",
+    images: [
+      'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&q=80'
+    ],
     likes: 847,
     commentsCount: 134,
     liked: false,
@@ -37,6 +45,7 @@ const postsData = [
     commentsPage: 1,
     reactions: { '❤️': 124, '💡': 35, '🚀': 41 }
   },
+
   {
     id: 'post_4',
     author: { name: 'Chidi Eze', handle: '@chidieze', avatar: 'CE' },

@@ -209,6 +209,28 @@ function closeLightboxModal(event) {
   }
 }
 
+/* ATTACHMENT ACTION TRIGGER HELPERS */
+function triggerImagePicker() {
+  const composeCollapsed = document.getElementById('compose-collapsed');
+  const formCreatePost = document.getElementById('form-create-post');
+  if (composeCollapsed && formCreatePost) {
+    composeCollapsed.classList.add('hidden');
+    formCreatePost.classList.remove('hidden');
+  }
+  const fileInput = document.getElementById('post-image-file-input');
+  if (fileInput) fileInput.click();
+}
+
+function triggerLinkPicker() {
+  const composeCollapsed = document.getElementById('compose-collapsed');
+  const formCreatePost = document.getElementById('form-create-post');
+  if (composeCollapsed && formCreatePost) {
+    composeCollapsed.classList.add('hidden');
+    formCreatePost.classList.remove('hidden');
+  }
+  promptAddLinkAttachment();
+}
+
 /* LINK ATTACHMENT PROMPT HELPER */
 function promptAddLinkAttachment() {
   const url = prompt("Enter website or document link (URL):", "https://");
@@ -263,33 +285,47 @@ function renderAttachmentTray() {
   tray.innerHTML = html;
 }
 
-// SETUP FILE INPUT ATTACHMENT LISTENERS WITH VIDEO REJECTION VALIDATOR
+// SETUP FILE INPUT DELEGATED LISTENER WITH VIDEO REJECTION VALIDATOR
+document.addEventListener('change', (e) => {
+  if (e.target && e.target.id === 'post-image-file-input') {
+    handleImageFileSelect(e);
+  }
+});
+
 function setupFileInputHandler() {
   const fileInput = document.getElementById('post-image-file-input');
   if (fileInput) {
-    fileInput.addEventListener('change', (e) => {
-      const files = Array.from(e.target.files);
-      let rejectedVideosCount = 0;
-
-      files.forEach(file => {
-        if (file.type.startsWith('video/')) {
-          rejectedVideosCount++;
-        } else if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            currentAttachedImages.push(event.target.result);
-            renderAttachmentTray();
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-
-      if (rejectedVideosCount > 0) {
-        showAnonymousToast("⚠️ Video uploads are not supported. Only images and links can be attached.");
-      } else if (files.length > 0) {
-        showAnonymousToast(`📸 Attached ${files.length} image(s)`);
-      }
-      fileInput.value = '';
-    });
+    fileInput.addEventListener('change', handleImageFileSelect);
   }
 }
+
+function handleImageFileSelect(e) {
+  const files = Array.from(e.target.files);
+  if (!files || files.length === 0) return;
+
+  let rejectedVideosCount = 0;
+  let processedCount = 0;
+
+  files.forEach(file => {
+    if (file.type.startsWith('video/')) {
+      rejectedVideosCount++;
+    } else if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        currentAttachedImages.push(event.target.result);
+        renderAttachmentTray();
+        processedCount++;
+        if (processedCount === files.length - rejectedVideosCount) {
+          showAnonymousToast(`📸 Attached ${processedCount} image(s)`);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  if (rejectedVideosCount > 0) {
+    showAnonymousToast("⚠️ Video uploads are not supported. Only images and links can be attached.");
+  }
+  e.target.value = '';
+}
+

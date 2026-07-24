@@ -101,7 +101,7 @@
           <div class="compose-footer">
             <div class="compose-tools-row">
               <input type="file" id="post-image-file-input" accept="image/*" multiple style="display:none;">
-              <button type="button" class="btn-attach-tool" onclick="document.getElementById('post-image-file-input').click()" title="Attach Images">
+              <button type="button" class="btn-attach-tool" onclick="triggerImagePicker()" title="Attach Images">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -110,7 +110,7 @@
                 <span>Images</span>
               </button>
 
-              <button type="button" class="btn-attach-tool" onclick="promptAddLinkAttachment()" title="Attach Link">
+              <button type="button" class="btn-attach-tool" onclick="triggerLinkPicker()" title="Attach Link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -120,6 +120,7 @@
 
               <span class="char-count" id="post-char-count">280</span>
             </div>
+
 
             <div class="compose-actions">
               <button type="button" id="btn-cancel-post" class="btn-cancel-sm">Cancel</button>
