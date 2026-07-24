@@ -261,20 +261,13 @@ function setupDoubleTapAndSwipe(cardElement, post) {
   let currentX = 0;
   let isDragging = false;
 
-  // Double Tap Handler (Touch / Click)
-  cardElement.addEventListener('click', (e) => {
+  // 1. DESKTOP DOUBLE CLICK EVENT
+  cardElement.addEventListener('dblclick', (e) => {
     if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
-    const now = Date.now();
-    if (now - lastTapTime < 300) {
-      // Double Tap detected! Show website custom emoji reaction bar
-      openWebsiteEmojiPicker(cardElement, post);
-      lastTapTime = 0;
-    } else {
-      lastTapTime = now;
-    }
+    openWebsiteEmojiPicker(cardElement, post);
   });
 
-  // Touch Swipe
+  // 2. TOUCH EVENTS (Touch Swipe + Mobile Double Tap)
   cardElement.addEventListener('touchstart', (e) => {
     if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
     startX = e.touches[0].clientX;
@@ -293,22 +286,73 @@ function setupDoubleTapAndSwipe(cardElement, post) {
     }
   }, { passive: true });
 
-  cardElement.addEventListener('touchend', () => {
+  cardElement.addEventListener('touchend', (e) => {
     if (!isDragging) return;
     isDragging = false;
     cardElement.classList.remove('swiping');
     cardElement.style.transform = '';
 
     const deltaX = currentX - startX;
-    if (deltaX > 40) {
+    const now = Date.now();
+
+    // Check for swipe gesture
+    if (deltaX > 45) {
+      // Swipe Right -> Show Comments View (8 at a time)!
       switchCardView(post.id, 'comments');
-    } else if (deltaX < -40) {
+    } else if (deltaX < -45) {
+      // Swipe Left -> Show Reply View!
+      switchCardView(post.id, 'reply');
+    } else if (Math.abs(deltaX) < 10) {
+      // Tap/Double-tap check
+      if (now - lastTapTime < 300) {
+        openWebsiteEmojiPicker(cardElement, post);
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+    }
+    startX = 0;
+    currentX = 0;
+  });
+
+  // 3. MOUSE DRAG EVENTS (Desktop Browsers)
+  cardElement.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
+    startX = e.clientX;
+    currentX = startX;
+    isDragging = true;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    currentX = e.clientX;
+    const deltaX = currentX - startX;
+
+    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
+      cardElement.classList.add('swiping');
+      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    cardElement.classList.remove('swiping');
+    cardElement.style.transform = '';
+
+    const deltaX = currentX - startX;
+    if (deltaX > 45) {
+      // Mouse Drag Right -> Show Comments View (8 at a time)!
+      switchCardView(post.id, 'comments');
+    } else if (deltaX < -45) {
+      // Mouse Drag Left -> Show Reply View!
       switchCardView(post.id, 'reply');
     }
     startX = 0;
     currentX = 0;
   });
 }
+
 
 // Open Custom Website Emoji Reaction Bar
 function openWebsiteEmojiPicker(cardElement, post) {

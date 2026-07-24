@@ -237,19 +237,13 @@ function setupDoubleTapAndSwipeTwoGroups(cardElement, post) {
   let currentX = 0;
   let isDragging = false;
 
-  // Double Tap Handler
-  cardElement.addEventListener('click', (e) => {
+  // 1. DESKTOP DOUBLE CLICK EVENT
+  cardElement.addEventListener('dblclick', (e) => {
     if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
-    const now = Date.now();
-    if (now - lastTapTime < 300) {
-      openWebsiteEmojiPicker(cardElement, post);
-      lastTapTime = 0;
-    } else {
-      lastTapTime = now;
-    }
+    openWebsiteEmojiPicker(cardElement, post);
   });
 
-  // Touch
+  // 2. TOUCH EVENTS (Touch Swipe + Mobile Double Tap)
   cardElement.addEventListener('touchstart', (e) => {
     if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
     startX = e.touches[0].clientX;
@@ -275,13 +269,59 @@ function setupDoubleTapAndSwipeTwoGroups(cardElement, post) {
     cardElement.style.transform = '';
 
     const deltaX = currentX - startX;
-    if (deltaX > 40) {
+    const now = Date.now();
+
+    if (deltaX > 45) {
+      // Swipe Right -> Show All Comments (8 at a time)!
+      switchTwoGroupView(post.id, 'comments');
+    } else if (Math.abs(deltaX) < 10) {
+      // Tap/Double-tap check
+      if (now - lastTapTime < 300) {
+        openWebsiteEmojiPicker(cardElement, post);
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+    }
+    startX = 0;
+    currentX = 0;
+  });
+
+  // 3. MOUSE DRAG EVENTS (Desktop Browsers)
+  cardElement.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button, input, textarea, a, .emoji-picker-box')) return;
+    startX = e.clientX;
+    currentX = startX;
+    isDragging = true;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    currentX = e.clientX;
+    const deltaX = currentX - startX;
+
+    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) < 140) {
+      cardElement.classList.add('swiping');
+      cardElement.style.transform = `translateX(${deltaX * 0.45}px)`;
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    cardElement.classList.remove('swiping');
+    cardElement.style.transform = '';
+
+    const deltaX = currentX - startX;
+    if (deltaX > 45) {
+      // Mouse Drag Right -> Show All Comments (8 at a time)!
       switchTwoGroupView(post.id, 'comments');
     }
     startX = 0;
     currentX = 0;
   });
 }
+
 
 // Open Website Emoji Picker Bar
 function openWebsiteEmojiPicker(cardElement, post) {
