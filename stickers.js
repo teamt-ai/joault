@@ -427,7 +427,7 @@ function threadStickerToPost(postId, sticker, pack) {
   playThreadedStickersForPost(postId, cardElement);
 }
 
-// CONSOLIDATE THREADED STICKERS & PLAY SEQUENCE (PREVENTING DUPLICATE OVERLAPS FOR SAME POST)
+// CONSOLIDATE THREADED STICKERS & PLAY SEQUENCE (PREVENTING DUPLICATE OVERLAPS & CLUSTERING)
 function playThreadedStickersForPost(postId, cardElement) {
   const stickersList = threadedStickersDB[postId];
   if (!stickersList || stickersList.length === 0) return;
@@ -453,36 +453,36 @@ function playThreadedStickersForPost(postId, cardElement) {
 
   const groupedItems = Array.from(groupedMap.values());
 
-  // Sequence playback for consolidated items
+  // Staggered non-overlapping spatial sequence playback
   groupedItems.forEach((entry, index) => {
+    const slotIndex = index % 5; // Assign distinct screen slot (0 to 4)
     setTimeout(() => {
-      triggerTikTokGiftAnimation(entry.sticker, entry.pack, entry.quantity);
-    }, index * 900);
+      triggerTikTokGiftAnimation(entry.sticker, entry.pack, entry.quantity, slotIndex);
+    }, index * 1200); // Staggered by 1.2s for clean breathing room!
   });
 
-  // Unlock activeGiftPlaying after sequence completes (6 seconds)
-  const totalSeqDuration = Math.max(6000, groupedItems.length * 900 + 4000);
+  // Unlock activeGiftPlaying after sequence completes
+  const totalSeqDuration = Math.max(6000, groupedItems.length * 1200 + 4000);
   setTimeout(() => {
     if (cardElement) delete cardElement.dataset.activeGiftPlaying;
   }, totalSeqDuration);
 }
 
-// TIKTOK-STYLE GIFT ANIMATION ENGINE (4 DYNAMIC MOTIONS + 2x/3x BADGES)
-function triggerTikTokGiftAnimation(sticker, pack, quantity = 1) {
+// TIKTOK-STYLE GIFT ANIMATION ENGINE (NON-CLUSTERING SPATIAL SLOTS + 2x/3x BADGES)
+function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, slotIndex = 0) {
   const overlay = document.getElementById('tiktok-gift-overlay-container');
   if (!overlay) return;
 
   const stageItem = document.createElement('div');
-  stageItem.className = 'tiktok-gift-stage-item';
+  stageItem.className = `tiktok-gift-stage-item gift-slot-${slotIndex % 5}`;
 
-  // Pick random motion 1 of 4
+  // Pick elegant motion pattern
   const motions = [
-    'motion-slide-shake-right',
-    'motion-drop-spin-center',
-    'motion-burst-center-out',
-    'motion-sweep-left-shine'
+    'motion-gift-float-glow',
+    'motion-gift-spin-shake',
+    'motion-gift-pulse-bounce'
   ];
-  const chosenMotion = motions[Math.floor(Math.random() * motions.length)];
+  const chosenMotion = motions[slotIndex % motions.length];
   stageItem.classList.add(chosenMotion);
 
   let visualHTML = '';
@@ -510,6 +510,7 @@ function triggerTikTokGiftAnimation(sticker, pack, quantity = 1) {
     if (stageItem.parentNode) stageItem.remove();
   }, 360000); // 6 Minutes!
 }
+
 
 // SCROLL TO MIDDLE OF SCREEN DETECTOR FOR THREADED STICKERS (EVERY TIME MESSAGE REACHES MIDDLE OF SCREEN)
 let isScrollChecking = false;
