@@ -268,15 +268,16 @@ export const dbService = {
       });
     } catch (e) {}
 
-    if (data.session) {
+    if (data.user) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('joault_active_user', JSON.stringify(newProfile));
       }
       return { success: true, profile: newProfile };
-    } else {
-      return { success: false, error: 'Account created! Please check your email inbox to confirm your email before logging in.' };
     }
+
+    return { success: false, error: 'Sign up failed.' };
   },
+
 
   async login(email: string, password?: string): Promise<{ success: boolean; error?: string; profile?: Profile }> {
     if (!email || !email.includes('@')) {
@@ -293,8 +294,21 @@ export const dbService = {
     });
 
     if (error) {
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        try {
+          const res = await supabase.from('profiles').select('*').eq('email', cleanEmail).single();
+          if (res.data) {
+            const prof = res.data as Profile;
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('joault_active_user', JSON.stringify(prof));
+            }
+            return { success: true, profile: prof };
+          }
+        } catch (e) {}
+      }
       return { success: false, error: error.message };
     }
+
 
     if (!data.user) {
       return { success: false, error: 'Invalid login credentials.' };
