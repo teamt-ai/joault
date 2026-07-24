@@ -15,12 +15,10 @@ import {
   Sparkles, 
   Loader2, 
   AlertCircle,
-  HelpCircle,
   Clock,
   Compass,
   Search,
   Key,
-  Shield,
   Users,
   Layers
 } from 'lucide-react';
@@ -57,7 +55,6 @@ export default function DashboardPage() {
 
   // Admin Request Status Updates
   const [adminLoadingId, setAdminLoadingId] = useState<string | null>(null);
-
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -126,7 +123,7 @@ export default function DashboardPage() {
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#1a73e8', '#34a853', '#ffffff']
+          colors: ['#000000', '#737373', '#ffffff']
         });
       }
     } catch (err: any) {
@@ -203,179 +200,133 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center text-[#1a73e8] gap-4 font-sans">
-        <Loader2 className="w-10 h-10 animate-spin text-[#1a73e8]" />
-        <span className="text-sm font-bold tracking-wider">Syncing Joault Workspace...</span>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center text-black gap-3 font-sans">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+        <span className="text-xs font-bold tracking-wider">Syncing Joault Workspace...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8f9fa] text-[#202124] font-sans select-none">
+    <div className="min-h-screen flex flex-col bg-white text-[#0f1419] font-sans select-none">
       
-      {/* GOOGLE WORKSPACE NAVIGATION HEADER */}
-      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#dadce0] shadow-xs">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      {/* THREADS MINIMALIST HEADER */}
+      <header className="sticky top-0 z-50 w-full bg-white/95 border-b border-[#f0f0f1] backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           
           <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-2xl bg-[#1a73e8] flex items-center justify-center text-white font-black text-xl shadow-md">
+            <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white font-black text-lg">
               J
             </div>
             <span className="font-outfit font-black text-2xl tracking-tight hidden sm:inline">Joault</span>
           </Link>
 
-          <div className="flex-grow max-w-xl relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-[#5f6368]" />
+          <div className="flex-grow max-w-lg relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search spaces, protocol codes..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-full border border-[#dadce0] bg-[#f1f3f4] text-sm outline-none focus:bg-white focus:border-[#1a73e8]"
+              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-zinc-200 bg-zinc-100 text-xs outline-none focus:bg-white focus:border-black transition"
             />
           </div>
 
           <div className="flex items-center gap-4 shrink-0">
-            <div className="hidden md:flex items-center gap-2.5 bg-[#f1f3f4] px-3.5 py-1.5 rounded-full border border-[#dadce0]">
-              <img 
-                src={user?.avatar_url} 
-                alt={user?.username} 
-                className="w-7 h-7 rounded-full bg-white border border-[#1a73e8]"
-              />
-              <span className="text-xs font-bold text-[#202124]">{user?.username}</span>
+            <div className="hidden md:flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-full border border-zinc-200">
+              <img src={user?.avatar_url} alt={user?.username} className="w-6 h-6 rounded-full border border-black bg-white" />
+              <span className="text-xs font-bold">{user?.username}</span>
             </div>
 
-            <button 
-              onClick={handleLogout}
-              className="p-2 text-[#5f6368] hover:text-[#1a73e8] transition cursor-pointer"
-              title="Logout"
-              id="dashboard_logout_btn"
-            >
-              <LogOut className="w-5 h-5" />
+            <button onClick={handleLogout} className="p-2 text-zinc-400 hover:text-black transition" title="Logout">
+              <LogOut className="w-4.5 h-4.5" />
             </button>
           </div>
 
         </div>
       </header>
 
-      {/* MAIN CONTENT GRID */}
-      <main className="max-w-7xl w-full mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-4 gap-8 flex-grow">
+      {/* DASHBOARD CONTENT GRID */}
+      <main className="max-w-6xl w-full mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-4 gap-8 flex-grow">
         
         {/* SIDEBAR ACTIONS */}
         <section className="lg:col-span-1 flex flex-col gap-6">
-          <div className="bg-white rounded-[28px] p-6 border border-[#dadce0] shadow-sm space-y-4">
-            <h2 className="font-outfit font-bold text-lg text-[#202124]">Space Controls</h2>
+          <div className="bg-white rounded-3xl p-6 border border-zinc-200 space-y-4">
+            <h2 className="font-outfit font-bold text-base">Space Controls</h2>
             
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
               <button
-                onClick={() => {
-                  setCreateOpen(true);
-                  setCreatedSpace(null);
-                  setCreateError(null);
-                  setJoinOpen(false);
-                }}
-                className="google-pill-btn w-full py-3.5 text-xs font-bold"
-                id="action_create_space_btn"
+                onClick={() => { setCreateOpen(true); setCreatedSpace(null); setCreateError(null); setJoinOpen(false); }}
+                className="w-full py-3 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Create Space
               </button>
               
               <button
-                onClick={() => {
-                  setJoinOpen(true);
-                  setJoinSuccessMsg(null);
-                  setJoinError(null);
-                  setCreateOpen(false);
-                }}
-                className="google-pill-outlined w-full py-3.5 text-xs font-bold"
-                id="action_join_space_btn"
+                onClick={() => { setJoinOpen(true); setJoinSuccessMsg(null); setJoinError(null); setCreateOpen(false); }}
+                className="w-full py-3 rounded-full border border-zinc-200 text-xs font-bold hover:bg-zinc-100 transition flex items-center justify-center gap-2"
               >
                 <UserPlus className="w-4 h-4" /> Join via Auth Protocol
               </button>
             </div>
           </div>
 
-          {/* WORKSPACE METRICS */}
-          <div className="bg-white rounded-[28px] p-6 border border-[#dadce0] shadow-sm space-y-4">
-            <h4 className="text-xs font-bold text-[#5f6368] uppercase tracking-wider">Workspace Metrics</h4>
-            
-            <div className="flex justify-between items-center bg-[#f8f9fa] p-3.5 rounded-2xl border border-[#dadce0]">
-              <div className="flex items-center gap-2">
-                <Compass className="w-4 h-4 text-[#1a73e8]" />
-                <span className="text-xs text-[#5f6368] font-medium">Active Spaces</span>
-              </div>
-              <span className="font-outfit font-bold text-sm text-[#202124]">{spaces.length}</span>
+          <div className="bg-white rounded-3xl p-6 border border-zinc-200 space-y-3">
+            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Metrics</h4>
+            <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-2xl border border-zinc-200 text-xs">
+              <span className="font-medium text-zinc-600">Active Spaces</span>
+              <span className="font-bold">{spaces.length}</span>
             </div>
-
-            <div className="flex justify-between items-center bg-[#f8f9fa] p-3.5 rounded-2xl border border-[#dadce0]">
-              <div className="flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-[#d97706]" />
-                <span className="text-xs text-[#5f6368] font-medium">Pending Requests</span>
-              </div>
-              <span className="font-outfit font-bold text-sm text-[#d97706]">{pendingRequests.length}</span>
+            <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-2xl border border-zinc-200 text-xs">
+              <span className="font-medium text-zinc-600">Pending Requests</span>
+              <span className="font-bold text-amber-600">{pendingRequests.length}</span>
             </div>
           </div>
         </section>
 
-        {/* SPACES GRID & MODALS */}
+        {/* MAIN SPACES FEED */}
         <section className="lg:col-span-3 flex flex-col gap-6">
           
           {/* Create Space Modal */}
           {createOpen && (
-            <div className="bg-white rounded-[28px] p-6 border border-[#1a73e8]/40 shadow-lg relative space-y-4">
-              <button onClick={() => setCreateOpen(false)} className="absolute top-5 right-5 text-[#5f6368] hover:text-[#202124]">
-                <X className="w-5 h-5" />
+            <div className="bg-white rounded-3xl p-6 border border-black shadow-sm relative space-y-4">
+              <button onClick={() => setCreateOpen(false)} className="absolute top-5 right-5 text-zinc-400 hover:text-black">
+                <X className="w-4 h-4" />
               </button>
-              
-              <h2 className="font-outfit font-bold text-xl text-[#1a73e8] flex items-center gap-2">
-                <Plus className="w-5 h-5" /> Create a New Group Space
+              <h2 className="font-outfit font-bold text-lg flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Create a New Space
               </h2>
 
               {!createdSpace ? (
                 <form onSubmit={handleCreateSpace} className="space-y-4">
-                  {createError && (
-                    <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 text-xs flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-red-600" />
-                      <span>{createError}</span>
-                    </div>
-                  )}
+                  {createError && <span className="text-xs text-red-600 block">{createError}</span>}
                   <div>
-                    <label className="block text-xs font-bold text-[#5f6368] uppercase tracking-wider mb-2">Space Name</label>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Space Name</label>
                     <input
                       type="text"
                       value={spaceName}
                       onChange={(e) => setSpaceName(e.target.value)}
-                      placeholder="e.g. Design Collective, Engineering Squad"
-                      className="w-full px-4 py-3 rounded-2xl border border-[#dadce0] bg-[#f1f3f4] text-sm outline-none focus:border-[#1a73e8]"
-                      id="create_space_input"
+                      placeholder="e.g. Design Collective"
+                      className="w-full px-4 py-3 rounded-full border border-zinc-200 bg-zinc-100 text-xs outline-none focus:bg-white focus:border-black"
                       required
                     />
                   </div>
-                  <button type="submit" disabled={createLoading} className="google-pill-btn py-3 px-6 text-xs font-bold">
-                    {createLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate Space & Auth Protocol'}
+                  <button type="submit" disabled={createLoading} className="px-6 py-3 rounded-full bg-black text-white text-xs font-bold">
+                    {createLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate Space & Protocol'}
                   </button>
                 </form>
               ) : (
-                <div className="space-y-4 bg-[#f8f9fa] p-5 rounded-2xl border border-[#dadce0]">
-                  <div className="flex items-center gap-2 text-[#1a73e8] text-sm font-bold">
-                    <Sparkles className="w-4 h-4 text-[#d97706]" /> Space Generated Successfully!
-                  </div>
-                  <p className="text-xs text-[#5f6368]">
-                    Share this unique <strong>Auth Protocol</strong> code with members. Anyone inputting this code will view your space details and can request to join.
-                  </p>
-                  
-                  <div className="flex items-center gap-2 bg-white p-3.5 rounded-xl border border-[#dadce0] justify-between">
-                    <code className="text-sm font-bold font-mono text-[#1a73e8] tracking-wider">{createdSpace.auth_protocol}</code>
-                    <button
-                      onClick={() => copyToClipboard(createdSpace.auth_protocol, createdSpace.id)}
-                      className="text-[#5f6368] hover:text-[#1a73e8] transition p-1 cursor-pointer"
-                    >
+                <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-200 text-xs">
+                  <span className="font-bold text-emerald-600 block">Space Created!</span>
+                  <p className="text-zinc-500">Share this unique Auth Protocol code with members:</p>
+                  <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-zinc-200 font-mono font-bold">
+                    <span>{createdSpace.auth_protocol}</span>
+                    <button onClick={() => copyToClipboard(createdSpace.auth_protocol, createdSpace.id)} className="text-zinc-400 hover:text-black">
                       {copiedId === createdSpace.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
-                  
-                  <Link href={`/space/${createdSpace.id}`} className="google-pill-btn py-2 px-5 text-xs font-bold">
-                    Enter Space Room <ArrowRight className="w-4 h-4" />
+                  <Link href={`/space/${createdSpace.id}`} className="px-4 py-2 rounded-full bg-black text-white text-xs font-bold inline-block">
+                    Enter Space Room
                   </Link>
                 </div>
               )}
@@ -384,43 +335,30 @@ export default function DashboardPage() {
 
           {/* Join Space Modal */}
           {joinOpen && (
-            <div className="bg-white rounded-[28px] p-6 border border-[#1a73e8]/40 shadow-lg relative space-y-4">
-              <button onClick={() => setJoinOpen(false)} className="absolute top-5 right-5 text-[#5f6368] hover:text-[#202124]">
-                <X className="w-5 h-5" />
+            <div className="bg-white rounded-3xl p-6 border border-black shadow-sm relative space-y-4">
+              <button onClick={() => setJoinOpen(false)} className="absolute top-5 right-5 text-zinc-400 hover:text-black">
+                <X className="w-4 h-4" />
               </button>
-              
-              <h2 className="font-outfit font-bold text-xl text-[#1a73e8] flex items-center gap-2">
-                <FolderLock className="w-5 h-5" /> Join Space via Auth Protocol
+              <h2 className="font-outfit font-bold text-lg flex items-center gap-2">
+                <FolderLock className="w-4 h-4" /> Join Space via Auth Protocol
               </h2>
 
               <form onSubmit={handleJoinSpace} className="space-y-4">
-                {joinError && (
-                  <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-600" />
-                    <span>{joinError}</span>
-                  </div>
-                )}
-                {joinSuccessMsg && (
-                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs flex items-center gap-2 font-bold">
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span>{joinSuccessMsg}</span>
-                  </div>
-                )}
-
+                {joinError && <span className="text-xs text-red-600 block">{joinError}</span>}
+                {joinSuccessMsg && <span className="text-xs text-emerald-600 font-bold block">{joinSuccessMsg}</span>}
                 <div>
-                  <label className="block text-xs font-bold text-[#5f6368] uppercase tracking-wider mb-2">Auth Protocol Code</label>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Auth Protocol Code</label>
                   <input
                     type="text"
                     value={authProtocol}
                     onChange={(e) => setAuthProtocol(e.target.value)}
                     placeholder="e.g. SPACE-COFFEE-9922"
-                    className="w-full px-4 py-3 rounded-2xl border border-[#dadce0] bg-[#f1f3f4] text-sm outline-none font-mono tracking-wider focus:border-[#1a73e8]"
-                    id="join_space_input"
+                    className="w-full px-4 py-3 rounded-full border border-zinc-200 bg-zinc-100 text-xs font-mono outline-none focus:bg-white focus:border-black"
                     required
                   />
                 </div>
-                <button type="submit" disabled={joinLoading} className="google-pill-btn py-3 px-6 text-xs font-bold">
-                  {joinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Inspect Space & Request Access'}
+                <button type="submit" disabled={joinLoading} className="px-6 py-3 rounded-full bg-black text-white text-xs font-bold">
+                  {joinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Request Access'}
                 </button>
               </form>
             </div>
@@ -428,42 +366,26 @@ export default function DashboardPage() {
 
           {/* Pending Requests Admin Panel */}
           {pendingRequests.length > 0 && (
-            <div className="bg-white rounded-[28px] p-6 border border-[#d97706]/40 shadow-sm space-y-4">
-              <h2 className="font-outfit font-bold text-lg text-[#d97706] flex items-center gap-2">
-                <Clock className="w-5 h-5 text-[#d97706]" /> Pending Access Approvals ({pendingRequests.length})
+            <div className="bg-white rounded-3xl p-6 border border-amber-300 space-y-4">
+              <h2 className="font-outfit font-bold text-base text-amber-600 flex items-center gap-2">
+                <Clock className="w-4 h-4" /> Pending Approvals ({pendingRequests.length})
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {pendingRequests.map((req) => (
-                  <div key={req.id} className="bg-[#f8f9fa] p-4 rounded-2xl border border-[#dadce0] flex flex-col justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <img 
-                        src={req.profile?.avatar_url} 
-                        alt={req.profile?.username} 
-                        className="w-9 h-9 rounded-full border border-[#1a73e8] bg-white shrink-0"
-                      />
-                      <div className="overflow-hidden">
-                        <h4 className="font-bold text-sm text-[#202124] truncate">{req.profile?.username}</h4>
-                        <p className="text-xs text-[#5f6368] truncate mb-1">{req.profile?.email}</p>
-                        <span className="text-[10px] bg-white px-2 py-0.5 rounded text-[#1a73e8] border border-[#dadce0] font-mono font-bold">
-                          Space: {req.space?.name}
-                        </span>
+                  <div key={req.id} className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200 flex flex-col justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2">
+                      <img src={req.profile?.avatar_url} alt={req.profile?.username} className="w-7 h-7 rounded-full border border-black bg-white" />
+                      <div>
+                        <h4 className="font-bold">{req.profile?.username}</h4>
+                        <span className="text-[10px] text-zinc-400 block font-mono">Space: {req.space?.name}</span>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2 w-full mt-2">
-                      <button
-                        onClick={() => handleRequestStatus(req.id, 'approved')}
-                        disabled={adminLoadingId === req.id}
-                        className="flex-1 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                      >
-                        <Check className="w-3.5 h-3.5" /> Approve
+                    <div className="flex gap-2">
+                      <button onClick={() => handleRequestStatus(req.id, 'approved')} className="flex-1 py-1.5 rounded-full bg-black text-white font-bold text-[11px]">
+                        Approve
                       </button>
-                      <button
-                        onClick={() => handleRequestStatus(req.id, 'rejected')}
-                        disabled={adminLoadingId === req.id}
-                        className="flex-1 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                      >
-                        <X className="w-3.5 h-3.5" /> Reject
+                      <button onClick={() => handleRequestStatus(req.id, 'rejected')} className="flex-1 py-1.5 rounded-full border border-zinc-300 font-bold text-[11px]">
+                        Reject
                       </button>
                     </div>
                   </div>
@@ -473,22 +395,17 @@ export default function DashboardPage() {
           )}
 
           {/* Active Spaces Grid */}
-          <div className="bg-white rounded-[28px] p-6 border border-[#dadce0] shadow-sm space-y-6">
-            
+          <div className="bg-white rounded-3xl p-6 border border-zinc-200 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-outfit font-bold text-xl text-[#202124] flex items-center gap-2.5">
-                <Compass className="w-5.5 h-5.5 text-[#1a73e8]" /> Your Group Spaces
+              <h2 className="font-outfit font-bold text-lg flex items-center gap-2">
+                <Compass className="w-5 h-5" /> Your Spaces
               </h2>
-              <span className="text-xs text-[#5f6368] font-mono font-semibold">{filteredSpaces.length} Spaces Active</span>
+              <span className="text-xs text-zinc-400 font-mono">{filteredSpaces.length} Active</span>
             </div>
 
             {filteredSpaces.length === 0 ? (
-              <div className="text-center py-16 px-4 bg-[#f8f9fa] rounded-2xl border border-dashed border-[#dadce0] flex flex-col items-center justify-center gap-3">
-                <FolderLock className="w-10 h-10 text-[#9aa0a6]" />
-                <h3 className="font-outfit font-bold text-base">No Spaces Found</h3>
-                <p className="text-xs text-[#5f6368] max-w-sm">
-                  Click "Create Space" to generate your first group space and Auth Protocol.
-                </p>
+              <div className="text-center py-16 px-4 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 text-xs text-zinc-400">
+                No active spaces found. Click "Create Space" to start.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -497,86 +414,52 @@ export default function DashboardPage() {
                   const hasGuestGroup = !!space.guest_space_name;
 
                   return (
-                    <div 
-                      key={space.id} 
-                      className="p-5 rounded-2xl bg-[#f8f9fa] hover:bg-white border border-[#dadce0] hover:border-[#1a73e8]/50 transition duration-200 flex flex-col justify-between gap-4 shadow-xs hover:shadow-md"
-                    >
+                    <div key={space.id} className="p-5 rounded-2xl border border-zinc-200 hover:border-black transition flex flex-col justify-between gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-outfit font-bold text-base text-[#202124]">
-                              {space.name}
-                            </h3>
-                            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
-                              isOwner 
-                                ? 'bg-[#1a73e8]/10 text-[#1a73e8] border-[#1a73e8]/30' 
-                                : 'bg-white text-[#5f6368] border-[#dadce0]'
-                            }`}>
-                              {isOwner ? 'Owner' : 'Member'}
-                            </span>
-                          </div>
-
-                          <button
-                            onClick={() => copyToClipboard(space.auth_protocol, space.id)}
-                            className="text-[#5f6368] hover:text-[#1a73e8] transition p-1.5 rounded-lg bg-white border border-[#dadce0] cursor-pointer"
-                            title="Copy Protocol Code"
-                          >
+                          <h3 className="font-outfit font-bold text-base">{space.name}</h3>
+                          <button onClick={() => copyToClipboard(space.auth_protocol, space.id)} className="text-zinc-400 hover:text-black">
                             {copiedId === space.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
                         </div>
+                        <p className="text-xs text-zinc-400 font-mono">{space.auth_protocol}</p>
 
-                        <p className="text-xs text-[#5f6368] font-mono flex items-center gap-1">
-                          <Key className="w-3.5 h-3.5 text-[#d97706]" /> {space.auth_protocol}
-                        </p>
-
-                        {/* Dual Group Tag */}
                         {hasGuestGroup && (
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-700 border border-purple-500/30 text-[10px] font-bold">
-                            <Layers className="w-3 h-3 text-purple-600" /> Dual Group Shared Mode with: {space.guest_space_name}
+                          <div className="text-[10px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-full inline-block">
+                            Dual Group Shared: {space.guest_space_name}
                           </div>
                         )}
                       </div>
 
-                      {/* Invite Second Group Button for Owner */}
+                      {/* Invite Second Group for Owner */}
                       {isOwner && !hasGuestGroup && (
                         <div>
                           {inviteGroupOpen === space.id ? (
-                            <form onSubmit={(e) => handleInviteSecondGroup(space.id, e)} className="p-3 bg-white rounded-xl border border-[#1a73e8]/30 space-y-2 mt-2">
+                            <form onSubmit={(e) => handleInviteSecondGroup(space.id, e)} className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
                               {inviteError && <span className="text-[10px] text-red-600 block">{inviteError}</span>}
                               <input
                                 type="text"
                                 value={guestProtocol}
                                 onChange={(e) => setGuestProtocol(e.target.value)}
-                                placeholder="Enter 2nd Group's Auth Protocol"
-                                className="w-full px-3 py-1.5 rounded-lg border text-xs font-mono"
+                                placeholder="2nd Group Auth Protocol"
+                                className="w-full px-3 py-1 rounded-full border text-xs font-mono"
                                 required
                               />
                               <div className="flex gap-2">
-                                <button type="submit" disabled={inviteLoading} className="google-pill-btn py-1 px-3 text-[10px]">
-                                  {inviteLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Link 2nd Group'}
-                                </button>
-                                <button type="button" onClick={() => setInviteGroupOpen(null)} className="text-[10px] text-[#5f6368]">
-                                  Cancel
-                                </button>
+                                <button type="submit" className="px-3 py-1 bg-black text-white text-[10px] font-bold rounded-full">Link Group</button>
+                                <button type="button" onClick={() => setInviteGroupOpen(null)} className="text-[10px] text-zinc-400">Cancel</button>
                               </div>
                             </form>
                           ) : (
-                            <button
-                              onClick={() => setInviteGroupOpen(space.id)}
-                              className="text-[11px] text-[#1a73e8] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                            >
-                              <Users className="w-3.5 h-3.5" /> Invite Another Group into this Chat Space
+                            <button onClick={() => setInviteGroupOpen(space.id)} className="text-[11px] font-bold text-zinc-500 hover:text-black">
+                              + Invite Second Group to Space
                             </button>
                           )}
                         </div>
                       )}
-                      
-                      <Link 
-                        href={`/space/${space.id}`}
-                        className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-[#1a73e8] text-[#1a73e8] hover:text-white text-xs font-bold transition duration-200 flex items-center justify-between border border-[#dadce0] shadow-xs"
-                      >
-                        <span>Enter Chat Space</span>
-                        <ArrowRight className="w-4 h-4" />
+
+                      <Link href={`/space/${space.id}`} className="w-full py-2 px-4 rounded-full bg-black text-white text-xs font-bold text-center">
+                        Enter Chat Space &rarr;
                       </Link>
                     </div>
                   );

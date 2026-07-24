@@ -12,22 +12,17 @@ import {
   Sparkles, 
   ArrowRight, 
   ShieldCheck, 
-  Layers, 
-  Flame, 
-  Heart, 
-  Send, 
   Check, 
   Loader2, 
   AlertCircle,
-  Lock,
-  UserCheck
+  Eye,
+  Heart
 } from 'lucide-react';
 import { dbService, isDemoMode, Profile, Space } from '@/lib/supabaseClient';
 
 export default function LandingPage() {
   const router = useRouter();
 
-  // Auth form states
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -41,8 +36,8 @@ export default function LandingPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewMsg, setPreviewMsg] = useState<string | null>(null);
 
-  // Theme preview state for landing demo
-  const [isDarkModeDemo, setIsDarkModeDemo] = useState(false);
+  // Theme preview state
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     async function checkUser() {
@@ -70,7 +65,7 @@ export default function LandingPage() {
       } else {
         setPreviewSpace({
           id: 'preview-space-1',
-          name: 'Design Collective & Tech Rival Squad',
+          name: 'Design Collective & Tech Rivals',
           owner_id: 'owner-1',
           auth_protocol: protocolInput.toUpperCase(),
           created_at: new Date().toISOString(),
@@ -125,54 +120,49 @@ export default function LandingPage() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-300 ${
-      isDarkModeDemo ? 'bg-[#121316] text-[#e8eaed]' : 'bg-[#f8f9fa] text-[#202124]'
+    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-200 ${
+      isDarkMode ? 'dark bg-black text-[#f7f9f9]' : 'bg-white text-[#0f1419]'
     } font-sans select-none overflow-x-hidden`}>
       
-      {/* GOOGLE WORKSPACE HEADER */}
-      <header className={`sticky top-0 z-50 w-full border-b transition-colors duration-300 ${
-        isDarkModeDemo ? 'bg-[#1e1f23]/90 border-[#303134]' : 'bg-white/90 border-[#dadce0]'
+      {/* THREADS / X MINIMALIST HEADER */}
+      <header className={`sticky top-0 z-50 w-full border-b transition-colors duration-200 ${
+        isDarkMode ? 'bg-black/90 border-[#18181b]' : 'bg-white/90 border-[#f0f0f1]'
       } backdrop-blur-md`}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#1a73e8] flex items-center justify-center text-white font-black text-xl shadow-md">
+            <div className="w-9 h-9 rounded-full bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-black text-lg">
               J
             </div>
-            <div>
-              <span className="font-outfit font-black text-2xl tracking-tight">Joault</span>
-              <span className="text-[10px] text-[#1a73e8] font-mono block uppercase font-bold tracking-wider">Group Space Networks</span>
-            </div>
+            <span className="font-outfit font-black text-2xl tracking-tight">Joault</span>
           </div>
 
           <div className="flex items-center gap-4">
             {/* Dark Mode Anonymous Switcher */}
             <button
-              onClick={() => setIsDarkModeDemo(!isDarkModeDemo)}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-semibold transition ${
-                isDarkModeDemo 
-                  ? 'bg-purple-950/60 text-purple-300 border-purple-500/40' 
-                  : 'bg-amber-500/10 text-amber-800 border-amber-500/30'
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold transition ${
+                isDarkMode 
+                  ? 'bg-zinc-900 text-zinc-200 border-zinc-800' 
+                  : 'bg-zinc-100 text-zinc-800 border-zinc-200'
               }`}
-              title="Toggle Dark Mode (Anonymous Mode)"
             >
-              {isDarkModeDemo ? <Moon className="w-3.5 h-3.5 text-purple-400" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
-              <span>{isDarkModeDemo ? 'Dark (Anonymous ON)' : 'Light (Identities Shown)'}</span>
+              {isDarkMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+              <span>{isDarkMode ? 'Dark (Anonymous ON)' : 'Light (Identities Shown)'}</span>
             </button>
 
             {user ? (
-              <Link href="/dashboard" className="google-pill-btn py-2 px-5 text-xs">
-                Dashboard <ArrowRight className="w-4 h-4" />
+              <Link href="/dashboard" className="px-5 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold">
+                Dashboard <ArrowRight className="w-3.5 h-3.5 inline ml-1" />
               </Link>
             ) : (
               <button 
                 onClick={() => {
-                  const authCard = document.getElementById('auth_card_container');
-                  authCard?.scrollIntoView({ behavior: 'smooth' });
+                  document.getElementById('auth_card_container')?.scrollIntoView({ behavior: 'smooth' });
                 }} 
-                className="google-pill-outlined py-2 px-5 text-xs"
+                className="px-5 py-2 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
               >
-                Sign In
+                Sign in
               </button>
             )}
           </div>
@@ -180,136 +170,122 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* HERO & SPLIT-SCREEN CONTAINER */}
-      <main className="max-w-7xl w-full mx-auto px-6 py-12 flex-grow">
-        
+      {/* THREADS / X MAIN SPLIT-SCREEN CONTAINER */}
+      <main className="max-w-6xl w-full mx-auto px-6 py-10 flex-grow">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          {/* LEFT COLUMN: HERO CONTENT & INNOVATION SHOWCASE */}
+          {/* LEFT COLUMN: MINIMALIST HEADLINE & RECTANGULAR FEED PREVIEW */}
           <div className="lg:col-span-7 space-y-8 text-left">
             
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1a73e8]/10 text-[#1a73e8] border border-[#1a73e8]/20 text-xs font-bold font-mono">
-              <Sparkles className="w-4 h-4" /> DUAL-GROUP CHAT & ANONYMOUS DARK MODE
+            <div className="space-y-4">
+              <h1 className="font-outfit text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08]">
+                See what’s happening in your spaces.
+              </h1>
+              <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg max-w-lg font-normal leading-relaxed">
+                Connect with friends and the world around you in structured group spaces. Invite rival groups, swipe to comment, and double tap to react with floating gift emojis.
+              </p>
             </div>
 
-            <h1 className="font-outfit text-4xl md:text-6xl font-black tracking-tight leading-[1.1]">
-              Where groups interact, collaborate, and compete <br />
-              <span className="text-[#1a73e8]">in a single space.</span>
-            </h1>
-
-            <p className={`text-base md:text-lg max-w-xl leading-relaxed ${
-              isDarkModeDemo ? 'text-[#9aa0a6]' : 'text-[#5f6368]'
-            }`}>
-              Joault redefines group communication. Invite another group into your space, swipe to comment, double-tap to trigger TikTok gift floating emojis, or toggle Dark Mode to instantly anonymize all messages.
-            </p>
-
-            {/* DEMO TOOL: AUTH PROTOCOL LOOKUP DEMO */}
+            {/* INTERACTIVE AUTH PROTOCOL LOOKUP TOOL */}
             <div className={`p-6 rounded-3xl border ${
-              isDarkModeDemo ? 'bg-[#1e1f23] border-[#303134]' : 'bg-white border-[#dadce0]'
-            } shadow-xl space-y-4`}>
+              isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-[#fcfcfc] border-[#f0f0f1]'
+            } space-y-4`}>
               <div className="flex items-center justify-between">
-                <h3 className="font-outfit font-bold text-base flex items-center gap-2">
-                  <Key className="w-4.5 h-4.5 text-[#1a73e8]" /> Try Auth Protocol Space Lookup
+                <h3 className="font-outfit font-bold text-sm flex items-center gap-2">
+                  <Key className="w-4 h-4 text-black dark:text-white" /> Auth Protocol Space Lookup
                 </h3>
-                <span className="text-[11px] font-mono text-[#1a73e8] font-bold">LIVE CODE TEST</span>
+                <span className="text-[10px] font-mono text-zinc-400 font-bold uppercase">LIVE DEMO</span>
               </div>
 
-              <form onSubmit={handleProtocolLookup} className="flex gap-3">
+              <form onSubmit={handleProtocolLookup} className="flex gap-2">
                 <input
                   type="text"
                   value={protocolInput}
                   onChange={(e) => setProtocolInput(e.target.value)}
-                  placeholder="Enter Auth Protocol (e.g. SPACE-COFFEE-9922)"
-                  className={`flex-grow px-4 py-3 rounded-2xl border text-sm outline-none font-mono tracking-wider ${
-                    isDarkModeDemo ? 'bg-[#292a2e] border-[#303134] text-white' : 'bg-[#f1f3f4] border-[#dadce0] text-[#202124]'
-                  } focus:border-[#1a73e8]`}
+                  placeholder="e.g. SPACE-COFFEE-9922"
+                  className={`flex-grow px-4 py-3 rounded-full border text-xs outline-none font-mono tracking-wider ${
+                    isDarkMode ? 'bg-[#121215] border-[#18181b] text-white' : 'bg-zinc-100 border-zinc-200 text-black'
+                  }`}
                 />
-                <button type="submit" disabled={previewLoading} className="google-pill-btn py-3 px-6 text-xs shrink-0">
-                  {previewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Inspect Space'}
+                <button type="submit" disabled={previewLoading} className="px-5 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold shrink-0">
+                  {previewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Inspect'}
                 </button>
               </form>
 
               {previewMsg && (
-                <div className="p-4 rounded-2xl bg-[#1a73e8]/10 border border-[#1a73e8]/30 flex items-center justify-between text-xs text-[#1a73e8]">
-                  <div className="flex items-center gap-2 font-bold">
-                    <Check className="w-4 h-4 text-emerald-500" />
-                    <span>Space: {previewSpace?.name} ({previewSpace?.auth_protocol})</span>
-                  </div>
-                  <Link href="/login" className="google-pill-btn py-1.5 px-4 text-[11px]">
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400">
+                  <span className="font-bold">{previewSpace?.name} ({previewSpace?.auth_protocol})</span>
+                  <Link href="/login" className="px-3 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-bold">
                     Request Access
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* X-STYLE RECTANGULAR MESSAGE FEATURE DEMO */}
+            {/* RECTANGULAR CARD FEED PREVIEW (X / THREADS STYLE) */}
             <div className={`p-6 rounded-3xl border ${
-              isDarkModeDemo ? 'bg-[#1e1f23] border-[#303134]' : 'bg-white border-[#dadce0]'
-            } shadow-xl space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h4 className="font-outfit font-bold text-sm flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-[#1a73e8]" /> X-Style Rectangular Card Feed Preview
-                </h4>
-                <span className="text-[10px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono font-bold">
-                  SWIPE & REACTION READY
+              isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-[#fcfcfc] border-[#f0f0f1]'
+            } space-y-4`}>
+              <div className="flex items-center justify-between text-xs text-zinc-500 font-bold">
+                <span className="flex items-center gap-1.5">
+                  <MessageSquare className="w-4 h-4" /> Rectangular Feed (Swipe & Double Tap Ready)
                 </span>
+                <span className="font-mono text-[10px]">{isDarkMode ? 'ANONYMOUS ON' : 'IDENTITIES SHOWN'}</span>
               </div>
 
-              {/* Sample Rectangular Post Box */}
-              <div className={`google-x-card p-5 border ${isDarkModeDemo ? 'bg-[#292a2e]' : 'bg-[#f8f9fa]'}`}>
-                <div className="flex items-center justify-between mb-2">
+              {/* Sample Post Rectangle */}
+              <div className="threads-post-card rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                      isDarkModeDemo ? 'bg-purple-900 text-purple-200' : 'bg-[#1a73e8] text-white'
-                    }`}>
-                      {isDarkModeDemo ? '?' : 'A'}
+                    <div className="w-8 h-8 rounded-full bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-bold text-xs">
+                      {isDarkMode ? '?' : 'A'}
                     </div>
                     <div>
                       <h5 className="text-xs font-bold">
-                        {isDarkModeDemo ? 'Anonymous Phantom' : 'Alex (Space Creator)'}
+                        {isDarkMode ? 'Anonymous Phantom' : 'Alex (Space Admin)'}
                       </h5>
-                      <span className="text-[10px] text-[#5f6368]">Design Group &bull; Just now</span>
+                      <span className="text-[10px] text-zinc-400">Design Group &bull; Just now</span>
                     </div>
                   </div>
-                  {isDarkModeDemo && (
-                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-mono font-bold">
-                      ANONYMOUS ON
-                    </span>
-                  )}
                 </div>
 
-                <p className="text-xs leading-relaxed mb-3">
-                  Two groups are sharing this exact chat space! Swipe left to comment, swipe right to view comments inside sub-rectangles, or double tap to launch TikTok gift emojis! 🔥
+                <p className="text-xs leading-relaxed text-zinc-800 dark:text-zinc-200">
+                  Welcome to Joault! Double tap this rectangle to trigger floating TikTok gift emojis, or swipe right to view comments inside sub-rectangles! 🔥
                 </p>
 
                 {/* Sub-Rectangle Comment */}
-                <div className="google-sub-rectangle text-[11px] space-y-1">
-                  <span className="font-bold text-[#1a73e8]">Sarah (Designer):</span>
-                  <p>The dual-group diagonal split rectangle view makes rival discussions super clean!</p>
+                <div className="threads-sub-rectangle text-[11px] space-y-1">
+                  <div className="flex justify-between font-bold">
+                    <span className="text-black dark:text-white">
+                      {isDarkMode ? 'Ghost Commenter' : 'Sarah (Designer)'}
+                    </span>
+                    <span className="text-zinc-400 font-mono">1m ago</span>
+                  </div>
+                  <p className="text-zinc-600 dark:text-zinc-400">This clean rectangle feed layout is super smooth!</p>
                 </div>
               </div>
             </div>
 
           </div>
 
-          {/* RIGHT COLUMN: GOOGLE-STYLE AUTHENTICATION CARD */}
+          {/* RIGHT COLUMN: MINIMALIST AUTH CARD */}
           <div className="lg:col-span-5 w-full max-w-md mx-auto" id="auth_card_container">
-            <div className={`p-8 md:p-10 rounded-[32px] border ${
-              isDarkModeDemo ? 'bg-[#1e1f23] border-[#303134]' : 'bg-white border-[#dadce0]'
-            } shadow-2xl space-y-6`}>
+            <div className={`p-8 rounded-3xl border ${
+              isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-white border-[#f0f0f1]'
+            } shadow-sm space-y-6`}>
               
               <div className="text-left">
                 <h2 className="font-outfit font-bold text-2xl mb-1">
-                  {activeTab === 'login' ? 'Log in to Joault' : 'Create a new account'}
+                  {activeTab === 'login' ? 'Log in to Joault' : 'Create an account'}
                 </h2>
-                <p className="text-xs text-[#5f6368]">
-                  {activeTab === 'login' ? 'Access your group spaces and auth protocols' : 'Start or join a group space today'}
+                <p className="text-xs text-zinc-500">
+                  {activeTab === 'login' ? 'Enter your details to access your spaces' : 'Quick registration to join your community'}
                 </p>
               </div>
 
               {error && (
-                <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
@@ -318,34 +294,34 @@ export default function LandingPage() {
                 
                 {activeTab === 'signup' && (
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-[#5f6368] uppercase tracking-wider ml-1">
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">
                       Username
                     </label>
                     <input
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Choose a unique username"
-                      className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none ${
-                        isDarkModeDemo ? 'bg-[#292a2e] border-[#303134] text-white' : 'bg-[#f1f3f4] border-[#dadce0] text-[#202124]'
-                      } focus:border-[#1a73e8]`}
+                      placeholder="Username"
+                      className={`w-full px-4 py-3.5 rounded-full border text-xs outline-none ${
+                        isDarkMode ? 'bg-[#121215] border-[#18181b] text-white' : 'bg-zinc-100 border-zinc-200 text-black'
+                      }`}
                       required={activeTab === 'signup'}
                     />
                   </div>
                 )}
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-[#5f6368] uppercase tracking-wider ml-1">
-                    Email Address
+                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">
+                    Email address
                   </label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none ${
-                      isDarkModeDemo ? 'bg-[#292a2e] border-[#303134] text-white' : 'bg-[#f1f3f4] border-[#dadce0] text-[#202124]'
-                    } focus:border-[#1a73e8]`}
+                    placeholder="Email address"
+                    className={`w-full px-4 py-3.5 rounded-full border text-xs outline-none ${
+                      isDarkMode ? 'bg-[#121215] border-[#18181b] text-white' : 'bg-zinc-100 border-zinc-200 text-black'
+                    }`}
                     required
                   />
                 </div>
@@ -353,30 +329,23 @@ export default function LandingPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="google-pill-btn w-full py-4 text-base font-bold shadow-lg"
+                  className="w-full py-3.5 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-sm shadow-sm"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                    <>
-                      <span>{activeTab === 'login' ? 'Log In' : 'Sign Up'}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (activeTab === 'login' ? 'Log in' : 'Sign up')}
                 </button>
 
-                <div className="text-center pt-2">
-                  <a href="#" className="text-xs text-[#1a73e8] hover:underline font-bold">
-                    Forgotten account or protocol key?
+                <div className="text-center pt-1">
+                  <a href="#" className="text-xs text-zinc-500 hover:underline font-medium">
+                    Forgotten account?
                   </a>
                 </div>
 
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className={`w-full border-t ${isDarkModeDemo ? 'border-[#303134]' : 'border-[#dadce0]'}`}></div>
+                    <div className="w-full border-t border-zinc-200 dark:border-zinc-800"></div>
                   </div>
                   <div className="relative flex justify-center text-[10px]">
-                    <span className={`px-3 uppercase font-mono font-bold ${
-                      isDarkModeDemo ? 'bg-[#1e1f23] text-[#9aa0a6]' : 'bg-white text-[#5f6368]'
-                    }`}>OR</span>
+                    <span className="bg-white dark:bg-[#09090b] px-3 text-zinc-400 font-mono uppercase font-bold">OR</span>
                   </div>
                 </div>
 
@@ -384,7 +353,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => { setActiveTab('signup'); setError(null); }}
-                    className="google-pill-outlined w-full py-3.5 text-xs font-bold"
+                    className="w-full py-3 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
                   >
                     Create new account
                   </button>
@@ -392,7 +361,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => { setActiveTab('login'); setError(null); }}
-                    className="google-pill-outlined w-full py-3.5 text-xs font-bold"
+                    className="w-full py-3 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
                   >
                     Sign in to existing account
                   </button>
@@ -400,9 +369,8 @@ export default function LandingPage() {
 
               </form>
 
-              <div className="pt-4 border-t border-[#dadce0]/30 text-center flex items-center justify-center gap-1.5 text-[11px] text-[#5f6368] font-medium">
-                <ShieldCheck className="w-4 h-4 text-[#1a73e8]" />
-                <span>Protected by Joault Auth Protocol Keys</span>
+              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 text-center text-[11px] text-zinc-500 font-medium">
+                Protected by Joault Auth Protocols
               </div>
 
             </div>
@@ -412,16 +380,13 @@ export default function LandingPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className={`w-full border-t py-6 px-6 text-center text-xs transition-colors duration-300 ${
-        isDarkModeDemo ? 'bg-[#1e1f23] border-[#303134] text-[#9aa0a6]' : 'bg-white border-[#dadce0] text-[#5f6368]'
-      }`}>
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <footer className="w-full border-t py-5 px-6 text-center text-xs border-zinc-200 dark:border-zinc-800 text-zinc-500">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
           <p>&copy; {new Date().getFullYear()} Joault Inc. All rights reserved.</p>
-          <div className="flex gap-6 font-medium">
-            <a href="#" className="hover:text-[#1a73e8] transition">Privacy</a>
-            <a href="#" className="hover:text-[#1a73e8] transition">Terms</a>
-            <a href="#" className="hover:text-[#1a73e8] transition">Cookies</a>
-            <a href="#" className="hover:text-[#1a73e8] transition">Support</a>
+          <div className="flex gap-5 font-medium">
+            <a href="#" className="hover:text-black dark:hover:text-white transition">Privacy</a>
+            <a href="#" className="hover:text-black dark:hover:text-white transition">Terms</a>
+            <a href="#" className="hover:text-black dark:hover:text-white transition">Cookies</a>
           </div>
         </div>
       </footer>

@@ -9,7 +9,6 @@ import {
   Users, 
   Copy, 
   Check, 
-  ShieldCheck, 
   Loader2, 
   ShieldAlert, 
   X, 
@@ -21,11 +20,7 @@ import {
   Sun,
   Flame,
   Heart,
-  Smile,
-  Layers,
-  CornerDownRight,
-  Eye,
-  Lock
+  Eye
 } from 'lucide-react';
 import { dbService, Profile, Space, SpaceMember, Message, Comment, MessageReaction } from '@/lib/supabaseClient';
 
@@ -88,7 +83,6 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
         const msgs = await dbService.getMessages(spaceId);
         setMessages(msgs);
 
-        // Check for unseen reactions to trigger TikTok Gift floating emojis on initial load!
         triggerTikTokGiftsForUnseenReactions(msgs);
 
       } catch (err) {
@@ -101,7 +95,6 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
     loadSpaceData();
   }, [spaceId, router]);
 
-  // Real-time message polling & reaction checker
   useEffect(() => {
     if (!spaceId) return;
 
@@ -124,7 +117,6 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
     return () => clearInterval(interval);
   }, [spaceId]);
 
-  // TikTok Gift Emojis Trigger
   const triggerTikTokGiftsForUnseenReactions = (msgs: Message[]) => {
     msgs.forEach(msg => {
       if (msg.reactions && msg.reactions.length > 0) {
@@ -140,7 +132,7 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
 
   const spawnFloatingEmoji = (emoji: string) => {
     const id = `gift-${Math.random().toString(36).substr(2, 9)}`;
-    const x = Math.floor(Math.random() * 70) + 15; // Random X percentage offset
+    const x = Math.floor(Math.random() * 70) + 15;
     setFloatingEmojis(prev => [...prev, { id, emoji, x }]);
     setTimeout(() => {
       setFloatingEmojis(prev => prev.filter(e => e.id !== id));
@@ -173,18 +165,15 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
     }
   };
 
-  // Swipe Left -> Comment on message
   const handleSwipeLeftComment = (messageId: string) => {
     setReplyingMessageId(messageId === replyingMessageId ? null : messageId);
-    setExpandedCommentsMessageId(messageId); // Auto open comments box
+    setExpandedCommentsMessageId(messageId);
   };
 
-  // Swipe Right -> Expand/view comments
   const handleSwipeRightViewComments = (messageId: string) => {
     setExpandedCommentsMessageId(messageId === expandedCommentsMessageId ? null : messageId);
   };
 
-  // Double Tap -> React to message & trigger TikTok Gift Emoji Float
   const handleDoubleTapReact = async (messageId: string, emoji: string = '🔥') => {
     if (!currentUser) return;
     spawnFloatingEmoji(emoji);
@@ -220,23 +209,23 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center gap-4 font-sans ${
-        isDarkMode ? 'bg-[#121316] text-white' : 'bg-[#f8f9fa] text-[#1a73e8]'
+      <div className={`min-h-screen flex flex-col items-center justify-center gap-3 font-sans ${
+        isDarkMode ? 'bg-black text-white' : 'bg-white text-black'
       }`}>
-        <Loader2 className="w-10 h-10 animate-spin" />
-        <span className="text-sm font-bold tracking-wider">Connecting to Space Protocol...</span>
+        <Loader2 className="w-8 h-8 animate-spin" />
+        <span className="text-xs font-bold tracking-wider">Connecting to Space Protocol...</span>
       </div>
     );
   }
 
   if (!space) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center gap-4 font-sans ${
-        isDarkMode ? 'bg-[#121316] text-white' : 'bg-[#f8f9fa] text-[#202124]'
+      <div className={`min-h-screen flex flex-col items-center justify-center gap-3 font-sans ${
+        isDarkMode ? 'bg-black text-white' : 'bg-white text-black'
       }`}>
-        <ShieldAlert className="w-12 h-12 text-[#1a73e8]" />
-        <span className="text-sm font-semibold">Space not found or permission denied.</span>
-        <Link href="/dashboard" className="google-pill-btn py-2.5 px-5 text-xs font-bold">
+        <ShieldAlert className="w-10 h-10 text-red-500" />
+        <span className="text-xs font-bold">Space not found or permission denied.</span>
+        <Link href="/dashboard" className="px-5 py-2 rounded-full bg-black text-white text-xs font-bold">
           Return to Dashboard
         </Link>
       </div>
@@ -247,11 +236,11 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
   const isDualGroupMode = !!space.guest_space_name;
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
-      isDarkMode ? 'dark bg-[#121316] text-[#e8eaed]' : 'bg-[#f8f9fa] text-[#202124]'
+    <div className={`min-h-screen flex flex-col transition-colors duration-200 ${
+      isDarkMode ? 'dark bg-black text-[#f7f9f9]' : 'bg-white text-[#0f1419]'
     } font-sans select-none relative overflow-x-hidden`}>
       
-      {/* TIKTOK GIFT FLOATING EMOJIS OVERLAY */}
+      {/* TIKTOK GIFT FLOATING EMOJIS */}
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
         {floatingEmojis.map(item => (
           <div 
@@ -264,18 +253,16 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
         ))}
       </div>
 
-      {/* HEADER BAR */}
-      <header className={`sticky top-0 z-40 w-full border-b transition-colors duration-300 ${
-        isDarkMode ? 'bg-[#1e1f23]/95 border-[#303134]' : 'bg-white/95 border-[#dadce0]'
+      {/* THREADS MINIMALIST HEADER */}
+      <header className={`sticky top-0 z-40 w-full border-b transition-colors duration-200 ${
+        isDarkMode ? 'bg-black/95 border-[#18181b]' : 'bg-white/95 border-[#f0f0f1]'
       } backdrop-blur-md`}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           
           <div className="flex items-center gap-4">
             <Link 
               href="/dashboard"
-              className={`p-2.5 rounded-2xl border transition ${
-                isDarkMode ? 'bg-[#292a2e] border-[#303134] text-[#e8eaed]' : 'bg-[#f1f3f4] border-[#dadce0] text-[#202124]'
-              }`}
+              className="p-2 rounded-full border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
               title="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -285,43 +272,36 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
               <div className="flex items-center gap-2">
                 <h1 className="font-outfit font-bold text-xl">{space.name}</h1>
                 {isDualGroupMode && (
-                  <span className="text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-mono font-bold">
+                  <span className="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 px-2.5 py-0.5 rounded-full font-mono font-bold">
                     Dual Group: {space.guest_space_name}
                   </span>
                 )}
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
-                  isOwner ? 'bg-[#1a73e8]/20 text-[#1a73e8] border-[#1a73e8]/30' : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                  isOwner ? 'bg-black text-white dark:bg-white dark:text-black border-transparent' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500 border-zinc-200 dark:border-zinc-800'
                 }`}>
-                  {isOwner ? 'Space Admin' : 'Member'}
+                  {isOwner ? 'Admin' : 'Member'}
                 </span>
               </div>
-              <p className="text-xs text-[#5f6368] flex items-center gap-1 font-mono mt-0.5">
-                <Key className="w-3.5 h-3.5 text-[#d97706]" /> {space.auth_protocol}
-              </p>
+              <p className="text-xs text-zinc-400 font-mono mt-0.5">{space.auth_protocol}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Dark Mode Anonymous Switch */}
             <button
               onClick={handleToggleAnonymousDarkMode}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-full border text-xs font-bold transition cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold transition cursor-pointer ${
                 isDarkMode 
-                  ? 'bg-purple-950/80 text-purple-300 border-purple-500/40' 
-                  : 'bg-amber-500/10 text-amber-800 border-amber-500/30'
+                  ? 'bg-zinc-900 text-zinc-200 border-zinc-800' 
+                  : 'bg-zinc-100 text-zinc-800 border-zinc-200'
               }`}
-              title="Toggle Dark Mode (Anonymous Mode)"
             >
-              {isDarkMode ? <Moon className="w-4 h-4 text-purple-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+              {isDarkMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
               <span>{isDarkMode ? 'Dark Mode (ANONYMOUS ON)' : 'Light Mode (Identities Shown)'}</span>
             </button>
 
-            <button
-              onClick={copyProtocol}
-              className="google-pill-outlined py-2 px-4 text-xs font-bold"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? 'Copied!' : 'Copy Code'}</span>
+            <button onClick={copyProtocol} className="px-4 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-bold">
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 inline" /> : <Copy className="w-3.5 h-3.5 inline" />}
+              <span className="ml-1">{copied ? 'Copied!' : 'Code'}</span>
             </button>
           </div>
 
@@ -329,47 +309,33 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
       </header>
 
       {/* ROOM MAIN CONTENT GRID */}
-      <main className="max-w-7xl w-full mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
+      <main className="max-w-6xl w-full mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
         
         {/* SIDEBAR MEMBERS */}
         <aside className="lg:col-span-1 flex flex-col gap-6">
-          <div className={`p-5 rounded-[28px] border ${
-            isDarkMode ? 'bg-[#1e1f23] border-[#303134]' : 'bg-white border-[#dadce0]'
-          } shadow-sm space-y-4`}>
+          <div className={`p-5 rounded-3xl border ${
+            isDarkMode ? 'bg-[#09090b] border-[#18181b]' : 'bg-white border-[#f0f0f1]'
+          } space-y-3`}>
             
-            <div className="flex items-center justify-between">
-              <h3 className="font-outfit font-bold text-base flex items-center gap-2">
-                <Users className="w-4.5 h-4.5 text-[#1a73e8]" /> Space Members ({members.length})
-              </h3>
-            </div>
+            <h3 className="font-outfit font-bold text-sm flex items-center gap-2">
+              <Users className="w-4 h-4" /> Space Members ({members.length})
+            </h3>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {members.map((mem) => {
                 const profile = mem.profile;
                 const isMemOwner = mem.profile_id === space.owner_id;
                 
-                // Anonymize if dark mode is active
                 const displayName = isDarkMode ? `Ghost Member #${mem.id.slice(-4)}` : profile?.username;
                 const displayAvatar = isDarkMode ? `https://api.dicebear.com/7.x/bottts/svg?seed=ghost-${mem.id}` : profile?.avatar_url;
 
                 return (
-                  <div 
-                    key={mem.id}
-                    className={`p-3 rounded-2xl border flex items-center justify-between ${
-                      isDarkMode ? 'bg-[#292a2e] border-[#303134]' : 'bg-[#f8f9fa] border-[#dadce0]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <img 
-                        src={displayAvatar} 
-                        alt={displayName}
-                        className="w-8 h-8 rounded-full border border-[#1a73e8] bg-white" 
-                      />
+                  <div key={mem.id} className="p-2.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <img src={displayAvatar} alt={displayName} className="w-7 h-7 rounded-full bg-white border border-black dark:border-white" />
                       <div>
-                        <h5 className="text-xs font-bold">{displayName}</h5>
-                        <span className="text-[10px] text-[#5f6368]">
-                          {mem.group_name || space.name} &bull; {isMemOwner ? 'Admin' : 'Member'}
-                        </span>
+                        <h5 className="font-bold">{displayName}</h5>
+                        <span className="text-[10px] text-zinc-400 block">{isMemOwner ? 'Admin' : 'Member'}</span>
                       </div>
                     </div>
                   </div>
@@ -380,31 +346,24 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
           </div>
         </aside>
 
-        {/* MAIN MESSAGES FEED (X-STYLE RECTANGLES WITH SUB-RECTANGLE COMMENTS & GESTURES) */}
+        {/* MAIN THREADS FEED */}
         <section className="lg:col-span-3 flex flex-col justify-between h-[calc(100vh-140px)]">
           
-          <div className="flex-grow overflow-y-auto pr-2 space-y-6 pb-6">
+          <div className="flex-grow overflow-y-auto pr-2 space-y-4 pb-6">
             
-            {/* Gesture Tip Bar */}
-            <div className={`p-4 rounded-2xl border flex items-center justify-between text-xs font-bold ${
-              isDarkMode ? 'bg-purple-950/40 text-purple-300 border-purple-500/30' : 'bg-blue-50 text-[#1a73e8] border-blue-200'
-            }`}>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                <span>Swipe Left = Comment | Swipe Right = View Comments | Double Tap = React with Floating TikTok Emojis</span>
-              </div>
-              <span className="font-mono text-[10px]">{messages.length} Messages Total</span>
+            <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-between text-zinc-500">
+              <span>Swipe Left = Comment | Swipe Right = View Comments | Double Tap = React with TikTok Emojis</span>
+              <span className="font-mono text-[10px] font-bold">{messages.length} Messages</span>
             </div>
 
             {messages.length === 0 ? (
-              <div className="text-center py-16 text-xs text-[#5f6368]">
-                No messages posted yet. Be the first to start the conversation!
+              <div className="text-center py-16 text-xs text-zinc-400">
+                No messages posted yet. Start the discussion below!
               </div>
             ) : (
               messages.map((msg) => {
                 const isMyMessage = msg.sender_id === currentUser?.id;
                 
-                // Anonymize in Dark Mode
                 const senderName = isDarkMode ? `Anonymous Phantom` : msg.profile?.username || 'Member';
                 const senderAvatar = isDarkMode ? `https://api.dicebear.com/7.x/bottts/svg?seed=ghost-${msg.sender_id}` : msg.profile?.avatar_url;
 
@@ -416,152 +375,111 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
                   <div 
                     key={msg.id}
                     onDoubleClick={() => handleDoubleTapReact(msg.id, '🔥')}
-                    className={`google-x-card p-5 border transition duration-200 ${
-                      isDualGroupMode ? 'dual-group-card' : ''
-                    }`}
+                    className="threads-post-card rounded-2xl border border-zinc-200 dark:border-zinc-800"
                   >
                     
-                    {/* DUAL GROUP SPLIT-RECTANGLE MODE */}
+                    {/* DUAL GROUP DIAGONAL SPLIT MODE */}
                     {isDualGroupMode ? (
-                      <div>
-                        {/* Top-Left Half: Main Message */}
-                        <div className="dual-split-top-left">
+                      <div className="space-y-3">
+                        <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2.5">
-                              <img src={senderAvatar} alt={senderName} className="w-8 h-8 rounded-full border border-[#1a73e8] bg-white" />
+                              <img src={senderAvatar} alt={senderName} className="w-8 h-8 rounded-full bg-white border border-black dark:border-white" />
                               <div>
                                 <h5 className="text-xs font-bold">{senderName}</h5>
-                                <span className="text-[10px] text-[#1a73e8] font-mono font-bold">
-                                  {msg.group_name || space.name} &bull; {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
+                                <span className="text-[10px] text-zinc-400 font-mono">{msg.group_name || space.name} &bull; {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
                             </div>
-                            {isDarkMode && (
-                              <span className="text-[9px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-mono font-bold">
-                                ANONYMOUS
-                              </span>
-                            )}
+                            {isDarkMode && <span className="text-[9px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full font-mono">ANONYMOUS</span>}
                           </div>
-
-                          <p className="text-sm font-normal leading-relaxed text-[#202124] dark:text-[#e8eaed]">
-                            {msg.content}
-                          </p>
+                          <p className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed">{msg.content}</p>
                         </div>
 
-                        {/* Bottom-Right Half: Comments Sub-Rectangles */}
-                        <div className="dual-split-bottom-right space-y-3">
-                          <div className="flex items-center justify-between text-[11px] font-bold text-[#d97706]">
-                            <span>Opponent & Fellow Member Comments ({msg.comments?.length || 0})</span>
-                            <div className="flex gap-2">
-                              <button onClick={() => handleSwipeLeftComment(msg.id)} className="hover:underline flex items-center gap-1">
-                                <MessageSquare className="w-3.5 h-3.5" /> Comment
-                              </button>
-                            </div>
+                        {/* Comments Sub-Rectangles */}
+                        <div className="space-y-2 pt-1">
+                          <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
+                            <span>Comments ({msg.comments?.length || 0})</span>
+                            <button onClick={() => handleSwipeLeftComment(msg.id)} className="hover:underline flex items-center gap-1">
+                              <MessageSquare className="w-3.5 h-3.5" /> Comment
+                            </button>
                           </div>
-
-                          {/* Render Sub-Rectangles for Comments */}
-                          {msg.comments && msg.comments.length > 0 && (
-                            <div className="space-y-2">
-                              {msg.comments.map(cmt => {
-                                const cmtName = isDarkMode ? `Ghost Commenter` : cmt.profile?.username || 'Member';
-                                return (
-                                  <div key={cmt.id} className="google-sub-rectangle space-y-1">
-                                    <div className="flex items-center justify-between text-[10px] font-bold">
-                                      <span className="text-[#1a73e8]">{cmtName}</span>
-                                      <span className="text-[#5f6368]">{new Date(cmt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                    </div>
-                                    <p className="text-xs text-[#202124] dark:text-[#e8eaed]">{cmt.content}</p>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                          {msg.comments?.map(cmt => {
+                            const cmtName = isDarkMode ? `Ghost Commenter` : cmt.profile?.username || 'Member';
+                            return (
+                              <div key={cmt.id} className="threads-sub-rectangle text-xs space-y-1">
+                                <div className="flex justify-between font-bold text-[10px]">
+                                  <span>{cmtName}</span>
+                                  <span className="text-zinc-400">{new Date(cmt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                                <p className="text-zinc-700 dark:text-zinc-300">{cmt.content}</p>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     ) : (
-                      /* SINGLE GROUP STANDARD X-STYLE RECTANGLE */
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
+                      /* SINGLE GROUP THREADS RECTANGLE */
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <img src={senderAvatar} alt={senderName} className="w-9 h-9 rounded-full border border-[#1a73e8] bg-white" />
+                            <img src={senderAvatar} alt={senderName} className="w-8 h-8 rounded-full bg-white border border-black dark:border-white" />
                             <div>
-                              <h5 className="text-xs font-bold flex items-center gap-1.5">
+                              <h5 className="text-xs font-bold flex items-center gap-1">
                                 {senderName}
-                                {isMyMessage && !isDarkMode && (
-                                  <span className="text-[9px] bg-[#1a73e8]/20 text-[#1a73e8] px-2 py-0.2 rounded-full font-mono font-bold">YOU</span>
-                                )}
+                                {isMyMessage && !isDarkMode && <span className="text-[9px] bg-black text-white px-1.5 rounded-full">YOU</span>}
                               </h5>
-                              <span className="text-[10px] text-[#5f6368] font-mono">
-                                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
+                              <span className="text-[10px] text-zinc-400 font-mono">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           </div>
 
-                          {/* Quick Reactions Bar */}
-                          <div className="flex items-center gap-1">
-                            <button onClick={() => handleDoubleTapReact(msg.id, '🔥')} className="p-1 hover:bg-[#1a73e8]/10 rounded-full transition text-xs">🔥</button>
-                            <button onClick={() => handleDoubleTapReact(msg.id, '🚀')} className="p-1 hover:bg-[#1a73e8]/10 rounded-full transition text-xs">🚀</button>
-                            <button onClick={() => handleDoubleTapReact(msg.id, '❤️')} className="p-1 hover:bg-[#1a73e8]/10 rounded-full transition text-xs">❤️</button>
+                          <div className="flex items-center gap-1 text-xs">
+                            <button onClick={() => handleDoubleTapReact(msg.id, '🔥')} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">🔥</button>
+                            <button onClick={() => handleDoubleTapReact(msg.id, '🚀')} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">🚀</button>
+                            <button onClick={() => handleDoubleTapReact(msg.id, '❤️')} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">❤️</button>
                           </div>
                         </div>
 
-                        {/* Main Message Text */}
-                        <p className="text-sm font-normal leading-relaxed mb-4 text-[#202124] dark:text-[#e8eaed]">
+                        <p className="text-xs leading-relaxed text-zinc-800 dark:text-zinc-200">
                           {msg.content}
                         </p>
 
-                        {/* Interactive Bar: Swipe Left / Right simulation */}
-                        <div className="flex items-center justify-between pt-3 border-t border-[#dadce0]/40 text-xs font-semibold text-[#5f6368]">
-                          <button 
-                            onClick={() => handleSwipeLeftComment(msg.id)}
-                            className="hover:text-[#1a73e8] transition flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <MessageSquare className="w-4 h-4 text-[#1a73e8]" />
-                            <span>Comment (Swipe Left)</span>
+                        <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800 text-[11px] font-semibold text-zinc-400">
+                          <button onClick={() => handleSwipeLeftComment(msg.id)} className="hover:text-black dark:hover:text-white transition flex items-center gap-1">
+                            <MessageSquare className="w-3.5 h-3.5" /> Comment (Swipe Left)
                           </button>
-
-                          <button 
-                            onClick={() => handleSwipeRightViewComments(msg.id)}
-                            className="hover:text-[#1a73e8] transition flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Eye className="w-4 h-4 text-[#d97706]" />
-                            <span>Comments ({msg.comments?.length || 0})</span>
+                          <button onClick={() => handleSwipeRightViewComments(msg.id)} className="hover:text-black dark:hover:text-white transition flex items-center gap-1">
+                            <Eye className="w-3.5 h-3.5" /> Comments ({msg.comments?.length || 0})
                           </button>
                         </div>
 
-                        {/* Sub-Rectangle Comments Container */}
                         {(isExpanded || hasComments) && (
-                          <div className="mt-4 pt-3 border-t border-[#dadce0]/30 space-y-2">
+                          <div className="space-y-2 pt-2">
                             {msg.comments?.map(cmt => {
                               const cmtName = isDarkMode ? `Ghost Commenter` : cmt.profile?.username || 'Member';
                               return (
-                                <div key={cmt.id} className="google-sub-rectangle space-y-1">
-                                  <div className="flex items-center justify-between text-[10px] font-bold">
-                                    <span className="text-[#1a73e8]">{cmtName}</span>
-                                    <span className="text-[#5f6368]">{new Date(cmt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                <div key={cmt.id} className="threads-sub-rectangle text-xs space-y-1">
+                                  <div className="flex justify-between font-bold text-[10px]">
+                                    <span>{cmtName}</span>
+                                    <span className="text-zinc-400">{new Date(cmt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                   </div>
-                                  <p className="text-xs text-[#202124] dark:text-[#e8eaed]">{cmt.content}</p>
+                                  <p className="text-zinc-700 dark:text-zinc-300">{cmt.content}</p>
                                 </div>
                               );
                             })}
                           </div>
                         )}
 
-                        {/* Inline Comment Input (Triggered by Swipe Left) */}
                         {isReplying && (
-                          <div className="mt-3 flex gap-2 pt-2 border-t border-[#dadce0]/30">
+                          <div className="flex gap-2 pt-2">
                             <input
                               type="text"
                               value={commentText}
                               onChange={(e) => setCommentText(e.target.value)}
                               placeholder="Write a comment..."
-                              className="flex-grow px-3 py-2 rounded-xl border text-xs outline-none bg-white dark:bg-[#121316] border-[#dadce0] dark:border-[#303134]"
+                              className="flex-grow px-3 py-1.5 rounded-full border text-xs outline-none bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
                             />
-                            <button
-                              onClick={() => handleAddComment(msg.id)}
-                              className="google-pill-btn py-1.5 px-4 text-xs font-bold"
-                            >
-                              Post Comment
+                            <button onClick={() => handleAddComment(msg.id)} className="px-4 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold">
+                              Post
                             </button>
                           </div>
                         )}
@@ -577,24 +495,17 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
           </div>
 
           {/* CHAT INPUT BAR */}
-          <form onSubmit={handleSendMessage} className="flex gap-3 pt-2">
+          <form onSubmit={handleSendMessage} className="flex gap-2 pt-2">
             <input
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={`Post message to space, ${isDarkMode ? 'Anonymous Phantom' : currentUser?.username}...`}
-              className={`flex-grow px-5 py-3.5 rounded-full border text-sm outline-none ${
-                isDarkMode ? 'bg-[#1e1f23] border-[#303134] text-white' : 'bg-white border-[#dadce0] text-[#202124]'
-              } focus:border-[#1a73e8]`}
+              placeholder={`Post update to space, ${isDarkMode ? 'Anonymous Phantom' : currentUser?.username}...`}
+              className="flex-grow px-5 py-3 rounded-full border text-xs outline-none bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus:border-black dark:focus:border-white transition"
               id="message_input"
             />
-            <button
-              type="submit"
-              disabled={sendLoading || !newMessage.trim()}
-              className="google-pill-btn py-3.5 px-6 shrink-0"
-              id="message_send_btn"
-            >
-              {sendLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            <button type="submit" disabled={sendLoading || !newMessage.trim()} className="px-6 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold shrink-0">
+              {sendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>
           </form>
 
