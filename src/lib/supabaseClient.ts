@@ -146,7 +146,8 @@ const initMockData = () => {
         id: 'msg-1', 
         space_id: 'space-alpha', 
         sender_id: 'usr-owner', 
-        content: 'Welcome to Joault! Swipe left to comment, swipe right to view comments, or double tap to launch TikTok gift emojis!', 
+        content: 'Welcome to Joault! Swipe left to comment, swipe right to view comments, or double tap to launch Joault gift emojis!', 
+
         created_at: new Date(Date.now() - 3600000).toISOString(),
         group_name: 'Design Collective'
       },
@@ -570,11 +571,12 @@ export const dbService = {
       reactions.push(newReact);
       setLocalStorageData('reactions', reactions);
 
-      // Trigger TikTok Gift Floating Emoji Event across open space views
+      // Trigger Joault Gift Floating Emoji Event across open space views
       if (typeof window !== 'undefined') {
-        const event = new CustomEvent(`joault_tiktok_gift_${messageId}`, { detail: { emoji } });
+        const event = new CustomEvent(`joault_gift_${messageId}`, { detail: { emoji } });
         window.dispatchEvent(event);
       }
+
 
       return newReact;
     }

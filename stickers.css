@@ -287,14 +287,15 @@
   font-weight: 500;
 }
 
-/* TIKTOK-STYLE GIFT SCREEN ANIMATIONS OVERLAY LAYER */
-.tiktok-gift-overlay-container {
+/* JOAULT GIFT SCREEN ANIMATIONS OVERLAY LAYER */
+.joault-gift-overlay-container {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 99999;
   overflow: hidden;
 }
+
 
 /* BASE GIFT STAGE ITEM (3 SECONDS LIFECYCLE) */
 .sticker-gift-stage-item {

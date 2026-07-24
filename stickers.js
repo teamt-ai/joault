@@ -1,4 +1,5 @@
-// Joault Premium Sticker Threading Engine & TikTok-Style Gift Animations
+// Joault Premium Sticker Threading Engine & Animated Gifts
+
 
 // 5 PREMIUM STICKER PACKS (27+ STICKERS PER PACK = 135 TOTAL)
 const PREMIUM_STICKER_PACKS = [
@@ -220,7 +221,7 @@ let stickerMiddleObserver = null;
 // INITIALIZE STICKER ENGINE
 document.addEventListener('DOMContentLoaded', () => {
   createStickerDrawerModalHTML();
-  createTikTokGiftOverlayHTML();
+  createJoaultGiftOverlayHTML();
 
   // Attach secret hotzone to cards
   setupSecretStickerHotzones();
@@ -228,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Middle-of-Screen Observer for Threaded Stickers
   setupStickerMiddleScreenObserver();
 });
+
 
 
 // CREATE DRAWER MODAL DOM STRUCTURE (GOOGLE & X CLASS CENTERED FLOATING SHEET)
@@ -267,7 +269,7 @@ function createStickerDrawerModalHTML() {
 
       <!-- FOOTER HINT BAR -->
       <div class="picker-footer-bar">
-        <span>⚡ 3s TikTok Gift Animation + 2x/3x Stack Badges</span>
+        <span>⚡ 3s Joault Animated Stickers + 2x/3x Stack Badges</span>
       </div>
     </div>
   `;
@@ -275,13 +277,13 @@ function createStickerDrawerModalHTML() {
   document.body.appendChild(modal);
 }
 
-// CREATE TIKTOK GIFT OVERLAY CONTAINER
-function createTikTokGiftOverlayHTML() {
-  if (document.getElementById('tiktok-gift-overlay-container')) return;
+// CREATE JOAULT GIFT OVERLAY CONTAINER
+function createJoaultGiftOverlayHTML() {
+  if (document.getElementById('joault-gift-overlay-container')) return;
 
   const overlay = document.createElement('div');
-  overlay.id = 'tiktok-gift-overlay-container';
-  overlay.className = 'tiktok-gift-overlay-container';
+  overlay.id = 'joault-gift-overlay-container';
+  overlay.className = 'joault-gift-overlay-container';
   document.body.appendChild(overlay);
 }
 
@@ -345,7 +347,7 @@ function closeStickerDrawer() {
   if (modal) modal.classList.remove('active');
 }
 
-// RENDER HORIZONTAL PACK CATEGORY PILLS (GOOGLE & X STYLE)
+// RENDER HORIZONTAL PACK CATEGORY PILLS
 function renderRegionAPacks() {
   const container = document.getElementById('packs-column-container');
   if (!container) return;
@@ -371,7 +373,7 @@ function renderRegionAPacks() {
   });
 }
 
-// RENDER STICKERS GRID (GOOGLE & X HIGH-DENSITY GRID)
+// RENDER STICKERS GRID
 function renderRegionBStickers() {
   const container = document.getElementById('stickers-grid-container');
   if (!container) return;
@@ -394,7 +396,7 @@ function renderRegionBStickers() {
       `;
     } else {
       tile.innerHTML = `
-        <img src="${sticker.content}" alt="${sticker.name}" class="sticker-img-el" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616490.png'">
+        <img src="${sticker.content}" alt="${sticker.name}" class="sticker-img-el" onerror="this.style.opacity='0.5'">
         <span class="sticker-label-tag">${sticker.name}</span>
       `;
     }
@@ -403,8 +405,7 @@ function renderRegionBStickers() {
   });
 }
 
-
-// THREAD STICKER TO MESSAGE & TRIGGER TIKTOK GIFT ANIMATION
+// THREAD STICKER TO MESSAGE & TRIGGER JOAULT ANIMATION
 function threadStickerToPost(postId, sticker, pack) {
   if (!postId) return;
 
@@ -428,7 +429,7 @@ function threadStickerToPost(postId, sticker, pack) {
   // Close drawer
   closeStickerDrawer();
 
-  // Play consolidated TikTok Gift Animation with 2x/3x quantity badge!
+  // Play consolidated Joault Animated Gift with 2x/3x quantity badge!
   playThreadedStickersForPost(postId, cardElement);
 }
 
@@ -464,7 +465,7 @@ function playThreadedStickersForPost(postId, cardElement) {
   // Spawn consolidated stickers with distinct motion patterns (1 to 5)
   groupedItems.forEach((entry, index) => {
     const patternIndex = (index % 5) + 1; // Motion pattern 1 to 5
-    triggerTikTokGiftAnimation(entry.sticker, entry.pack, entry.quantity, patternIndex);
+    triggerJoaultGiftAnimation(entry.sticker, entry.pack, entry.quantity, patternIndex);
   });
 
   // Strict Lock Release after exactly 3.2 seconds (when 3s set animation completely finishes)
@@ -473,9 +474,9 @@ function playThreadedStickersForPost(postId, cardElement) {
   }, 3200);
 }
 
-// TIKTOK-STYLE GIFT ANIMATION ENGINE (5 DISTINCT MOTION PATTERNS + 3s DURATION + 2x/3x BADGES)
-function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, patternIndex = 1) {
-  const overlay = document.getElementById('tiktok-gift-overlay-container');
+// JOAULT GIFT ANIMATION ENGINE (5 DISTINCT MOTION PATTERNS + 3s DURATION + 2x/3x BADGES)
+function triggerJoaultGiftAnimation(sticker, pack, quantity = 1, patternIndex = 1) {
+  const overlay = document.getElementById('joault-gift-overlay-container');
   if (!overlay) return;
 
   const stageItem = document.createElement('div');
@@ -485,7 +486,7 @@ function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, patternIndex = 
   if (pack.type === 'emoji') {
     visualHTML = `<span class="gift-emoji-art">${sticker.content}</span>`;
   } else {
-    visualHTML = `<img src="${sticker.content}" alt="${sticker.name}" class="gift-img-art" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616490.png'">`;
+    visualHTML = `<img src="${sticker.content}" alt="${sticker.name}" class="gift-img-art" onerror="this.style.opacity='0.5'">`;
   }
 
   const quantityBadge = quantity > 1 ? ` <span style="color: #FFD700; font-weight: 800; font-size: 1.15em;">${quantity}x</span>` : '';
@@ -506,6 +507,7 @@ function triggerTikTokGiftAnimation(sticker, pack, quantity = 1, patternIndex = 
     if (stageItem.parentNode) stageItem.remove();
   }, 3000);
 }
+
 
 
 

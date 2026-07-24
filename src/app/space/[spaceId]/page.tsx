@@ -47,7 +47,8 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
   const [expandedCommentsMessageId, setExpandedCommentsMessageId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
 
-  // TikTok Gift Floating Emojis State
+  // Joault Gift Floating Emojis State
+
   const [floatingEmojis, setFloatingEmojis] = useState<{ id: string; emoji: string; x: number }[]>([]);
   const seenReactionsRef = useRef<Set<string>>(new Set());
 
@@ -83,7 +84,7 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
         const msgs = await dbService.getMessages(spaceId);
         setMessages(msgs);
 
-        triggerTikTokGiftsForUnseenReactions(msgs);
+        triggerJoaultGiftsForUnseenReactions(msgs);
 
       } catch (err) {
         console.error('Failed to load space room:', err);
@@ -108,7 +109,7 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
         if (currentSpace) {
           setIsDarkMode(!!currentSpace.is_anonymous_mode);
         }
-        triggerTikTokGiftsForUnseenReactions(msgs);
+        triggerJoaultGiftsForUnseenReactions(msgs);
       } catch (err) {
         console.error('Error polling room:', err);
       }
@@ -117,7 +118,7 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
     return () => clearInterval(interval);
   }, [spaceId]);
 
-  const triggerTikTokGiftsForUnseenReactions = (msgs: Message[]) => {
+  const triggerJoaultGiftsForUnseenReactions = (msgs: Message[]) => {
     msgs.forEach(msg => {
       if (msg.reactions && msg.reactions.length > 0) {
         msg.reactions.forEach(r => {
@@ -240,18 +241,19 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
       isDarkMode ? 'dark bg-black text-[#f7f9f9]' : 'bg-white text-[#0f1419]'
     } font-sans select-none relative overflow-x-hidden`}>
       
-      {/* TIKTOK GIFT FLOATING EMOJIS */}
+      {/* JOAULT GIFT FLOATING EMOJIS */}
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
         {floatingEmojis.map(item => (
           <div 
             key={item.id} 
-            className="tiktok-gift-emoji"
+            className="joault-gift-emoji"
             style={{ left: `${item.x}%`, bottom: '15%' }}
           >
             {item.emoji}
           </div>
         ))}
       </div>
+
 
       {/* THREADS MINIMALIST HEADER */}
       <header className={`sticky top-0 z-40 w-full border-b transition-colors duration-200 ${
@@ -351,10 +353,11 @@ export default function SpaceRoomPage({ params }: { params: Promise<{ spaceId: s
           
           <div className="flex-grow overflow-y-auto pr-2 space-y-4 pb-6">
             
-            <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-between text-zinc-500">
-              <span>Swipe Left = Comment | Swipe Right = View Comments | Double Tap = React with TikTok Emojis</span>
+            <div class="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-between text-zinc-500">
+              <span>Swipe Left = Comment | Swipe Right = View Comments | Double Tap = React with Joault Emojis</span>
               <span className="font-mono text-[10px] font-bold">{messages.length} Messages</span>
             </div>
+
 
             {messages.length === 0 ? (
               <div className="text-center py-16 text-xs text-zinc-400">
