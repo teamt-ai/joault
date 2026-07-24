@@ -901,6 +901,20 @@ function setupComposer() {
       commentsDatabase[newPost.id] = [];
     }
 
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      const tableName = isAnon ? 'anonymous_messages' : 'messages';
+      const insertPayload = {
+        content: text,
+        images: currentAttachedImages.length > 0 ? [...currentAttachedImages] : null,
+        link: currentAttachedLink || null,
+        reactions: {}
+      };
+
+      supabaseClient.from(tableName).insert([insertPayload]).then(({ error }) => {
+        if (error) console.warn("Supabase live post insert notice:", error);
+      });
+    }
+
     // Reset draft attachments
     currentAttachedImages = [];
     currentAttachedLink = null;
@@ -915,6 +929,7 @@ function setupComposer() {
     renderFeed();
   });
 }
+
 
 
 
