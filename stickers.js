@@ -469,38 +469,51 @@ function triggerTikTokGiftAnimation(sticker, pack) {
   }, 360000); // 6 Minutes!
 }
 
-// SCROLL TO MIDDLE OF SCREEN OBSERVER FOR THREADED STICKERS (EVERY TIME MESSAGE REACHES MIDDLE OF SCREEN)
+// SCROLL TO MIDDLE OF SCREEN DETECTOR FOR THREADED STICKERS (EVERY TIME MESSAGE REACHES MIDDLE OF SCREEN)
+let isScrollChecking = false;
+
 function setupStickerMiddleScreenObserver() {
-  if (!('IntersectionObserver' in window)) return;
+  window.removeEventListener('scroll', checkMiddleScreenCards);
+  window.addEventListener('scroll', checkMiddleScreenCards, { passive: true });
+  checkMiddleScreenCards();
+}
 
-  if (stickerMiddleObserver) stickerMiddleObserver.disconnect();
+function checkMiddleScreenCards() {
+  if (isScrollChecking) return;
+  isScrollChecking = true;
 
-  stickerMiddleObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const cardBox = entry.target;
-      const postId = cardBox.dataset.postId;
+  requestAnimationFrame(() => {
+    const cards = document.querySelectorAll('.post-card-box, .twogroup-card-box');
+    const screenCenterY = window.innerHeight / 2;
+    const middleZoneRadius = window.innerHeight * 0.28;
 
-      if (entry.isIntersecting) {
-        if (postId && threadedStickersDB[postId] && threadedStickersDB[postId].length > 0) {
-          if (!cardBox.dataset.stickerPlaying) {
-            cardBox.dataset.stickerPlaying = 'true';
+    cards.forEach(card => {
+      const postId = card.dataset.postId;
+      if (!postId || !threadedStickersDB[postId] || threadedStickersDB[postId].length === 0) return;
 
-            // Play all threaded stickers for this post!
-            threadedStickersDB[postId].forEach((item, index) => {
-              setTimeout(() => {
-                triggerTikTokGiftAnimation(item.sticker, item.pack);
-              }, index * 800);
-            });
-          }
+      const rect = card.getBoundingClientRect();
+      const cardCenterY = rect.top + (rect.height / 2);
+      const isMiddle = Math.abs(cardCenterY - screenCenterY) < middleZoneRadius;
+
+      if (isMiddle) {
+        if (!card.dataset.inMiddleZone) {
+          card.dataset.inMiddleZone = 'true';
+
+          // Trigger all threaded stickers for this post!
+          threadedStickersDB[postId].forEach((item, index) => {
+            setTimeout(() => {
+              triggerTikTokGiftAnimation(item.sticker, item.pack);
+            }, index * 800);
+          });
         }
       } else {
-        delete cardBox.dataset.stickerPlaying;
+        // Reset when message leaves middle of screen so it plays again every time user returns!
+        delete card.dataset.inMiddleZone;
       }
     });
-  }, { rootMargin: '-30% 0px -30% 0px', threshold: 0.1 });
 
-  // Observe all cards
-  const cardBoxes = document.querySelectorAll('.post-card-box, .twogroup-card-box');
-  cardBoxes.forEach(card => stickerMiddleObserver.observe(card));
+    isScrollChecking = false;
+  });
 }
+
 
